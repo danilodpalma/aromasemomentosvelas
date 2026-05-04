@@ -1,0 +1,71 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Insumo {
+  id                Int      @id @default(autoincrement())
+  name              String
+  active            Boolean  @default(true)
+  unit              String?
+  purchaseCost      Float
+  purchasedQuantity Float
+  unitCost          Float
+  description       String?
+  stock             Int      @default(0)
+  createdAt         DateTime @default(now())
+  sales             Sale[]
+}
+
+model Modelo {
+  id            Int      @id @default(autoincrement())
+  nome          String
+  ativo         Boolean  @default(true)
+  valorVendido  Float    @default(0)
+  tipoProduto   String?
+  ceraGr        Float
+  esenciaMl     Float
+  essenciaNome  String?
+  pavio         String?
+  coranteNome   String?
+  coranteGr     Float
+  recipiente    String?
+  pedra         String?
+  extrato       String?
+  extratoGr     Float
+  lauril        String?
+  laurilGr      Float
+  tampa         String?
+  embalagem     Float
+  maoDeObra     Float
+  margemLucro   Float
+  createdAt     DateTime @default(now())
+}
+
+model Sale {
+  id        Int      @id @default(autoincrement())
+  insumoId  Int
+  quantity  Int
+  unitPrice Float
+  total     Float
+  createdAt DateTime @default(now())
+  insumo    Insumo   @relation(fields: [insumoId], references: [id])
+}
+
+model Venda {
+  id             Int      @id @default(autoincrement())
+  dataVenda      DateTime
+  cliente        String
+  modeloVela     String
+  quantidade     Int
+  precoUnitario  Float
+  total          Float
+  formaPagamento String
+  status         String
+  observacao     String?
+  createdAt      DateTime @default(now())
+}
