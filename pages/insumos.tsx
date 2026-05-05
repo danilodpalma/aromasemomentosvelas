@@ -65,8 +65,26 @@ export default function Insumos() {
 
   useEffect(() => {
     fetch("/api/products")
-      .then((res) => res.json())
-      .then(setInsumos);
+      .then(async (res) => {
+        const body = await res.text();
+        const parsed = body ? JSON.parse(body) : null;
+
+        if (!res.ok) {
+          const message = parsed?.error || "Falha ao carregar insumos.";
+          throw new Error(message);
+        }
+
+        if (!Array.isArray(parsed)) {
+          throw new Error("Resposta inválida do servidor.");
+        }
+
+        return parsed;
+      })
+      .then(setInsumos)
+      .catch((error) => {
+        console.error("Falha ao buscar insumos:", error);
+        setMessage(error.message || "Erro ao carregar insumos.");
+      });
   }, []);
 
   useEffect(() => {
