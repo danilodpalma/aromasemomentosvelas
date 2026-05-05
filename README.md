@@ -8,15 +8,27 @@ Projeto inicial para controle de produtos, custos e vendas.
    ```bash
    npm install
    ```
-2. Gere o cliente Prisma e crie o banco de dados:
+2. Crie um arquivo `.env` baseado em `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Defina `DATABASE_URL` para um banco PostgreSQL em nuvem (por exemplo, Supabase, Neon ou Railway).
+4. Gere o cliente Prisma e crie o esquema no banco:
    ```bash
    npx prisma generate
    npx prisma db push
    ```
-3. Execute o app:
+5. Execute o app:
    ```bash
    npm run dev
    ```
+
+## Configuração para Vercel
+- `Framework Preset`: `Next.js`
+- `Install Command`: `npm install`
+- `Build Command`: `npm run build`
+- `Output Directory`: `.next`
+- Defina a variável de ambiente `DATABASE_URL` no Vercel com o valor do seu banco PostgreSQL.
 
 ## Estrutura inicial
 
