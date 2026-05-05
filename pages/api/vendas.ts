@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
+import { withApiErrorHandling } from "../../lib/api";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default withApiErrorHandling(async function handler(req: NextApiRequest, res: NextApiResponse) {
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
 
@@ -93,4 +94,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(405).json({ error: "Method not allowed" });
-}
+});

@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
+import { withApiErrorHandling } from "../../lib/api";
 
-export default async function handler(
+export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -132,4 +133,4 @@ export default async function handler(
   }
 
   return res.status(405).json({ error: "Method not allowed" });
-}
+});
