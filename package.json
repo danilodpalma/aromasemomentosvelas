@@ -3,11 +3,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "start:remote": "next start -H 0.0.0.0 -p 3000",
     "lint": "next lint",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.15.0",
