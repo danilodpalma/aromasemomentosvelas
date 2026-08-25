@@ -35,17 +35,15 @@ export default function Dashboard() {
   }, []);
 
   const totalVendas = vendas.length;
-  const receita = vendas
-    .filter(
-      (v) => v.formaPagamento && v.formaPagamento.toUpperCase().includes("PG"),
-    )
-    .reduce((sum, item) => sum + item.total, 0);
+  const receita = vendas.reduce((sum, item) => sum + item.total, 0);
   const vendasRecentes = vendas.slice(0, 5);
 
   return (
     <div>
-      <h2>Resumo e dashboard</h2>
-      <p>Use este painel como ponto de partida para acompanhar seu negócio.</p>
+      <h2 style={{ marginBottom: 6, color: "#6b3b12" }}>Resumo e dashboard</h2>
+      <p style={{ marginTop: 0, color: "#8a5a2b" }}>
+        Use este painel como ponto de partida para acompanhar seu negócio.
+      </p>
 
       <section
         style={{
@@ -57,10 +55,11 @@ export default function Dashboard() {
       >
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Total de insumos</p>
@@ -70,10 +69,11 @@ export default function Dashboard() {
         </div>
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Total de vendas</p>
@@ -83,10 +83,11 @@ export default function Dashboard() {
         </div>
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Receita</p>
@@ -96,18 +97,19 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section style={{ marginTop: 32 }}>
-        <h3>Vendas recentes</h3>
+      <section style={{ marginTop: 28 }}>
+        <h3 style={{ marginBottom: 10, color: "#6b3b12" }}>Vendas recentes</h3>
         <table
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            background: "rgb(239, 221, 201)",
-            borderRadius: 12,
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            borderRadius: 14,
             overflow: "hidden",
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.08)",
           }}
         >
-          <thead style={{ background: "rgb(239, 221, 201)" }}>
+          <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
               <th style={{ padding: 12, textAlign: "left" }}>Cliente</th>
               <th style={{ padding: 12, textAlign: "left" }}>Produto</th>
@@ -156,11 +158,12 @@ export default function Dashboard() {
 
       <section
         style={{
-          marginTop: 32,
-          background: "rgb(239, 221, 201)",
+          marginTop: 28,
+          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
           padding: 20,
-          borderRadius: 12,
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+          borderRadius: 14,
+          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+          border: "1px solid rgba(166, 116, 71, 0.2)",
         }}
       >
         <h3>Próximo passo</h3>

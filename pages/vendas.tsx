@@ -22,6 +22,7 @@ type Modelo = {
   id: number;
   nome: string;
   tipoProduto?: string;
+  baseNome?: string;
   ceraGr: number;
   esenciaMl: number;
   essenciaNome?: string;
@@ -40,22 +41,11 @@ type Modelo = {
   tampa?: string;
 };
 
-const statusOptions = [
-  "Entregue",
-  "Pronto",
-  "Consignação",
-  "Produção",
-  "Vendido",
-  "Enviado",
-];
-const formaPagamentoOptions = [
-  "Pix - PG",
-  "Pix",
-  "Presente",
-  "Consignação",
-  "Dinheiro",
-  "Dinheiro - PG",
-];
+type Parameter = {
+  id: number;
+  name: string;
+  category: string;
+};
 
 export default function Vendas() {
   const [vendas, setVendas] = useState<Venda[]>([]);
@@ -82,16 +72,22 @@ export default function Vendas() {
     observacao: "",
   });
   const [message, setMessage] = useState<string>("");
+  const [paymentMethods, setPaymentMethods] = useState<Parameter[]>([]);
+  const [saleStatuses, setSaleStatuses] = useState<Parameter[]>([]);
   const dataVendaInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function load() {
-      const [vendasRes, modelosRes] = await Promise.all([
+      const [vendasRes, modelosRes, paymentRes, statusRes] = await Promise.all([
         fetch("/api/vendas"),
         fetch("/api/modelos"),
+        fetch("/api/productTypes?category=paymentMethod"),
+        fetch("/api/productTypes?category=saleStatus"),
       ]);
       setVendas(await vendasRes.json());
       setModelos(await modelosRes.json());
+      setPaymentMethods(await paymentRes.json());
+      setSaleStatuses(await statusRes.json());
     }
 
     load();
@@ -147,7 +143,7 @@ export default function Vendas() {
       cliente: venda.cliente,
       modeloVela: venda.modeloVela,
       quantidade: venda.quantidade.toString(),
-      precoUnitario: formatCurrencyInput(venda.precoUnitario, 2),
+      precoUnitario: formatCurrencyInput(venda.precoUnitario, 3),
       formaPagamento: venda.formaPagamento,
       status: venda.status,
       observacao: venda.observacao ?? "",
@@ -223,7 +219,8 @@ export default function Vendas() {
       return item ? item.unitCost : 0;
     }
 
-    const ceraCost = modelo.ceraGr * findUnitCost(insumos, modelo.tipoProduto || "Cera de Coco");
+    const baseName = modelo.baseNome || "Cera de Coco";
+    const ceraCost = modelo.ceraGr * findUnitCost(insumos, baseName);
     const esenciaCost =
       modelo.esenciaMl * findUnitCost(insumos, modelo.essenciaNome);
     const pavioCost = 1 * findUnitCost(insumos, modelo.pavio);
@@ -231,9 +228,9 @@ export default function Vendas() {
       modelo.coranteGr * findUnitCost(insumos, modelo.coranteNome);
     const recipienteCost = 1 * findUnitCost(insumos, modelo.recipiente);
     const pedraCost = 1 * findUnitCost(insumos, modelo.pedra);
-    const extratoCost = modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
+    const extratoCost =
+      modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
     const laurilCost = modelo.laurilGr * findUnitCost(insumos, modelo.lauril);
-    const tampaCost = 1 * findUnitCost(insumos, modelo.tampa);
 
     const insumoCost =
       ceraCost +
@@ -243,16 +240,15 @@ export default function Vendas() {
       recipienteCost +
       pedraCost +
       extratoCost +
-      laurilCost +
-      tampaCost;
+      laurilCost;
     const fixedCost = modelo.embalagem + modelo.maoDeObra;
     const totalCost = insumoCost + fixedCost;
     const priceSuggested = Math.ceil(
       totalCost * (1 + modelo.margemLucro / 100),
     );
 
-    setForm({ ...form, precoUnitario: formatCurrencyInput(priceSuggested, 2) });
-    setMessage(`Preço sugerido calculado: R$ ${priceSuggested.toFixed(2)}`);
+    setForm({ ...form, precoUnitario: formatCurrencyInput(priceSuggested, 3) });
+    setMessage(`Preço sugerido calculado: R$ ${priceSuggested.toFixed(3)}`);
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -293,65 +289,48 @@ export default function Vendas() {
 
   function calculateResumo() {
     const totalVendido = vendas.reduce((sum, v) => sum + v.total, 0);
-    const totalRecebidoPix = vendas
-      .filter((v) => v.formaPagamento === "Pix - PG")
-      .reduce((sum, v) => sum + v.total, 0);
-    const totalRecebidoDinheiro = vendas
-      .filter((v) => v.formaPagamento === "Dinheiro - PG")
-      .reduce((sum, v) => sum + v.total, 0);
-    const totalAReceber = vendas
-      .filter(
-        (v) => v.formaPagamento === "Pix" || v.formaPagamento === "Consignação",
-      )
-      .reduce((sum, v) => sum + v.total, 0);
-    const totalAReceberPix = vendas
-      .filter((v) => v.formaPagamento === "Pix")
-      .reduce((sum, v) => sum + v.total, 0);
-    const totalAReceberConsignacao = vendas
-      .filter((v) => v.formaPagamento === "Consignação")
-      .reduce((sum, v) => sum + v.total, 0);
-
-    const pedidosPagos = vendas.filter(
-      (v) => v.formaPagamento === "Pix - PG",
-    ).length;
-    const pedidosEntregues = vendas.filter(
-      (v) => v.status === "Entregue",
-    ).length;
-    const pedidosProducao = vendas.filter(
-      (v) => v.status === "Produção",
-    ).length;
-    const pedidosProntos = vendas.filter((v) => v.status === "Pronto").length;
-    const pedidosConsignacao = vendas.filter(
-      (v) => v.status === "Consignação",
-    ).length;
-    const pedidosEnviado = vendas.filter((v) => v.status === "Enviado").length;
-    const pedidosVendido = vendas.filter((v) => v.status === "Vendido").length;
     const totalVelasVendidas = vendas.reduce((sum, v) => sum + v.quantidade, 0);
+    const receita = totalVendido;
 
-    const presentesCount = vendas.filter(
-      (v) => v.formaPagamento === "Presente",
-    ).length;
-    const presentesValue = vendas
-      .filter((v) => v.formaPagamento === "Presente")
-      .reduce((sum, v) => sum + v.total, 0);
+    const paymentSummary = paymentMethods.map((method) => {
+      const value = vendas
+        .filter((v) => v.formaPagamento === method.name)
+        .reduce((sum, v) => sum + v.total, 0);
+      const count = vendas.filter(
+        (v) => v.formaPagamento === method.name,
+      ).length;
+      return { name: method.name, value, count };
+    });
+
+    const statusSummary = saleStatuses.map((status) => {
+      const count = vendas.filter((v) => v.status === status.name).length;
+      return { name: status.name, count };
+    });
+
+    const paymentTotals = paymentSummary.reduce(
+      (acc, item) => {
+        acc[item.name] = item.value;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    const statusCounts = statusSummary.reduce(
+      (acc, item) => {
+        acc[item.name] = item.count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return {
       totalVendido,
-      totalRecebidoPix,
-      totalRecebidoDinheiro,
-      totalAReceber,
-      totalAReceberPix,
-      totalAReceberConsignacao,
-      pedidosPagos,
-      pedidosEntregues,
-      pedidosProducao,
-      pedidosProntos,
-      pedidosConsignacao,
-      pedidosEnviado,
-      pedidosVendido,
+      receita,
       totalVelasVendidas,
-      presentesCount,
-      presentesValue,
+      paymentSummary,
+      statusSummary,
+      paymentTotals,
+      statusCounts,
     };
   }
 
@@ -403,8 +382,8 @@ export default function Vendas() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "rgb(239, 221, 201)",
-            border: "1px solid #a7f3d0",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           {message}
@@ -420,10 +399,11 @@ export default function Vendas() {
       >
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 15,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <div
@@ -443,11 +423,12 @@ export default function Vendas() {
               onClick={startNew}
               style={{
                 padding: "8px 16px",
-                background: "rgb(34, 197, 94)",
+                background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
                 color: "white",
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 999,
                 cursor: "pointer",
+                fontWeight: 600,
               }}
             >
               + Novo
@@ -609,9 +590,9 @@ export default function Vendas() {
                   }}
                 >
                   <option value="">Escolha</option>
-                  {formaPagamentoOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {paymentMethods.map((opt) => (
+                    <option key={opt.id} value={opt.name}>
+                      {opt.name}
                     </option>
                   ))}
                   <option value="Outros">Outros</option>
@@ -636,9 +617,9 @@ export default function Vendas() {
                   }}
                 >
                   <option value="">Escolha</option>
-                  {statusOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {saleStatuses.map((opt) => (
+                    <option key={opt.id} value={opt.name}>
+                      {opt.name}
                     </option>
                   ))}
                 </select>
@@ -709,10 +690,11 @@ export default function Vendas() {
 
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <div
@@ -882,9 +864,9 @@ export default function Vendas() {
                   }}
                 >
                   <option value="">Todos</option>
-                  {statusOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {saleStatuses.map((opt) => (
+                    <option key={opt.id} value={opt.name}>
+                      {opt.name}
                     </option>
                   ))}
                 </select>
@@ -907,9 +889,9 @@ export default function Vendas() {
                   }}
                 >
                   <option value="">Todos</option>
-                  {formaPagamentoOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
+                  {paymentMethods.map((opt) => (
+                    <option key={opt.id} value={opt.name}>
+                      {opt.name}
                     </option>
                   ))}
                   <option value="Outros">Outros</option>
@@ -948,7 +930,7 @@ export default function Vendas() {
                 minWidth: 1000,
               }}
             >
-              <thead style={{ background: "rgb(239, 221, 201)" }}>
+              <thead style={{ background: "rgba(255,255,255,0.35)" }}>
                 <tr>
                   <th style={{ padding: 12, textAlign: "center" }}>
                     Selecionar
@@ -1089,10 +1071,11 @@ export default function Vendas() {
       </div>
       <div
         style={{
-          background: "rgb(239, 221, 201)",
+          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
           padding: 20,
-          borderRadius: 12,
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+          borderRadius: 14,
+          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+          border: "1px solid rgba(166, 116, 71, 0.2)",
         }}
       >
         <h3>Resumo de Pagamentos</h3>
@@ -1124,143 +1107,50 @@ export default function Vendas() {
               boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
             }}
           >
-            <strong>Total Recebido PIX</strong>
-            <div style={{ marginTop: 8 }}>
-              R$ {resumo.totalRecebidoPix.toFixed(2)}
+            <strong>Receita</strong>
+            <div style={{ marginTop: 8 }}>R$ {resumo.receita.toFixed(2)}</div>
+          </div>
+          <div
+            style={{
+              background: "white",
+              padding: 16,
+              borderRadius: 10,
+              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+            }}
+          >
+            <strong>Velas Vendidas</strong>
+            <div style={{ marginTop: 8 }}>{resumo.totalVelasVendidas}</div>
+          </div>
+          {resumo.paymentSummary.map((item) => (
+            <div
+              key={item.name}
+              style={{
+                background: "white",
+                padding: 16,
+                borderRadius: 10,
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              <strong>{item.name}</strong>
+              <div style={{ marginTop: 8 }}>
+                {item.count} itens — R$ {item.value.toFixed(2)}
+              </div>
             </div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Total Recebido Dinheiro</strong>
-            <div style={{ marginTop: 8 }}>
-              R$ {resumo.totalRecebidoDinheiro.toFixed(2)}
+          ))}
+          {resumo.statusSummary.map((item) => (
+            <div
+              key={item.name}
+              style={{
+                background: "white",
+                padding: 16,
+                borderRadius: 10,
+                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              }}
+            >
+              <strong>{item.name}</strong>
+              <div style={{ marginTop: 8 }}>{item.count} pedidos</div>
             </div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Total a Receber</strong>
-            <div style={{ marginTop: 8 }}>
-              R$ {resumo.totalAReceber.toFixed(2)}
-            </div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Total a Receber PIX</strong>
-            <div style={{ marginTop: 8 }}>
-              R$ {resumo.totalAReceberPix.toFixed(2)}
-            </div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Total a Receber Consignação</strong>
-            <div style={{ marginTop: 8 }}>
-              R$ {resumo.totalAReceberConsignacao.toFixed(2)}
-            </div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos Pagos</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosPagos}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos Entregues</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosEntregues}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos em Produção</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosProducao}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos Prontos</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosProntos}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos Consignação</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosConsignacao}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Pedidos Enviado</strong>
-            <div style={{ marginTop: 8 }}>{resumo.pedidosEnviado}</div>
-          </div>
-          <div
-            style={{
-              background: "white",
-              padding: 16,
-              borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
-          >
-            <strong>Presentes</strong>
-            <div style={{ marginTop: 8 }}>
-              {resumo.presentesCount} itens — R${" "}
-              {resumo.presentesValue.toFixed(2)}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

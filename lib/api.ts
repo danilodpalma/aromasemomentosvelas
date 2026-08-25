@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export function withApiErrorHandling(
-  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void>,
+  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<any>,
 ) {
   return async function (req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -12,8 +12,8 @@ export function withApiErrorHandling(
         error instanceof Error
           ? error.message
           : typeof error === "string"
-          ? error
-          : "Unknown error";
+            ? error
+            : "Unknown error";
       return res.status(500).json({ error: message });
     }
   };

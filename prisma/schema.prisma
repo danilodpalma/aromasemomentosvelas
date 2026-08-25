@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -8,17 +8,20 @@ generator client {
 }
 
 model Insumo {
-  id                Int      @id @default(autoincrement())
+  id                Int          @id @default(autoincrement())
   name              String
-  active            Boolean  @default(true)
+  active            Boolean      @default(true)
   unit              String?
   purchaseCost      Float
   purchasedQuantity Float
   unitCost          Float
   description       String?
-  stock             Int      @default(0)
-  createdAt         DateTime @default(now())
+  productTypes      String?
+  isBase            Boolean      @default(false)
+  stock             Int          @default(0)
+  createdAt         DateTime     @default(now())
   sales             Sale[]
+  compraItems       CompraItem[]
 }
 
 model Modelo {
@@ -27,7 +30,10 @@ model Modelo {
   ativo         Boolean  @default(true)
   valorVendido  Float    @default(0)
   tipoProduto   String?
+  baseNome      String?
+  base2Nome     String?
   ceraGr        Float
+  cera2Gr       Float    @default(0)
   esenciaMl     Float
   essenciaNome  String?
   pavio         String?
@@ -39,7 +45,14 @@ model Modelo {
   extratoGr     Float
   lauril        String?
   laurilGr      Float
-  tampa         String?
+  oleo          String?
+  oleoGr        Float    @default(0)
+  argila        String?
+  argilaGr      Float    @default(0)
+  dioxido       String?
+  dioxidoGr     Float    @default(0)
+  manteiga      String?
+  manteigaGr    Float    @default(0)
   embalagem     Float
   maoDeObra     Float
   margemLucro   Float
@@ -68,4 +81,36 @@ model Venda {
   status         String
   observacao     String?
   createdAt      DateTime @default(now())
+}
+
+model Compra {
+  id              Int          @id @default(autoincrement())
+  data            DateTime
+  tipoLancamento  String
+  categoria       String?
+  descricao       String?
+  valor           Float
+  status          String       @default("Pendente")
+  createdAt       DateTime     @default(now())
+  itens           CompraItem[]
+}
+
+model CompraItem {
+  id               Int      @id @default(autoincrement())
+  compraId         Int
+  insumoId         Int
+  quantidade       Float
+  unidade          String?
+  custoUnitario    Float
+  custoTotal       Float
+  createdAt        DateTime @default(now())
+  compra           Compra   @relation(fields: [compraId], references: [id])
+  insumo           Insumo   @relation(fields: [insumoId], references: [id])
+}
+
+model ProductType {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  category  String   @default("productType")
+  createdAt DateTime @default(now())
 }

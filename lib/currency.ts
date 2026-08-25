@@ -1,4 +1,4 @@
-export function sanitizeCurrencyInput(value: string, maxDecimals = 2) {
+export function sanitizeCurrencyInput(value: string, maxDecimals = 3) {
   const normalized = value.replace(/\./g, ",").replace(/[^\d,]/g, "");
   const firstComma = normalized.indexOf(",");
 
@@ -17,7 +17,7 @@ export function parseCurrencyInput(value: string) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-export function formatCurrencyInput(value: string | number, decimals = 2) {
+export function formatCurrencyInput(value: string | number, decimals = 3) {
   const numeric = typeof value === "number" ? value : parseCurrencyInput(value);
   return numeric.toLocaleString("pt-BR", {
     minimumFractionDigits: decimals,

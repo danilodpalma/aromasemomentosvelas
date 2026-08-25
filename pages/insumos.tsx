@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   formatCurrencyInput,
   parseCurrencyInput,
@@ -14,30 +14,73 @@ type Insumo = {
   purchasedQuantity: number;
   unitCost: number;
   description?: string;
+  productTypes?: string[];
+  isBase?: boolean;
+};
+
+type Parameter = {
+  id: number;
+  name: string;
+  category: string;
 };
 
 export default function Insumos() {
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
+  const [unitOptions, setUnitOptions] = useState<Parameter[]>([]);
+  const [productTypeOptions, setProductTypeOptions] = useState<Parameter[]>([]);
+  const [formMode, setFormMode] = useState<"create" | "edit" | "idle">("idle");
   const [form, setForm] = useState({
     name: "",
     unit: "",
+    productTypes: [] as string[],
     purchaseCost: "",
     purchasedQuantity: "",
     description: "",
     active: true,
+    isBase: false,
   });
+
+  // ← Coloque este useEffect logo abaixo do useState
+  useEffect(() => {
+    if (formMode === "create") {
+      setForm({
+        name: "",
+        unit: "",
+        productTypes: [],
+        purchaseCost: "",
+        purchasedQuantity: "",
+        description: "",
+        active: true,
+        isBase: false,
+      });
+    }
+  }, [formMode]);
+
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formMode, setFormMode] = useState<"idle" | "new" | "edit">("idle");
   const [message, setMessage] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [showActiveOnly, setShowActiveOnly] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   function normalizeInsumoName(value: string) {
     return value.trim().toLowerCase().replace(/\s+/g, " ");
   }
 
+  function getComputedUnitCost(
+    name: string,
+    purchaseCost: number,
+    purchasedQuantity: number,
+  ) {
+    const normalizedName = normalizeInsumoName(name);
+    const baseUnitCost =
+      purchasedQuantity > 0 ? purchaseCost / purchasedQuantity : 0;
+    return normalizedName.includes("pavio natural")
+      ? baseUnitCost / 10
+      : baseUnitCost;
+  }
   // Filtrar e ordenar insumos por ordem alfabetica
   const filteredInsumos = insumos
     .filter((item) => (item.active ?? true) === showActiveOnly)
@@ -45,7 +88,6 @@ export default function Insumos() {
       item.name.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-
   // Alternar seleção de item
   function toggleSelect(id: number) {
     if (selectedItems.has(id)) {
@@ -54,12 +96,40 @@ export default function Insumos() {
       setSelectedItems(new Set([id]));
     }
   }
-
   // Editar itens selecionados
   function editSelected() {
     if (selectedItems.size === 1) {
       const item = insumos.find((i) => i.id === Array.from(selectedItems)[0]);
       if (item) startEdit(item);
+    }
+  }
+
+  async function deleteSelected() {
+    if (selectedItems.size !== 1) return;
+
+    const id = Array.from(selectedItems)[0];
+    const item = insumos.find((i) => i.id === id);
+    if (!item) return;
+
+    const confirmed = window.confirm(`Excluir o insumo "${item.name}"?`);
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/products?id=${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok || response.status === 204) {
+        setInsumos((prev) => prev.filter((i) => i.id !== id));
+        setSelectedItems(new Set());
+        if (editingId === id) {
+          resetForm(true);
+        }
+        setMessage("Insumo excluído com sucesso.");
+      } else {
+        setMessage("Erro ao excluir insumo.");
+      }
+    } catch {
+      setMessage("Erro inesperado ao excluir insumo.");
     }
   }
 
@@ -85,15 +155,59 @@ export default function Insumos() {
         console.error("Falha ao buscar insumos:", error);
         setMessage(error.message || "Erro ao carregar insumos.");
       });
+
+    fetch("/api/productTypes?category=unit")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setUnitOptions(data);
+        } else {
+          console.warn("Resposta inválida para unidades de parâmetros.", data);
+          setUnitOptions([]);
+        }
+      })
+      .catch((error) => {
+        console.warn("Falha ao carregar unidades de parâmetros.", error);
+        setUnitOptions([]);
+      });
+
+    fetch("/api/productTypes?category=productType")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setProductTypeOptions(data);
+        } else {
+          console.warn("Resposta inválida para tipos de produto.", data);
+          setProductTypeOptions([]);
+        }
+      })
+      .catch((error) => {
+        console.warn("Falha ao carregar tipos de produto.", error);
+        setProductTypeOptions([]);
+      });
   }, []);
 
   useEffect(() => {
-    if (formMode === "new" || formMode === "edit") {
+    if (formMode === "create" || formMode === "edit") {
       requestAnimationFrame(() => {
         nameInputRef.current?.focus();
       });
     }
   }, [formMode, editingId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   function resetForm(shouldClearMessage = false) {
     setEditingId(null);
@@ -101,10 +215,12 @@ export default function Insumos() {
     setForm({
       name: "",
       unit: "",
+      productTypes: [],
       purchaseCost: "",
       purchasedQuantity: "",
       description: "",
       active: true,
+      isBase: false,
     });
     if (shouldClearMessage) {
       setMessage("");
@@ -114,14 +230,16 @@ export default function Insumos() {
 
   function startNew() {
     setEditingId(null);
-    setFormMode("new");
+    setFormMode("create");
     setForm({
       name: "",
       unit: "",
+      productTypes: [],
       purchaseCost: "",
       purchasedQuantity: "",
       description: "",
       active: true,
+      isBase: false,
     });
     setSelectedItems(new Set());
     setMessage("");
@@ -133,10 +251,12 @@ export default function Insumos() {
     setForm({
       name: item.name,
       unit: item.unit ?? "",
-      purchaseCost: formatCurrencyInput(item.purchaseCost, 2),
+      productTypes: item.productTypes ?? [],
+      purchaseCost: formatCurrencyInput(item.purchaseCost, 3),
       purchasedQuantity: item.purchasedQuantity.toString(),
       description: item.description ?? "",
       active: item.active ?? true,
+      isBase: item.isBase ?? false,
     });
     setMessage("Edição de insumo ativa. Faça as alterações e salve.");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -161,6 +281,13 @@ export default function Insumos() {
 
     const method = editingId ? "PATCH" : "POST";
     const url = editingId ? `/api/products?id=${editingId}` : "/api/products";
+    const purchaseCostNumber = parseCurrencyInput(form.purchaseCost);
+    const purchasedQuantityNumber = Number(form.purchasedQuantity);
+    const computedUnitCost = getComputedUnitCost(
+      form.name,
+      purchaseCostNumber,
+      purchasedQuantityNumber,
+    );
 
     try {
       const response = await fetch(url, {
@@ -169,10 +296,13 @@ export default function Insumos() {
         body: JSON.stringify({
           name: form.name,
           unit: form.unit,
-          purchaseCost: parseCurrencyInput(form.purchaseCost),
-          purchasedQuantity: Number(form.purchasedQuantity),
+          productTypes: form.productTypes,
+          purchaseCost: purchaseCostNumber,
+          purchasedQuantity: purchasedQuantityNumber,
+          unitCost: computedUnitCost,
           description: form.description,
           active: form.active,
+          isBase: form.isBase,
         }),
       });
 
@@ -223,15 +353,19 @@ export default function Insumos() {
           display: "flex",
           flexDirection: "column",
           gap: 20,
-          marginTop: 24,
+          marginTop: 20,
+          maxWidth: 1120,
+          marginLeft: "auto",
+          marginRight: "auto",
         }}
       >
         <div
           style={{
-            background: "rgb(239, 221, 201)",
-            padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            padding: 18,
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <div
@@ -242,7 +376,7 @@ export default function Insumos() {
               marginBottom: 12,
             }}
           >
-            <h3 style={{ margin: 0 }}>
+            <h3 style={{ margin: 0, color: "#6b3b12" }}>
               {editingId ? "Editar insumo" : "Novo insumo"}
             </h3>
             <button
@@ -250,11 +384,12 @@ export default function Insumos() {
               onClick={startNew}
               style={{
                 padding: "8px 16px",
-                background: "rgb(34, 197, 94)",
+                background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
                 color: "white",
                 border: "none",
-                borderRadius: 6,
+                borderRadius: 999,
                 cursor: "pointer",
+                fontWeight: 600,
               }}
             >
               + Novo
@@ -262,7 +397,7 @@ export default function Insumos() {
           </div>
           <form onSubmit={handleSubmit}>
             <label style={{ display: "block", marginBottom: 12 }}>
-              Base Principal
+              Nome do Insumo
               <input
                 ref={nameInputRef}
                 required
@@ -281,9 +416,26 @@ export default function Insumos() {
                 }}
               />
             </label>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <input
+                type="checkbox"
+                disabled={formMode === "idle"}
+                checked={Boolean(form.isBase)}
+                onChange={(e) => setForm({ ...form, isBase: e.target.checked })}
+              />
+              <span>Base</span>
+            </label>
+
             <label style={{ display: "block", marginBottom: 12 }}>
               Unidade
-              <input
+              <select
                 disabled={formMode === "idle"}
                 value={form.unit}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
@@ -297,7 +449,85 @@ export default function Insumos() {
                   borderStyle: "solid",
                   borderRadius: 6,
                 }}
-              />
+              >
+                <option value="">Escolha a unidade</option>
+                {(Array.isArray(unitOptions) ? unitOptions : []).map(
+                  (option) => (
+                    <option key={option.id} value={option.name}>
+                      {option.name}
+                    </option>
+                  ),
+                )}
+              </select>
+            </label>
+            <label style={{ display: "block", marginBottom: 12 }}>
+              Tipo de produto aplicável
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "grid",
+                  gap: 8,
+                  padding: 10,
+                  border: "1px solid rgba(167, 117, 75, 0.25)",
+                  borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.7)",
+                }}
+              >
+                {(Array.isArray(productTypeOptions) ? productTypeOptions : [])
+                  .length === 0 && (
+                  <span style={{ color: "#888", fontSize: "0.95em" }}>
+                    Nenhum tipo de produto cadastrado.
+                  </span>
+                )}
+
+                {(Array.isArray(productTypeOptions)
+                  ? productTypeOptions
+                  : []
+                ).map((option) => {
+                  const checked =
+                    Array.isArray(form.productTypes) &&
+                    form.productTypes.includes(option.name);
+
+                  return (
+                    <label
+                      key={option.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 10px",
+                        background: checked
+                          ? "rgba(167, 117, 75, 0.08)"
+                          : "transparent",
+                        borderRadius: 6,
+                        cursor: formMode === "idle" ? "not-allowed" : "pointer",
+                        color: formMode === "idle" ? "#8a8a8a" : "inherit",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        disabled={formMode === "idle"}
+                        checked={checked}
+                        onChange={() => {
+                          const value = option.name;
+                          setForm((prev: any) => {
+                            const current = Array.isArray(prev.productTypes)
+                              ? prev.productTypes
+                              : [];
+                            return {
+                              ...prev,
+                              productTypes: current.includes(value)
+                                ? current.filter((t: string) => t !== value)
+                                : [...current, value],
+                            };
+                          });
+                        }}
+                      />
+                      <span style={{ fontSize: "0.95em" }}>{option.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </label>
             <label style={{ display: "block", marginBottom: 12 }}>
               Custo da compra (R$)
@@ -316,7 +546,7 @@ export default function Insumos() {
                   setForm((prev) => ({
                     ...prev,
                     purchaseCost: prev.purchaseCost
-                      ? formatCurrencyInput(prev.purchaseCost, 2)
+                      ? formatCurrencyInput(prev.purchaseCost, 3)
                       : "",
                   }))
                 }
@@ -428,16 +658,17 @@ export default function Insumos() {
                   background:
                     formMode === "idle"
                       ? "rgb(200, 200, 200)"
-                      : "rgb(167, 117, 75)",
+                      : "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
                   color: "white",
                   border: "none",
-                  borderRadius: 6,
+                  borderRadius: 999,
                   cursor: formMode === "idle" ? "not-allowed" : "pointer",
+                  fontWeight: 600,
                 }}
               >
                 {editingId ? "Atualizar insumo" : "Salvar insumo"}
               </button>
-              {(formMode === "new" || formMode === "edit") && (
+              {(formMode === "create" || formMode === "edit") && (
                 <button
                   type="button"
                   onClick={() => resetForm(true)}
@@ -458,10 +689,11 @@ export default function Insumos() {
 
         <div
           style={{
-            background: "rgb(239, 221, 201)",
+            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
-            borderRadius: 12,
-            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            borderRadius: 14,
+            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+            border: "1px solid rgba(166, 116, 71, 0.2)",
           }}
         >
           <div
@@ -525,7 +757,10 @@ export default function Insumos() {
                 disabled={selectedItems.size !== 1}
                 style={{
                   padding: "8px 16px",
-                  background: selectedItems.size === 1 ? "rgb(167, 117, 75)" : "rgb(200, 200, 200)",
+                  background:
+                    selectedItems.size === 1
+                      ? "rgb(167, 117, 75)"
+                      : "rgb(200, 200, 200)",
                   color: "white",
                   border: "none",
                   borderRadius: 6,
@@ -533,6 +768,24 @@ export default function Insumos() {
                 }}
               >
                 Editar
+              </button>
+              <button
+                type="button"
+                onClick={deleteSelected}
+                disabled={selectedItems.size !== 1}
+                style={{
+                  padding: "8px 16px",
+                  background:
+                    selectedItems.size === 1
+                      ? "rgb(220, 38, 38)"
+                      : "rgb(200, 200, 200)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                }}
+              >
+                Excluir
               </button>
             </div>
           </div>
@@ -591,6 +844,15 @@ export default function Insumos() {
                   }}
                 >
                   Unidade
+                </th>
+                <th
+                  style={{
+                    padding: 12,
+                    textAlign: "center",
+                    color: "rgb(167, 117, 75)",
+                  }}
+                >
+                  Tipos de produto
                 </th>
                 <th
                   style={{
@@ -672,6 +934,17 @@ export default function Insumos() {
                       textAlign: "center",
                     }}
                   >
+                    {item.productTypes && item.productTypes.length > 0
+                      ? item.productTypes.join(", ")
+                      : "-"}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
                     R$ {item.purchaseCost.toFixed(2)}
                   </td>
                   <td
@@ -690,7 +963,7 @@ export default function Insumos() {
                       textAlign: "center",
                     }}
                   >
-                    R$ {item.unitCost.toFixed(2)}
+                    R$ {item.unitCost.toFixed(3)}
                   </td>
                 </tr>
               ))}

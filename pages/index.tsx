@@ -93,6 +93,21 @@ export default function Home() {
           <p>Registre as compras e despesas.</p>
         </Link>
         <Link
+          href="/estoque"
+          style={{
+            padding: 15,
+            borderRadius: 15,
+            background: "rgb(167, 117, 75)",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            textAlign: "center",
+            textDecoration: "none",
+            color: "#ffffff",
+          }}
+        >
+          <h3>Estoque</h3>
+          <p>Acompanhe o saldo e o custo médio dos insumos.</p>
+        </Link>
+        <Link
           href="/producao"
           style={{
             padding: 15,
@@ -121,6 +136,21 @@ export default function Home() {
         >
           <h3>Vendas</h3>
           <p>Registre vendas e veja o histórico.</p>
+        </Link>
+        <Link
+          href="/parametros"
+          style={{
+            padding: 15,
+            borderRadius: 15,
+            background: "rgb(167, 117, 75)",
+            boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+            textAlign: "center",
+            textDecoration: "none",
+            color: "#ffffff",
+          }}
+        >
+          <h3>Parâmetros</h3>
+          <p>Cadastre os tipos de produto usados no sistema.</p>
         </Link>
       </section>
     </div>

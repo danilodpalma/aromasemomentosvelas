@@ -17,7 +17,10 @@ type Modelo = {
   ativo: boolean;
   valorVendido?: number;
   tipoProduto?: string;
+  baseNome?: string;
+  base2Nome?: string;
   ceraGr: number;
+  cera2Gr?: number;
   esenciaMl: number;
   essenciaNome?: string;
   pavio?: string;
@@ -29,7 +32,14 @@ type Modelo = {
   extratoGr: number;
   lauril?: string;
   laurilGr: number;
-  tampa?: string;
+  oleo?: string;
+  oleoGr: number;
+  argila?: string;
+  argilaGr: number;
+  dioxido?: string;
+  dioxidoGr: number;
+  manteiga?: string;
+  manteigaGr: number;
   embalagem: number;
   maoDeObra: number;
   margemLucro: number;
@@ -162,7 +172,10 @@ export default function Calculo() {
   }, []);
 
   function calculateCosts(modelo: Modelo) {
-    const ceraCost = modelo.ceraGr * findUnitCost(insumos, modelo.tipoProduto || "Cera de Coco");
+    const baseName = modelo.baseNome || "Cera de Coco";
+    const base2Name = modelo.base2Nome || "";
+    const ceraCost = modelo.ceraGr * findUnitCost(insumos, baseName);
+    const cera2Cost = (modelo.cera2Gr || 0) * findUnitCost(insumos, base2Name);
     const esenciaCost =
       modelo.esenciaMl * findUnitCost(insumos, modelo.essenciaNome);
     const pavioCost = 1 * findUnitCost(insumos, modelo.pavio);
@@ -170,12 +183,19 @@ export default function Calculo() {
       modelo.coranteGr * findUnitCost(insumos, modelo.coranteNome);
     const recipienteCost = 1 * findUnitCost(insumos, modelo.recipiente);
     const pedraCost = 1 * findUnitCost(insumos, modelo.pedra);
-    const extratoCost = modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
+    const extratoCost =
+      modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
     const laurilCost = modelo.laurilGr * findUnitCost(insumos, modelo.lauril);
-    const tampaCost = 1 * findUnitCost(insumos, modelo.tampa);
+    const oleoCost = modelo.oleoGr * findUnitCost(insumos, modelo.oleo);
+    const argilaCost = modelo.argilaGr * findUnitCost(insumos, modelo.argila);
+    const dioxidoCost =
+      modelo.dioxidoGr * findUnitCost(insumos, modelo.dioxido);
+    const manteigaCost =
+      modelo.manteigaGr * findUnitCost(insumos, modelo.manteiga);
 
     const insumoCost =
       ceraCost +
+      cera2Cost +
       esenciaCost +
       pavioCost +
       coranteCost +
@@ -183,7 +203,10 @@ export default function Calculo() {
       pedraCost +
       extratoCost +
       laurilCost +
-      tampaCost;
+      oleoCost +
+      argilaCost +
+      dioxidoCost +
+      manteigaCost;
     const fixedCost = modelo.embalagem + modelo.maoDeObra;
     const totalCost = insumoCost + fixedCost;
     const priceSuggested = totalCost * (1 + modelo.margemLucro / 100);
@@ -195,11 +218,18 @@ export default function Calculo() {
 
     const breakdown = [
       {
-        label: "Cera de Coco",
+        label: baseName,
         quantidade: modelo.ceraGr,
         unidade: "g",
-        unitCost: findUnitCost(insumos, "Cera de Coco"),
+        unitCost: findUnitCost(insumos, baseName),
         value: ceraCost,
+      },
+      {
+        label: base2Name || "Base secundária",
+        quantidade: modelo.cera2Gr || 0,
+        unidade: "g",
+        unitCost: findUnitCost(insumos, base2Name),
+        value: cera2Cost,
       },
       {
         label: modelo.essenciaNome ? modelo.essenciaNome : "Essência",
@@ -251,11 +281,32 @@ export default function Calculo() {
         value: laurilCost,
       },
       {
-        label: modelo.tampa ? modelo.tampa : "Tampa",
-        quantidade: 1,
-        unidade: "und",
-        unitCost: findUnitCost(insumos, modelo.tampa),
-        value: tampaCost,
+        label: modelo.oleo ? modelo.oleo : "Óleo",
+        quantidade: modelo.oleoGr,
+        unidade: "g",
+        unitCost: findUnitCost(insumos, modelo.oleo),
+        value: oleoCost,
+      },
+      {
+        label: modelo.argila ? modelo.argila : "Argila",
+        quantidade: modelo.argilaGr,
+        unidade: "g",
+        unitCost: findUnitCost(insumos, modelo.argila),
+        value: argilaCost,
+      },
+      {
+        label: modelo.dioxido ? modelo.dioxido : "Dióxido",
+        quantidade: modelo.dioxidoGr,
+        unidade: "g",
+        unitCost: findUnitCost(insumos, modelo.dioxido),
+        value: dioxidoCost,
+      },
+      {
+        label: modelo.manteiga ? modelo.manteiga : "Manteiga",
+        quantidade: modelo.manteigaGr,
+        unidade: "g",
+        unitCost: findUnitCost(insumos, modelo.manteiga),
+        value: manteigaCost,
       },
     ].filter((item) => item.value > 0);
 
@@ -295,38 +346,41 @@ export default function Calculo() {
 
       <div
         style={{
-          background: "rgb(239, 221, 201)",
-          borderRadius: 15,
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08)",
+          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+          borderRadius: 14,
+          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
           overflowX: "auto",
+          border: "1px solid rgba(166, 116, 71, 0.2)",
         }}
       >
         <table
           style={{ width: "100%", borderCollapse: "collapse", minWidth: 200 }}
         >
-          <thead style={{ background: "rgb(239, 221, 201)" }}>
+          <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
               <th style={{ padding: 10, textAlign: "center" }}>Nome da Vela</th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 10, textAlign: "center" }}>
                 Custo Insumos (R$)
               </th>
-              <th style={{ padding: 1, textAlign: "center" }}>Detalhes</th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 10, textAlign: "center" }}>Detalhes</th>
+              <th style={{ padding: 10, textAlign: "center" }}>
                 Custos Fixos (R$)
               </th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 15, textAlign: "center" }}>
                 Custo Total (R$)
               </th>
-              <th style={{ padding: 1, textAlign: "center" }}>Margem (%)</th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 10, textAlign: "center" }}>Margem (%)</th>
+              <th style={{ padding: 10, textAlign: "center" }}>
                 Preço Sugerido (R$)
               </th>
-              <th style={{ padding: 1, textAlign: "center" }}>Lucro (R$)</th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 25, textAlign: "center" }}>Lucro (R$)</th>
+              <th style={{ padding: 10, textAlign: "center" }}>
                 Lucro sobre a venda
               </th>
-              <th style={{ padding: 1, textAlign: "center" }}>Valor Vendido</th>
-              <th style={{ padding: 1, textAlign: "center" }}>
+              <th style={{ padding: 10, textAlign: "center" }}>
+                Valor Vendido
+              </th>
+              <th style={{ padding: 10, textAlign: "center" }}>
                 Preço Final P/ Venda
               </th>
             </tr>
@@ -412,7 +466,7 @@ export default function Calculo() {
                           color: "rgb(167, 117, 75)",
                         }}
                       >
-                        {modelo.margemLucro.toFixed(2)}%
+                        {Math.round(modelo.margemLucro)}%
                       </td>
                       <td
                         style={{
@@ -474,7 +528,7 @@ export default function Calculo() {
                                 if (!current) return prev;
                                 return {
                                   ...prev,
-                                  [modelo.id]: formatCurrencyInput(current, 2),
+                                  [modelo.id]: formatCurrencyInput(current, 3),
                                 };
                               })
                             }
@@ -619,7 +673,7 @@ export default function Calculo() {
                                       }}
                                     >
                                       {item.quantidade.toFixed(
-                                        item.quantidade % 1 === 0 ? 0 : 3,
+                                        item.quantidade % 1 === 0 ? 0 : 2,
                                       )}{" "}
                                       {item.unidade}
                                     </td>
@@ -631,7 +685,7 @@ export default function Calculo() {
                                         color: "#667eea",
                                       }}
                                     >
-                                      R$ {item.unitCost.toFixed(4)}
+                                      R$ {item.unitCost.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -642,7 +696,7 @@ export default function Calculo() {
                                         color: "rgb(167, 117, 75)",
                                       }}
                                     >
-                                      R$ {item.value.toFixed(4)}
+                                      R$ {item.value.toFixed(2)}
                                     </td>
                                   </tr>
                                 ))}
@@ -670,7 +724,7 @@ export default function Calculo() {
                                       color: "rgb(167, 117, 75)",
                                     }}
                                   >
-                                    R$ {values.insumoCost.toFixed(4)}
+                                    R$ {values.insumoCost.toFixed(2)}
                                   </td>
                                 </tr>
                                 <tr>
@@ -692,7 +746,7 @@ export default function Calculo() {
                                       color: "#667eea",
                                     }}
                                   >
-                                    R$ {values.fixedCost.toFixed(4)}
+                                    R$ {values.fixedCost.toFixed(2)}
                                   </td>
                                 </tr>
                                 <tr
@@ -719,7 +773,7 @@ export default function Calculo() {
                                       color: "rgb(34, 197, 94)",
                                     }}
                                   >
-                                    R$ {values.totalCost.toFixed(4)}
+                                    R$ {values.totalCost.toFixed(2)}
                                   </td>
                                 </tr>
                               </tbody>

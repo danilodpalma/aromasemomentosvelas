@@ -7,8 +7,10 @@ const menuItems = [
   { href: "/modelos", label: "Modelos" },
   { href: "/calculo", label: "Cálculo" },
   { href: "/compras", label: "Compras" },
+  { href: "/estoque", label: "Estoque" },
   { href: "/producao", label: "Produção" },
   { href: "/vendas", label: "Vendas" },
+  { href: "/parametros", label: "Parâmetros" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -24,9 +26,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     >
       <header
         style={{
-          borderBottom: "1px solid rgb(166, 116, 71)",
-          background: "rgb(239, 221, 201)",
+          borderBottom: "1px solid rgba(166, 116, 71, 0.2)",
+          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
           padding: "16px 24px",
+          boxShadow: "0 6px 18px rgba(92, 54, 24, 0.08)",
         }}
       >
         <div
@@ -68,7 +71,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </p>
             </div> */}
           </div>
-          <nav style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          <nav
+            style={{
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
             {menuItems.map((item) => (
               <Link
                 key={item.href}
@@ -80,6 +90,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       ? "rgb(255, 255, 255)"
                       : "rgb(166, 116, 71)",
                   fontWeight: router.pathname === item.href ? 700 : 500,
+                  padding: "7px 12px",
+                  borderRadius: 999,
+                  background:
+                    router.pathname === item.href
+                      ? "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)"
+                      : "transparent",
                 }}
               >
                 {item.label}
@@ -88,7 +104,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
       </header>
-      <main style={{ maxWidth: 1200, margin: "24px auto", padding: "0 24px" }}>
+      <main
+        style={{
+          maxWidth: 1240,
+          margin: "24px auto",
+          padding: "0 24px 40px",
+        }}
+      >
         {children}
       </main>
     </div>
