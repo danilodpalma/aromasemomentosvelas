@@ -30,6 +30,39 @@ function mapCompra(compra: any) {
   };
 }
 
+async function applyInventoryEffect(
+  insumoId: number,
+  quantityDelta: number,
+  costDelta: number,
+  status: string,
+) {
+  const insumo = await prisma.insumo.findUnique({ where: { id: insumoId } });
+  if (!insumo) return;
+
+  const newStock = Math.max(0, Number(insumo.stock || 0) + quantityDelta);
+  const newQuantity = Math.max(
+    0,
+    Number(insumo.purchasedQuantity || 0) + quantityDelta,
+  );
+  const newCost = Math.max(
+    0,
+    Number(insumo.purchaseCost || 0) + costDelta,
+  );
+
+  const newUnitCost =
+    newQuantity > 0 ? newCost / newQuantity : Number(insumo.unitCost || 0);
+
+  await prisma.insumo.update({
+    where: { id: insumoId },
+    data: {
+      stock: newStock,
+      purchasedQuantity: newQuantity,
+      purchaseCost: newCost,
+      unitCost: newUnitCost,
+    },
+  });
+}
+
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
