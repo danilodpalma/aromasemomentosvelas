@@ -36,6 +36,7 @@ type Modelo = {
   coranteGr: number;
   recipiente?: string;
   pedra?: string;
+  pedraGr?: number;
   extrato?: string;
   extratoGr: number;
   lauril?: string;
@@ -75,6 +76,7 @@ export default function Modelos() {
     coranteGr: "",
     recipiente: "",
     pedra: "",
+    pedraGr: "",
     extrato: "",
     extratoGr: "",
     lauril: "",
@@ -117,6 +119,7 @@ export default function Modelos() {
       coranteNome: "",
       recipiente: "",
       pedra: "",
+      pedraGr: "",
       extrato: "",
       lauril: "",
       oleo: "",
@@ -237,6 +240,7 @@ export default function Modelos() {
       coranteGr: "",
       recipiente: "",
       pedra: "",
+      pedraGr: "",
       extrato: "",
       extratoGr: "",
       lauril: "",
@@ -277,6 +281,7 @@ export default function Modelos() {
       coranteGr: "",
       recipiente: "",
       pedra: "",
+      pedraGr: "",
       extrato: "",
       extratoGr: "",
       lauril: "",
@@ -315,6 +320,7 @@ export default function Modelos() {
       coranteGr: modelo.coranteGr.toString(),
       recipiente: modelo.recipiente ?? "",
       pedra: modelo.pedra ?? "",
+      pedraGr: (modelo.pedraGr ?? 0).toString(),
       extrato: modelo.extrato ?? "",
       extratoGr: modelo.extratoGr.toString(),
       lauril: modelo.lauril ?? "",
@@ -374,6 +380,7 @@ export default function Modelos() {
           coranteGr: Number(form.coranteGr),
           recipiente: form.recipiente,
           pedra: form.pedra,
+          pedraGr: Number(form.pedraGr),
           extrato: form.extrato,
           extratoGr: Number(form.extratoGr),
           lauril: form.lauril,
@@ -912,6 +919,27 @@ export default function Modelos() {
                     </option>
                   ))}
                 </select>
+              </label>
+              <label style={{ display: "block" }}>
+                Pedra (g)
+                <input
+                  disabled={formMode === "idle"}
+                  type="number"
+                  step={0.01}
+                  min={0}
+                  value={form.pedraGr}
+                  onChange={(e) =>
+                    setForm({ ...form, pedraGr: e.target.value })
+                  }
+                  style={{
+                    width: "100%",
+                    marginTop: 6,
+                    padding: 8,
+                    background: "rgb(255, 255, 255)",
+                    border: "1px solid rgb(166, 116, 71)",
+                    borderRadius: 6,
+                  }}
+                />
               </label>
               <label style={{ display: "block" }}>
                 Extrato

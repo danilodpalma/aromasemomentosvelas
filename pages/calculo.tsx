@@ -28,6 +28,7 @@ type Modelo = {
   coranteGr: number;
   recipiente?: string;
   pedra?: string;
+  pedraGr?: number;
   extrato?: string;
   extratoGr: number;
   lauril?: string;
@@ -182,7 +183,8 @@ export default function Calculo() {
     const coranteCost =
       modelo.coranteGr * findUnitCost(insumos, modelo.coranteNome);
     const recipienteCost = 1 * findUnitCost(insumos, modelo.recipiente);
-    const pedraCost = 1 * findUnitCost(insumos, modelo.pedra);
+    const pedraCost =
+      (modelo.pedraGr || 0) * findUnitCost(insumos, modelo.pedra);
     const extratoCost =
       modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
     const laurilCost = modelo.laurilGr * findUnitCost(insumos, modelo.lauril);
@@ -261,8 +263,8 @@ export default function Calculo() {
       },
       {
         label: modelo.pedra ? modelo.pedra : "Pedra",
-        quantidade: 1,
-        unidade: "und",
+        quantidade: modelo.pedraGr || 0,
+        unidade: "g",
         unitCost: findUnitCost(insumos, modelo.pedra),
         value: pedraCost,
       },

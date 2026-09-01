@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -41,6 +41,7 @@ model Modelo {
   coranteGr     Float
   recipiente    String?
   pedra         String?
+  pedraGr       Float    @default(0)
   extrato       String?
   extratoGr     Float
   lauril        String?
