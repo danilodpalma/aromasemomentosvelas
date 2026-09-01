@@ -44,10 +44,7 @@ async function applyInventoryEffect(
     0,
     Number(insumo.purchasedQuantity || 0) + quantityDelta,
   );
-  const newCost = Math.max(
-    0,
-    Number(insumo.purchaseCost || 0) + costDelta,
-  );
+  const newCost = Math.max(0, Number(insumo.purchaseCost || 0) + costDelta);
 
   const newUnitCost =
     newQuantity > 0 ? newCost / newQuantity : Number(insumo.unitCost || 0);

@@ -1,7 +1,7 @@
 // pages/login.tsx
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context";
 import Head from "next/head";
 
 export default function Login() {
