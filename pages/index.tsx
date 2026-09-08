@@ -153,6 +153,7 @@ export default function Home() {
           <p>Cadastre os tipos de produto usados no sistema.</p>
         </Link>
         <link rel="icon" type="image/png" href="/favicon.png" />
+        <title>Aromas e Momentos</title>
       </section>
     </div>
   );
