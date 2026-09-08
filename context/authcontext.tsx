@@ -12,7 +12,7 @@ interface User {
   email: string;
 }
 
-interface AuthContextType {
+interface authcontexttype {
   user: User | null;
   login: (token: string, userData: User) => void;
   logout: () => void;
@@ -20,7 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<authcontexttype | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
