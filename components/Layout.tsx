@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const menuItems = [
   { href: "/dashboard", label: "Resumo" },
@@ -16,6 +17,14 @@ const menuItems = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
+  // Descobre qual item do menu corresponde à página aberta no momento
+  const currentMenu = menuItems.find((item) => item.href === router.pathname);
+
+  // Se encontrar o menu, monta "Aromas e Momentos | Nome". Se não encontrar (ex: home), deixa apenas "Aromas e Momentos"
+  const pageTitle = currentMenu
+    ? `Aromas e Momentos | ${currentMenu.label}`
+    : "Aromas e Momentos";
+
   return (
     <div
       style={{
@@ -24,6 +33,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         color: "rgb(166, 116, 71)",
       }}
     >
+      {/* O componente Head agora utiliza a variável pageTitle para atualizar o título automaticamente */}
+      <Head>
+        <title>{pageTitle}</title>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+      </Head>
+
       <header
         style={{
           borderBottom: "1px solid rgba(166, 116, 71, 0.2)",
@@ -63,13 +78,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 }
               />
             </Link>
-            {/* <div>
-              <p
-                style={{ margin: 20, color: "rgb(167, 117, 75)", fontSize: 18 }}
-              >
-                <center>Sistema de Gestão Aromas e Momentos</center>
-              </p>
-            </div> */}
           </div>
           <nav
             style={{
