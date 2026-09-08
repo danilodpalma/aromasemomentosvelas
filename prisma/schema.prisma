@@ -115,10 +115,3 @@ model ProductType {
   category  String   @default("productType")
   createdAt DateTime @default(now())
 }
-
-const nextConfig = {
-  outputFileTracingIncludes: {
-    '/api/migrate': ['./prisma/**/*'],
-  },
-};
-export default nextConfig;

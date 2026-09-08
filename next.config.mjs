@@ -1,5 +1,7 @@
 const nextConfig = {
-  reactStrictMode: true
+  reactStrictMode: true,
+  outputFileTracingIncludes: {
+    "/api/migrate": ["./prisma/**/*"],
+  },
 };
-
 export default nextConfig;
