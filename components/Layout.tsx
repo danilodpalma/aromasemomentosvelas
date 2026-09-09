@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { useAuth } from "../context";
 
 const menuItems = [
   { href: "/dashboard", label: "Resumo" },
@@ -16,6 +17,12 @@ const menuItems = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    router.push("/login");
+  }
 
   // Descobre qual item do menu corresponde à página aberta no momento
   const currentMenu = menuItems.find((item) => item.href === router.pathname);
@@ -109,6 +116,59 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {item.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/usuarios"
+                style={{
+                  textDecoration: "none",
+                  color:
+                    router.pathname === "/usuarios"
+                      ? "rgb(255, 255, 255)"
+                      : "rgb(166, 116, 71)",
+                  fontWeight: router.pathname === "/usuarios" ? 700 : 500,
+                  padding: "7px 12px",
+                  borderRadius: 999,
+                  background:
+                    router.pathname === "/usuarios"
+                      ? "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)"
+                      : "transparent",
+                }}
+              >
+                Usuários
+              </Link>
+            )}
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  padding: "7px 14px",
+                  borderRadius: 999,
+                  border: "1px solid rgb(167, 117, 75)",
+                  background: "transparent",
+                  color: "rgb(166, 116, 71)",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+                title={user?.email}
+              >
+                Sair
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                style={{
+                  textDecoration: "none",
+                  padding: "7px 14px",
+                  borderRadius: 999,
+                  border: "1px solid rgb(167, 117, 75)",
+                  color: "rgb(166, 116, 71)",
+                  fontWeight: 600,
+                }}
+              >
+                Entrar
+              </Link>
+            )}
           </nav>
         </div>
       </header>

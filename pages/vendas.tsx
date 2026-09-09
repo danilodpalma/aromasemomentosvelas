@@ -4,6 +4,8 @@ import {
   parseCurrencyInput,
   sanitizeCurrencyInput,
 } from "../lib/currency";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Venda = {
   id: number;
@@ -48,6 +50,7 @@ type Parameter = {
 };
 
 export default function Vendas() {
+  const { isAuthenticated } = useAuth();
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -180,7 +183,7 @@ export default function Vendas() {
   async function deleteVenda(id: number) {
     if (!confirm("Tem certeza que deseja excluir esta venda?")) return;
 
-    const response = await fetch(`/api/vendas?id=${id}`, { method: "DELETE" });
+    const response = await authFetch(`/api/vendas?id=${id}`, { method: "DELETE" });
     if (response.ok) {
       setVendas((prev) => prev.filter((v) => v.id !== id));
       setSelectedItems(new Set());
@@ -263,7 +266,7 @@ export default function Vendas() {
       precoUnitario: parseCurrencyInput(form.precoUnitario),
     };
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -397,6 +400,7 @@ export default function Vendas() {
           marginTop: 24,
         }}
       >
+        {isAuthenticated && (
         <div
           style={{
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
@@ -687,6 +691,7 @@ export default function Vendas() {
             </div>
           </form>
         </div>
+        )}
 
         <div
           style={{
@@ -708,40 +713,44 @@ export default function Vendas() {
           >
             <h3>Vendas Registradas</h3>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button
-                type="button"
-                onClick={editSelected}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background:
-                    selectedItems.size === 1
-                      ? "rgb(167, 117, 75)"
-                      : "rgb(200, 200, 200)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                onClick={deleteSelected}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background:
-                    selectedItems.size === 1 ? "#ef4444" : "rgb(200, 200, 200)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Excluir
-              </button>
+              {isAuthenticated && (
+                <>
+                  <button
+                    type="button"
+                    onClick={editSelected}
+                    disabled={selectedItems.size !== 1}
+                    style={{
+                      padding: "8px 16px",
+                      background:
+                        selectedItems.size === 1
+                          ? "rgb(167, 117, 75)"
+                          : "rgb(200, 200, 200)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deleteSelected}
+                    disabled={selectedItems.size !== 1}
+                    style={{
+                      padding: "8px 16px",
+                      background:
+                        selectedItems.size === 1 ? "#ef4444" : "rgb(200, 200, 200)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Excluir
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <div style={{ color: "#6b7280", fontSize: 14, marginTop: 8 }}>

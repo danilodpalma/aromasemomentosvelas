@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
+import { requireAuth } from "../../lib/auth";
 
 const validCategories = [
   "productType",
@@ -23,6 +24,10 @@ export default withApiErrorHandling(async function handler(
   const category = validCategories.includes(categoryParam || "")
     ? categoryParam
     : undefined;
+
+  if (req.method !== "GET") {
+    requireAuth(req);
+  }
 
   if (req.method === "GET") {
     if (categoryParam && !category) {

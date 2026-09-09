@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Parameter = {
   id: number;
@@ -13,6 +15,7 @@ type Parameter = {
 };
 
 export default function Parametros() {
+  const { isAuthenticated } = useAuth();
   const [types, setTypes] = useState<Parameter[]>([]);
   const [name, setName] = useState("");
   const [category, setCategory] =
@@ -55,7 +58,7 @@ export default function Parametros() {
         if (missingDefaults.length > 0) {
           const created = await Promise.all(
             missingDefaults.map((entry) =>
-              fetch("/api/productTypes", {
+              authFetch("/api/productTypes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -95,7 +98,7 @@ export default function Parametros() {
       : "/api/productTypes";
     const method = editingId ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
+    const res = await authFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: name.trim(), category }),
@@ -120,7 +123,7 @@ export default function Parametros() {
 
   async function handleDelete(id: number) {
     if (!confirm("Excluir esse parâmetro?")) return;
-    const res = await fetch(`/api/productTypes?id=${id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/productTypes?id=${id}`, { method: "DELETE" });
     if (res.ok || res.status === 204) {
       setTypes((prev) => prev.filter((t) => t.id !== id));
       setMessage("Excluído.");
@@ -189,36 +192,40 @@ export default function Parametros() {
                   {t.name}
                 </span>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  <button
-                    onClick={() => startEdit(t)}
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: 999,
-                      border: "1px solid rgba(166, 116, 71, 0.3)",
-                      background: "#fff",
-                      color: "#6b3b12",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(t.id)}
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: 999,
-                      border: "none",
-                      background: "#b45309",
-                      color: "white",
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Excluir
-                  </button>
+                  {isAuthenticated && (
+                    <>
+                      <button
+                        onClick={() => startEdit(t)}
+                        style={{
+                          padding: "7px 10px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(166, 116, 71, 0.3)",
+                          background: "#fff",
+                          color: "#6b3b12",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        style={{
+                          padding: "7px 10px",
+                          borderRadius: 999,
+                          border: "none",
+                          background: "#b45309",
+                          color: "white",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -259,6 +266,7 @@ export default function Parametros() {
           marginRight: "auto",
         }}
       >
+        {isAuthenticated && (
         <div
           style={{
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
@@ -372,6 +380,7 @@ export default function Parametros() {
             </div>
           </form>
         </div>
+        )}
 
         <div
           style={{

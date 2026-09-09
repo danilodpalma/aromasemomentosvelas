@@ -1,8 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
+import { requireAuth } from "../../lib/auth";
 
 export default withApiErrorHandling(async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "GET") {
+    requireAuth(req);
+  }
+
   if (req.method === "GET") {
     const sales = await prisma.sale.findMany({
       orderBy: { createdAt: "desc" },

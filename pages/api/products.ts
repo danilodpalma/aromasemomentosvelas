@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
+import { requireAuth } from "../../lib/auth";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -8,6 +9,10 @@ export default withApiErrorHandling(async function handler(
 ) {
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
+
+  if (req.method !== "GET") {
+    requireAuth(req);
+  }
 
   if (req.method === "GET") {
     const insumos = await prisma.insumo.findMany({

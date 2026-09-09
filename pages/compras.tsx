@@ -4,6 +4,8 @@ import {
   parseCurrencyInput,
   sanitizeCurrencyInput,
 } from "../lib/currency";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Insumo = {
   id: number;
@@ -53,6 +55,7 @@ type Compra = {
 };
 
 export default function Compras() {
+  const { isAuthenticated } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [form, setForm] = useState({
     data: "",
@@ -270,7 +273,7 @@ export default function Compras() {
     const url = editingId ? `/api/compras?id=${editingId}` : "/api/compras";
     const method = editingId ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
+    const res = await authFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -294,7 +297,7 @@ export default function Compras() {
 
   async function deleteCompra(id: number) {
     if (!confirm("Tem certeza que deseja excluir este lançamento?")) return;
-    const res = await fetch(`/api/compras?id=${id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/compras?id=${id}`, { method: "DELETE" });
     if (!res.ok) {
       setMessage("Erro ao excluir lançamento.");
       return;
@@ -335,6 +338,7 @@ export default function Compras() {
           marginRight: "auto",
         }}
       >
+        {isAuthenticated && (
         <section
           style={{
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
@@ -713,6 +717,7 @@ export default function Compras() {
             </div>
           </form>
         </section>
+        )}
       </div>
 
       <section
@@ -816,34 +821,38 @@ export default function Compras() {
                       }}
                     >
                       <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          type="button"
-                          onClick={() => startEdit(compra)}
-                          style={{
-                            padding: "6px 10px",
-                            background: "#2563eb",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteCompra(compra.id)}
-                          style={{
-                            padding: "6px 10px",
-                            background: "#dc2626",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Excluir
-                        </button>
+                        {isAuthenticated && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEdit(compra)}
+                              style={{
+                                padding: "6px 10px",
+                                background: "#2563eb",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteCompra(compra.id)}
+                              style={{
+                                padding: "6px 10px",
+                                background: "#dc2626",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Excluir
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

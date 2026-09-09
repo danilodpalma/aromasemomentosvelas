@@ -10,6 +10,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  role: string;
 }
 
 interface authcontexttype {
@@ -17,6 +18,7 @@ interface authcontexttype {
   login: (token: string, userData: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
 }
 
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         isAuthenticated: !!user,
+        isAdmin: user?.role === "ADMIN",
         isLoading,
       }}
     >

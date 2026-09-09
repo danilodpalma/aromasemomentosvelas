@@ -4,6 +4,8 @@ import {
   parseCurrencyInput,
   sanitizeCurrencyInput,
 } from "../lib/currency";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Insumo = {
   id: number;
@@ -55,6 +57,7 @@ type Modelo = {
 };
 
 export default function Modelos() {
+  const { isAuthenticated } = useAuth();
   const nomeInputRef = useRef<HTMLInputElement>(null);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -163,7 +166,7 @@ export default function Modelos() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/modelos?id=${id}`, {
+      const response = await authFetch(`/api/modelos?id=${id}`, {
         method: "DELETE",
       });
       if (response.ok || response.status === 204) {
@@ -362,7 +365,7 @@ export default function Modelos() {
     const url = editingId ? `/api/modelos?id=${editingId}` : "/api/modelos";
 
     try {
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -551,6 +554,7 @@ export default function Modelos() {
           marginRight: "auto",
         }}
       >
+        {isAuthenticated && (
         <div
           style={{
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
@@ -1371,6 +1375,7 @@ export default function Modelos() {
             </div>
           </form>
         </div>
+        )}
 
         <div
           style={{
@@ -1436,42 +1441,46 @@ export default function Modelos() {
                   />
                 </button>
               </label>
-              <button
-                type="button"
-                onClick={editSelected}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background:
-                    selectedItems.size === 1
-                      ? "rgb(167, 117, 75)"
-                      : "rgb(200, 200, 200)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                onClick={deleteSelected}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background:
-                    selectedItems.size === 1
-                      ? "rgb(220, 38, 38)"
-                      : "rgb(200, 200, 200)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Excluir
-              </button>
+              {isAuthenticated && (
+                <>
+                  <button
+                    type="button"
+                    onClick={editSelected}
+                    disabled={selectedItems.size !== 1}
+                    style={{
+                      padding: "8px 16px",
+                      background:
+                        selectedItems.size === 1
+                          ? "rgb(167, 117, 75)"
+                          : "rgb(200, 200, 200)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deleteSelected}
+                    disabled={selectedItems.size !== 1}
+                    style={{
+                      padding: "8px 16px",
+                      background:
+                        selectedItems.size === 1
+                          ? "rgb(220, 38, 38)"
+                          : "rgb(200, 200, 200)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Excluir
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

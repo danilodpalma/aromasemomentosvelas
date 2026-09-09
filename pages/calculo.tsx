@@ -4,6 +4,8 @@ import {
   parseCurrencyInput,
   sanitizeCurrencyInput,
 } from "../lib/currency";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Insumo = {
   id: number;
@@ -67,6 +69,7 @@ function findUnitCost(insumos: Insumo[], name?: string) {
 }
 
 export default function Calculo() {
+  const { isAuthenticated } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [calculos, setCalculos] = useState<Record<number, string>>({});
@@ -82,7 +85,7 @@ export default function Calculo() {
     const valorNumber = parseCurrencyInput(rawValue);
     const valorFormatted = valorNumber.toFixed(2);
 
-    const response = await fetch(`/api/modelos?id=${modeloId}`, {
+    const response = await authFetch(`/api/modelos?id=${modeloId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ valorVendido: valorNumber }),
@@ -111,7 +114,7 @@ export default function Calculo() {
 
   // Limpar valor vendido
   async function clearValorVendido(modeloId: number) {
-    const response = await fetch(`/api/modelos?id=${modeloId}`, {
+    const response = await authFetch(`/api/modelos?id=${modeloId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ valorVendido: 0 }),
@@ -515,67 +518,75 @@ export default function Calculo() {
                             gap: 4,
                           }}
                         >
-                          <span>R$</span>
-                          <input
-                            type="text"
-                            value={
-                              tempValues[modelo.id] ?? calculos[modelo.id] ?? ""
-                            }
-                            onChange={(e) =>
-                              updateTempValue(modelo.id, e.target.value)
-                            }
-                            onBlur={() =>
-                              setTempValues((prev) => {
-                                const current = prev[modelo.id];
-                                if (!current) return prev;
-                                return {
-                                  ...prev,
-                                  [modelo.id]: formatCurrencyInput(current, 3),
-                                };
-                              })
-                            }
-                            placeholder={calculos[modelo.id] ? "" : "0.00"}
-                            style={{
-                              width: "80px",
-                              padding: 6,
-                              textAlign: "right",
-                              background: "rgb(255, 255, 255)",
-                              border: "1px solid rgb(167, 117, 75)",
-                              borderRadius: 6,
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => saveValorVendido(modelo.id)}
-                            title="Salvar"
-                            style={{
-                              padding: "4px 8px",
-                              background: "rgb(34, 197, 94)",
-                              color: "white",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                              fontSize: 12,
-                            }}
-                          >
-                            ✓
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => clearValorVendido(modelo.id)}
-                            title="Limpar"
-                            style={{
-                              padding: "4px 8px",
-                              background: "rgb(239, 68, 68)",
-                              color: "white",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                              fontSize: 12,
-                            }}
-                          >
-                            ✕
-                          </button>
+                          {isAuthenticated ? (
+                            <>
+                              <span>R$</span>
+                              <input
+                                type="text"
+                                value={
+                                  tempValues[modelo.id] ?? calculos[modelo.id] ?? ""
+                                }
+                                onChange={(e) =>
+                                  updateTempValue(modelo.id, e.target.value)
+                                }
+                                onBlur={() =>
+                                  setTempValues((prev) => {
+                                    const current = prev[modelo.id];
+                                    if (!current) return prev;
+                                    return {
+                                      ...prev,
+                                      [modelo.id]: formatCurrencyInput(current, 3),
+                                    };
+                                  })
+                                }
+                                placeholder={calculos[modelo.id] ? "" : "0.00"}
+                                style={{
+                                  width: "80px",
+                                  padding: 6,
+                                  textAlign: "right",
+                                  background: "rgb(255, 255, 255)",
+                                  border: "1px solid rgb(167, 117, 75)",
+                                  borderRadius: 6,
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => saveValorVendido(modelo.id)}
+                                title="Salvar"
+                                style={{
+                                  padding: "4px 8px",
+                                  background: "rgb(34, 197, 94)",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: 4,
+                                  cursor: "pointer",
+                                  fontSize: 12,
+                                }}
+                              >
+                                ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => clearValorVendido(modelo.id)}
+                                title="Limpar"
+                                style={{
+                                  padding: "4px 8px",
+                                  background: "rgb(239, 68, 68)",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: 4,
+                                  cursor: "pointer",
+                                  fontSize: 12,
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </>
+                          ) : (
+                            <span>
+                              R$ {calculos[modelo.id] ?? "0.00"}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td

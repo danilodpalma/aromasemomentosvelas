@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context";
+import { authFetch } from "../lib/apiClient";
 
 type Insumo = {
   id: number;
@@ -11,6 +13,7 @@ type Insumo = {
 };
 
 export default function Estoque() {
+  const { isAuthenticated } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draftStock, setDraftStock] = useState("");
@@ -54,7 +57,7 @@ export default function Estoque() {
     }
 
     try {
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await authFetch(`/api/products?id=${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stock: Math.round(parsedStock) }),
@@ -186,19 +189,50 @@ export default function Estoque() {
                       borderTop: "1px solid rgba(166, 116, 71, 0.2)",
                     }}
                   >
-                    {editingId === insumo.id ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: 8,
-                        }}
-                      >
+                    {isAuthenticated ? (
+                      editingId === insumo.id ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => saveStock(insumo.id)}
+                            style={{
+                              padding: "6px 10px",
+                              background: "rgb(167, 117, 75)",
+                              color: "white",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Salvar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            style={{
+                              padding: "10px 16px",
+                              background: "rgb(239, 68, 68)",
+                              color: "white",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
                         <button
                           type="button"
-                          onClick={() => saveStock(insumo.id)}
+                          onClick={() => startEdit(insumo)}
                           style={{
-                            padding: "6px 10px",
+                            padding: "8px 16px",
                             background: "rgb(167, 117, 75)",
                             color: "white",
                             border: "none",
@@ -206,38 +240,11 @@ export default function Estoque() {
                             cursor: "pointer",
                           }}
                         >
-                          Salvar
+                          Editar
                         </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          style={{
-                            padding: "10px 16px",
-                            background: "rgb(239, 68, 68)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
+                      )
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => startEdit(insumo)}
-                        style={{
-                          padding: "8px 16px",
-                          background: "rgb(167, 117, 75)",
-                          color: "white",
-                          border: "none",
-                          borderRadius: 6,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Editar
-                      </button>
+                      "-"
                     )}
                   </td>
                 </tr>

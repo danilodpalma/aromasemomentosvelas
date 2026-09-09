@@ -7,14 +7,20 @@ export function withApiErrorHandling(
     try {
       await handler(req, res);
     } catch (error) {
-      console.error("API error:", error);
+      const statusCode =
+        error instanceof Error && (error as any).statusCode
+          ? (error as any).statusCode
+          : 500;
+      if (statusCode >= 500) {
+        console.error("API error:", error);
+      }
       const message =
         error instanceof Error
           ? error.message
           : typeof error === "string"
             ? error
             : "Unknown error";
-      return res.status(500).json({ error: message });
+      return res.status(statusCode).json({ error: message });
     }
   };
 }
