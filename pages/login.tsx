@@ -35,7 +35,7 @@ export default function Login() {
           data.message || "Se o e-mail estiver cadastrado, um código foi enviado.",
         );
       } else {
-        setError(data.message || "Erro ao solicitar o código.");
+        setError(data.error || data.message || "Erro ao solicitar o código.");
       }
     } catch {
       setError("Erro ao conectar com o servidor.");
@@ -61,7 +61,7 @@ export default function Login() {
         login(data.token, data.user);
         router.push("/dashboard");
       } else {
-        setError(data.message || "Código inválido ou expirado.");
+        setError(data.error || data.message || "Código inválido ou expirado.");
       }
     } catch {
       setError("Erro ao conectar com o servidor.");

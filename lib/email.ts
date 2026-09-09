@@ -16,7 +16,7 @@ export async function sendLoginCodeEmail(to: string, code: string) {
     );
   }
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to,
     subject: "Seu código de acesso - Aromas e Momentos",
@@ -33,4 +33,8 @@ export async function sendLoginCodeEmail(to: string, code: string) {
       </div>
     `,
   });
+
+  if (error) {
+    throw new Error(`Falha ao enviar e-mail: ${error.message || JSON.stringify(error)}`);
+  }
 }
