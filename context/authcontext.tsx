@@ -19,6 +19,7 @@ interface authcontexttype {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  canDelete: boolean;
   isLoading: boolean;
 }
 
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "ADMIN",
+        canDelete: !!user && user.role !== "VIEWER",
         isLoading,
       }}
     >

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth } from "../../lib/auth";
+import { requireAuth, requireCanDelete } from "../../lib/auth";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -10,7 +10,9 @@ export default withApiErrorHandling(async function handler(
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
 
-  if (req.method !== "GET") {
+  if (req.method === "DELETE") {
+    requireCanDelete(req);
+  } else if (req.method !== "GET") {
     requireAuth(req);
   }
 

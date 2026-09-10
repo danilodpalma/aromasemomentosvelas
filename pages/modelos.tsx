@@ -58,7 +58,7 @@ type Modelo = {
 };
 
 export default function Modelos() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, canDelete } = useAuth();
   const nomeInputRef = useRef<HTMLInputElement>(null);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -1443,44 +1443,44 @@ export default function Modelos() {
                 </button>
               </label>
               {isAuthenticated && (
-                <>
-                  <button
-                    type="button"
-                    onClick={editSelected}
-                    disabled={selectedItems.size !== 1}
-                    style={{
-                      padding: "8px 16px",
-                      background:
-                        selectedItems.size === 1
-                          ? COLORS.primary
-                          : COLORS.gray,
-                      color: "white",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={deleteSelected}
-                    disabled={selectedItems.size !== 1}
-                    style={{
-                      padding: "8px 16px",
-                      background:
-                        selectedItems.size === 1
-                          ? COLORS.dangerRgb
-                          : COLORS.gray,
-                      color: "white",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    Excluir
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={editSelected}
+                  disabled={selectedItems.size !== 1}
+                  style={{
+                    padding: "8px 16px",
+                    background:
+                      selectedItems.size === 1
+                        ? COLORS.primary
+                        : COLORS.gray,
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Editar
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  disabled={selectedItems.size !== 1}
+                  style={{
+                    padding: "8px 16px",
+                    background:
+                      selectedItems.size === 1
+                        ? COLORS.dangerRgb
+                        : COLORS.gray,
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Excluir
+                </button>
               )}
             </div>
           </div>

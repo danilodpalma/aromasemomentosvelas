@@ -56,7 +56,7 @@ type Compra = {
 };
 
 export default function Compras() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, canDelete } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [form, setForm] = useState({
     data: "",
@@ -823,36 +823,36 @@ export default function Compras() {
                     >
                       <div style={{ display: "flex", gap: 8 }}>
                         {isAuthenticated && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => startEdit(compra)}
-                              style={{
-                                padding: "6px 10px",
-                                background: "#2563eb",
-                                color: "white",
-                                border: "none",
-                                borderRadius: 6,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteCompra(compra.id)}
-                              style={{
-                                padding: "6px 10px",
-                                background: COLORS.danger,
-                                color: "white",
-                                border: "none",
-                                borderRadius: 6,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Excluir
-                            </button>
-                          </>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(compra)}
+                            style={{
+                              padding: "6px 10px",
+                              background: "#2563eb",
+                              color: "white",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            type="button"
+                            onClick={() => deleteCompra(compra.id)}
+                            style={{
+                              padding: "6px 10px",
+                              background: COLORS.danger,
+                              color: "white",
+                              border: "none",
+                              borderRadius: 6,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Excluir
+                          </button>
                         )}
                       </div>
                     </td>

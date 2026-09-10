@@ -16,7 +16,7 @@ type Parameter = {
 };
 
 export default function Parametros() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, canDelete } = useAuth();
   const [types, setTypes] = useState<Parameter[]>([]);
   const [name, setName] = useState("");
   const [category, setCategory] =
@@ -194,38 +194,38 @@ export default function Parametros() {
                 </span>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {isAuthenticated && (
-                    <>
-                      <button
-                        onClick={() => startEdit(t)}
-                        style={{
-                          padding: "7px 10px",
-                          borderRadius: 999,
-                          border: "1px solid rgba(166, 116, 71, 0.3)",
-                          background: "#fff",
-                          color: COLORS.primaryDark,
-                          cursor: "pointer",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(t.id)}
-                        style={{
-                          padding: "7px 10px",
-                          borderRadius: 999,
-                          border: "none",
-                          background: "#b45309",
-                          color: "white",
-                          cursor: "pointer",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Excluir
-                      </button>
-                    </>
+                    <button
+                      onClick={() => startEdit(t)}
+                      style={{
+                        padding: "7px 10px",
+                        borderRadius: 999,
+                        border: "1px solid rgba(166, 116, 71, 0.3)",
+                        background: "#fff",
+                        color: COLORS.primaryDark,
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      style={{
+                        padding: "7px 10px",
+                        borderRadius: 999,
+                        border: "none",
+                        background: "#b45309",
+                        color: "white",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Excluir
+                    </button>
                   )}
                 </div>
               </div>

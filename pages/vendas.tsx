@@ -51,7 +51,7 @@ type Parameter = {
 };
 
 export default function Vendas() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, canDelete } = useAuth();
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -715,42 +715,42 @@ export default function Vendas() {
             <h3>Vendas Registradas</h3>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {isAuthenticated && (
-                <>
-                  <button
-                    type="button"
-                    onClick={editSelected}
-                    disabled={selectedItems.size !== 1}
-                    style={{
-                      padding: "8px 16px",
-                      background:
-                        selectedItems.size === 1
-                          ? COLORS.primary
-                          : COLORS.gray,
-                      color: "white",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={deleteSelected}
-                    disabled={selectedItems.size !== 1}
-                    style={{
-                      padding: "8px 16px",
-                      background:
-                        selectedItems.size === 1 ? COLORS.dangerLight : COLORS.gray,
-                      color: "white",
-                      border: "none",
-                      borderRadius: 6,
-                      cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                    }}
-                  >
-                    Excluir
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={editSelected}
+                  disabled={selectedItems.size !== 1}
+                  style={{
+                    padding: "8px 16px",
+                    background:
+                      selectedItems.size === 1
+                        ? COLORS.primary
+                        : COLORS.gray,
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Editar
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  disabled={selectedItems.size !== 1}
+                  style={{
+                    padding: "8px 16px",
+                    background:
+                      selectedItems.size === 1 ? COLORS.dangerLight : COLORS.gray,
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Excluir
+                </button>
               )}
             </div>
           </div>

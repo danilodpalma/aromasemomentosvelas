@@ -49,3 +49,12 @@ export function requireAdmin(req: NextApiRequest): AuthUser {
   }
   return user;
 }
+
+/** Garante que a requisição está autenticada e o perfil pode excluir (todos menos Visualizador). */
+export function requireCanDelete(req: NextApiRequest): AuthUser {
+  const user = requireAuth(req);
+  if (user.role === "VIEWER") {
+    throw new HttpError(403, "Visualizadores não podem excluir registros.");
+  }
+  return user;
+}

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth } from "../../lib/auth";
+import { requireAuth, requireCanDelete } from "../../lib/auth";
 
 const validCategories = [
   "productType",
@@ -25,7 +25,9 @@ export default withApiErrorHandling(async function handler(
     ? categoryParam
     : undefined;
 
-  if (req.method !== "GET") {
+  if (req.method === "DELETE") {
+    requireCanDelete(req);
+  } else if (req.method !== "GET") {
     requireAuth(req);
   }
 
