@@ -24,7 +24,7 @@ export default withApiErrorHandling(async function handler(
 
   const normalizedEmail = String(email).toLowerCase().trim();
 
-  const user = await (prisma as any).user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   });
 
@@ -42,12 +42,12 @@ export default withApiErrorHandling(async function handler(
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
 
   // Invalida códigos anteriores ainda não usados desse e-mail.
-  await (prisma as any).loginCode.updateMany({
+  await prisma.loginCode.updateMany({
     where: { email: normalizedEmail, used: false },
     data: { used: true },
   });
 
-  await (prisma as any).loginCode.create({
+  await prisma.loginCode.create({
     data: { email: normalizedEmail, codeHash, expiresAt },
   });
 

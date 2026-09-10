@@ -6,6 +6,7 @@ import {
 } from "../lib/currency";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Insumo = {
   id: number;
@@ -343,7 +344,7 @@ export default function Insumos() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "#ecfdf5",
+            background: COLORS.successBg,
             border: "1px solid #a7f3d0",
           }}
         >
@@ -365,11 +366,11 @@ export default function Insumos() {
         {isAuthenticated && (
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 18,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -380,7 +381,7 @@ export default function Insumos() {
               marginBottom: 12,
             }}
           >
-            <h3 style={{ margin: 0, color: "#6b3b12" }}>
+            <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
               {editingId ? "Editar insumo" : "Novo insumo"}
             </h3>
             <button
@@ -412,8 +413,8 @@ export default function Insumos() {
                   width: "100%",
                   marginTop: 6,
                   padding: 8,
-                  background: "rgb(255, 255, 255)",
-                  borderColor: "rgb(167, 117, 75)",
+                  background: COLORS.white,
+                  borderColor: COLORS.primary,
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderRadius: 6,
@@ -447,8 +448,8 @@ export default function Insumos() {
                   width: "100%",
                   marginTop: 6,
                   padding: 8,
-                  background: "rgb(255, 255, 255)",
-                  borderColor: "rgb(167, 117, 75)",
+                  background: COLORS.white,
+                  borderColor: COLORS.primary,
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderRadius: 6,
@@ -501,7 +502,7 @@ export default function Insumos() {
                         gap: 8,
                         padding: "8px 10px",
                         background: checked
-                          ? "rgba(167, 117, 75, 0.08)"
+                          ? COLORS.primarySoftAlt
                           : "transparent",
                         borderRadius: 6,
                         cursor: formMode === "idle" ? "not-allowed" : "pointer",
@@ -558,8 +559,8 @@ export default function Insumos() {
                   width: "100%",
                   marginTop: 5,
                   padding: 8,
-                  background: "rgb(255, 255, 255)",
-                  borderColor: "rgb(167, 117, 75)",
+                  background: COLORS.white,
+                  borderColor: COLORS.primary,
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderRadius: 6,
@@ -580,8 +581,8 @@ export default function Insumos() {
                   width: "100%",
                   marginTop: 6,
                   padding: 8,
-                  background: "rgb(255, 255, 255)",
-                  borderColor: "rgb(167, 117, 75)",
+                  background: COLORS.white,
+                  borderColor: COLORS.primary,
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderRadius: 6,
@@ -600,8 +601,8 @@ export default function Insumos() {
                   width: "100%",
                   marginTop: 6,
                   padding: 8,
-                  background: "rgb(255, 255, 255)",
-                  borderColor: "rgb(167, 117, 75)",
+                  background: COLORS.white,
+                  borderColor: COLORS.primary,
                   borderWidth: 1,
                   borderStyle: "solid",
                   borderRadius: 6,
@@ -630,7 +631,7 @@ export default function Insumos() {
                       border: "none",
                       cursor: "pointer",
                       background: form.active
-                        ? "rgb(34, 197, 94)"
+                        ? COLORS.success
                         : "rgb(156, 163, 175)",
                       position: "relative",
                       padding: 0,
@@ -661,7 +662,7 @@ export default function Insumos() {
                   padding: "10px 16px",
                   background:
                     formMode === "idle"
-                      ? "rgb(200, 200, 200)"
+                      ? COLORS.gray
                       : "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
                   color: "white",
                   border: "none",
@@ -678,7 +679,7 @@ export default function Insumos() {
                   onClick={() => resetForm(true)}
                   style={{
                     padding: "10px 16px",
-                    background: "rgb(239, 68, 68)",
+                    background: COLORS.dangerLight,
                     color: "white",
                     border: "none",
                     borderRadius: 6,
@@ -694,11 +695,11 @@ export default function Insumos() {
 
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 20,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -736,7 +737,7 @@ export default function Insumos() {
                     border: "none",
                     cursor: "pointer",
                     background: showActiveOnly
-                      ? "rgb(34, 197, 94)"
+                      ? COLORS.success
                       : "rgb(156, 163, 175)",
                     position: "relative",
                     padding: 0,
@@ -766,8 +767,8 @@ export default function Insumos() {
                       padding: "8px 16px",
                       background:
                         selectedItems.size === 1
-                          ? "rgb(167, 117, 75)"
-                          : "rgb(200, 200, 200)",
+                          ? COLORS.primary
+                          : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -784,8 +785,8 @@ export default function Insumos() {
                       padding: "8px 16px",
                       background:
                         selectedItems.size === 1
-                          ? "rgb(220, 38, 38)"
-                          : "rgb(200, 200, 200)",
+                          ? COLORS.dangerRgb
+                          : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -810,7 +811,7 @@ export default function Insumos() {
                 padding: 10,
                 border: "1px solid rgb(167, 117, 75)",
                 borderRadius: 6,
-                background: "rgb(255, 255, 255)",
+                background: COLORS.white,
               }}
             />
           </div>
@@ -822,7 +823,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Status
@@ -831,7 +832,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Selecionar
@@ -840,7 +841,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Insumo
@@ -849,7 +850,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Unidade
@@ -858,7 +859,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Tipos de produto
@@ -867,7 +868,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Custo compra
@@ -876,7 +877,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Qtd comprada
@@ -885,7 +886,7 @@ export default function Insumos() {
                   style={{
                     padding: 12,
                     textAlign: "center",
-                    color: "rgb(167, 117, 75)",
+                    color: COLORS.primary,
                   }}
                 >
                   Custo unitário

@@ -6,6 +6,7 @@ import {
 } from "../lib/currency";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Insumo = {
   id: number;
@@ -508,7 +509,7 @@ export default function Modelos() {
     display: "block" as const,
     marginBottom: 10,
     fontWeight: 600,
-    color: "#6b3b12",
+    color: COLORS.primaryDark,
     fontSize: 13,
   };
 
@@ -534,7 +535,7 @@ export default function Modelos() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "#ecfdf5",
+            background: COLORS.successBg,
             border: "1px solid #a7f3d0",
           }}
         >
@@ -557,11 +558,11 @@ export default function Modelos() {
         {isAuthenticated && (
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 22,
             borderRadius: 16,
-            boxShadow: "0 12px 30px rgba(92, 54, 24, 0.12)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadowLarge,
+            border: COLORS.cardBorder,
             minWidth: 0,
           }}
         >
@@ -574,10 +575,10 @@ export default function Modelos() {
             }}
           >
             <div>
-              <h3 style={{ margin: 0, color: "#6b3b12" }}>
+              <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
                 {editingId ? "Editar modelo" : "Novo modelo"}
               </h3>
-              <p style={{ margin: "4px 0 0", color: "#8a5a2b", fontSize: 13 }}>
+              <p style={{ margin: "4px 0 0", color: COLORS.primaryDarkAlt, fontSize: 13 }}>
                 Organize a receita, os itens e os custos em uma única tela.
               </p>
             </div>
@@ -618,7 +619,7 @@ export default function Modelos() {
                       width: "100%",
                       marginTop: 6,
                       padding: "8px 10px",
-                      background: "rgb(255, 255, 255)",
+                      background: COLORS.white,
                       border: "1px solid rgb(166, 116, 71)",
                       borderRadius: 8,
                       fontSize: 13,
@@ -636,7 +637,7 @@ export default function Modelos() {
                       width: "100%",
                       marginTop: 6,
                       padding: "8px 10px",
-                      background: "rgb(255, 255, 255)",
+                      background: COLORS.white,
                       border: "1px solid rgb(166, 116, 71)",
                       borderRadius: 8,
                       fontSize: 13,
@@ -653,7 +654,7 @@ export default function Modelos() {
                     )}
                   </select>
                   <div
-                    style={{ marginTop: 6, fontSize: 13, color: "#7c3d12" }}
+                    style={{ marginTop: 6, fontSize: 13, color: COLORS.primaryDarkText }}
                   ></div>
                 </label>
                 <label style={fieldLabelStyle}>
@@ -668,7 +669,7 @@ export default function Modelos() {
                       width: "100%",
                       marginTop: 6,
                       padding: "8px 10px",
-                      background: "rgb(255, 255, 255)",
+                      background: COLORS.white,
                       border: "1px solid rgb(166, 116, 71)",
                       borderRadius: 8,
                       fontSize: 13,
@@ -683,7 +684,7 @@ export default function Modelos() {
                     ))}
                   </select>
                   <div style={{ marginTop: 8 }}>
-                    <label style={{ fontSize: 13, color: "#7c3d12" }}>
+                    <label style={{ fontSize: 13, color: COLORS.primaryDarkText }}>
                       Base secundária (opcional)
                     </label>
                     <select
@@ -696,7 +697,7 @@ export default function Modelos() {
                         width: "100%",
                         marginTop: 6,
                         padding: "8px 10px",
-                        background: "rgb(255, 255, 255)",
+                        background: COLORS.white,
                         border: "1px solid rgb(166, 116, 71)",
                         borderRadius: 8,
                         fontSize: 13,
@@ -715,10 +716,10 @@ export default function Modelos() {
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <h4 style={{ margin: "0 0 8px", color: "#6b3b12" }}>
+              <h4 style={{ margin: "0 0 8px", color: COLORS.primaryDark }}>
                 Ingredientes e custos
               </h4>
-              <p style={{ margin: "0 0 12px", color: "#8a5a2b", fontSize: 13 }}>
+              <p style={{ margin: "0 0 12px", color: COLORS.primaryDarkAlt, fontSize: 13 }}>
                 Ajuste os componentes da receita e os valores de produção.
               </p>
             </div>
@@ -740,7 +741,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -759,7 +760,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -778,7 +779,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -796,7 +797,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -819,7 +820,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -844,7 +845,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -870,7 +871,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -888,7 +889,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -911,7 +912,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -939,7 +940,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -957,7 +958,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -983,7 +984,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -999,7 +1000,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1025,7 +1026,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1041,7 +1042,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1065,7 +1066,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1081,7 +1082,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1107,7 +1108,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1125,7 +1126,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1151,7 +1152,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1169,7 +1170,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1195,7 +1196,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1227,7 +1228,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1259,7 +1260,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1278,7 +1279,7 @@ export default function Modelos() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 6,
                   }}
@@ -1307,7 +1308,7 @@ export default function Modelos() {
                       border: "none",
                       cursor: "pointer",
                       background: form.ativo
-                        ? "rgb(34, 197, 94)"
+                        ? COLORS.success
                         : "rgb(156, 163, 175)",
                       position: "relative",
                       padding: 0,
@@ -1345,7 +1346,7 @@ export default function Modelos() {
                   padding: "10px 16px",
                   background:
                     formMode === "idle"
-                      ? "rgb(200, 200, 200)"
+                      ? COLORS.gray
                       : "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
                   color: "white",
                   border: "none",
@@ -1379,11 +1380,11 @@ export default function Modelos() {
 
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 22,
             borderRadius: 16,
-            boxShadow: "0 12px 30px rgba(92, 54, 24, 0.12)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadowLarge,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -1421,7 +1422,7 @@ export default function Modelos() {
                     border: "none",
                     cursor: "pointer",
                     background: showActiveOnly
-                      ? "rgb(34, 197, 94)"
+                      ? COLORS.success
                       : "rgb(156, 163, 175)",
                     position: "relative",
                     padding: 0,
@@ -1451,8 +1452,8 @@ export default function Modelos() {
                       padding: "8px 16px",
                       background:
                         selectedItems.size === 1
-                          ? "rgb(167, 117, 75)"
-                          : "rgb(200, 200, 200)",
+                          ? COLORS.primary
+                          : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -1469,8 +1470,8 @@ export default function Modelos() {
                       padding: "8px 16px",
                       background:
                         selectedItems.size === 1
-                          ? "rgb(220, 38, 38)"
-                          : "rgb(200, 200, 200)",
+                          ? COLORS.dangerRgb
+                          : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -1495,7 +1496,7 @@ export default function Modelos() {
                 padding: 10,
                 border: "1px solid rgb(167, 117, 75)",
                 borderRadius: 6,
-                background: "rgb(255, 255, 255)",
+                background: COLORS.white,
               }}
             />
           </div>

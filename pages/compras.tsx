@@ -6,6 +6,7 @@ import {
 } from "../lib/currency";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Insumo = {
   id: number;
@@ -308,8 +309,8 @@ export default function Compras() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, color: "#6b3b12" }}>Compras e despesas</h2>
-      <p style={{ marginTop: 0, color: "#8a5a2b" }}>
+      <h2 style={{ marginBottom: 6, color: COLORS.primaryDark }}>Compras e despesas</h2>
+      <p style={{ marginTop: 0, color: COLORS.primaryDarkAlt }}>
         Registre compras de insumos e despesas financeiras, com atualização
         automática do estoque quando a compra for aprovada.
       </p>
@@ -319,7 +320,7 @@ export default function Compras() {
           style={{
             marginBottom: 16,
             padding: 12,
-            background: "#ecfdf5",
+            background: COLORS.successBg,
             border: "1px solid #a7f3d0",
           }}
         >
@@ -341,11 +342,11 @@ export default function Compras() {
         {isAuthenticated && (
         <section
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 18,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -356,7 +357,7 @@ export default function Compras() {
               marginBottom: 12,
             }}
           >
-            <h3 style={{ margin: 0, color: "#6b3b12" }}>
+            <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
               {isCreating ? "Novo lançamento" : "Lançamentos"}
             </h3>
             <button
@@ -379,11 +380,11 @@ export default function Compras() {
           <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
             <section
               style={{
-                background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+                background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
                 padding: 20,
                 borderRadius: 14,
-                boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-                border: "1px solid rgba(166, 116, 71, 0.2)",
+                boxShadow: COLORS.cardShadow,
+                border: COLORS.cardBorder,
               }}
             >
               <div
@@ -514,7 +515,7 @@ export default function Compras() {
                   background: "white",
                   padding: 20,
                   borderRadius: 14,
-                  border: "1px solid rgba(166, 116, 71, 0.2)",
+                  border: COLORS.cardBorder,
                 }}
               >
                 <div
@@ -525,7 +526,7 @@ export default function Compras() {
                     marginBottom: 12,
                   }}
                 >
-                  <h3 style={{ margin: 0, color: "#6b3b12" }}>
+                  <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
                     Itens da compra
                   </h3>
                   <button
@@ -534,7 +535,7 @@ export default function Compras() {
                     disabled={!isFormEditable}
                     style={{
                       padding: "8px 12px",
-                      background: "rgb(167, 117, 75)",
+                      background: COLORS.primary,
                       color: "white",
                       border: "none",
                       borderRadius: 8,
@@ -547,7 +548,7 @@ export default function Compras() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr style={{ background: "rgba(167, 117, 75, 0.08)" }}>
+                      <tr style={{ background: COLORS.primarySoftAlt }}>
                         <th style={{ padding: 8, textAlign: "left" }}>
                           Insumo
                         </th>
@@ -665,7 +666,7 @@ export default function Compras() {
                               disabled={!isFormEditable}
                               style={{
                                 padding: "8px 10px",
-                                background: "#ef4444",
+                                background: COLORS.dangerLight,
                                 color: "white",
                                 border: "none",
                                 borderRadius: 8,
@@ -691,7 +692,7 @@ export default function Compras() {
                 onClick={resetForm}
                 style={{
                   padding: "10px 16px",
-                  background: "rgb(239, 68, 68)",
+                  background: COLORS.dangerLight,
                   color: "white",
                   border: "none",
                   borderRadius: 6,
@@ -705,7 +706,7 @@ export default function Compras() {
                 disabled={!isFormEditable}
                 style={{
                   padding: "10px 18px",
-                  background: "rgb(167, 117, 75)",
+                  background: COLORS.primary,
                   color: "white",
                   border: "none",
                   borderRadius: 8,
@@ -726,7 +727,7 @@ export default function Compras() {
           background: "white",
           padding: 20,
           borderRadius: 14,
-          border: "1px solid rgba(166, 116, 71, 0.2)",
+          border: COLORS.cardBorder,
         }}
       >
         <div
@@ -737,13 +738,13 @@ export default function Compras() {
             marginBottom: 12,
           }}
         >
-          <h3 style={{ margin: 0, color: "#6b3b12" }}>
+          <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
             Lançamentos cadastrados
           </h3>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead style={{ background: "rgba(167, 117, 75, 0.08)" }}>
+            <thead style={{ background: COLORS.primarySoftAlt }}>
               <tr>
                 <th style={{ padding: 8, textAlign: "left" }}>Data</th>
                 <th style={{ padding: 8, textAlign: "left" }}>Tipo</th>
@@ -767,7 +768,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       {new Date(compra.data).toLocaleDateString("pt-BR")}
@@ -775,7 +776,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       {compra.tipoLancamento}
@@ -783,7 +784,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       {compra.categoria || "-"}
@@ -791,7 +792,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       {compra.status}
@@ -799,7 +800,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       R$ {compra.valor.toFixed(2)}
@@ -807,7 +808,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       {compra.itens
@@ -817,7 +818,7 @@ export default function Compras() {
                     <td
                       style={{
                         padding: 8,
-                        borderTop: "1px solid rgba(167, 117, 75, 0.12)",
+                        borderTop: COLORS.primaryBorderSoft12,
                       }}
                     >
                       <div style={{ display: "flex", gap: 8 }}>
@@ -842,7 +843,7 @@ export default function Compras() {
                               onClick={() => deleteCompra(compra.id)}
                               style={{
                                 padding: "6px 10px",
-                                background: "#dc2626",
+                                background: COLORS.danger,
                                 color: "white",
                                 border: "none",
                                 borderRadius: 6,

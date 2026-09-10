@@ -14,7 +14,7 @@ export default withApiErrorHandling(async function handler(
   requireAdmin(req);
 
   if (req.method === "GET") {
-    const users = await (prisma as any).user.findMany({
+    const users = await prisma.user.findMany({
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
@@ -31,14 +31,14 @@ export default withApiErrorHandling(async function handler(
     const normalizedEmail = String(email).toLowerCase().trim();
     const finalRole = VALID_ROLES.includes(role) ? role : "VIEWER";
 
-    const existing = await (prisma as any).user.findUnique({
+    const existing = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
     if (existing) {
       return res.status(409).json({ error: "Já existe um usuário com esse e-mail." });
     }
 
-    const user = await (prisma as any).user.create({
+    const user = await prisma.user.create({
       data: { name, email: normalizedEmail, role: finalRole },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
     });
@@ -53,7 +53,7 @@ export default withApiErrorHandling(async function handler(
       return res.status(400).json({ error: "Informe o id do usuário." });
     }
 
-    await (prisma as any).user.delete({ where: { id } });
+    await prisma.user.delete({ where: { id } });
     return res.status(204).end();
   }
 

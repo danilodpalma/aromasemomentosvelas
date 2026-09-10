@@ -6,6 +6,7 @@ import {
 } from "../lib/currency";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Insumo = {
   id: number;
@@ -341,7 +342,7 @@ export default function Calculo() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "#ecfdf5",
+            background: COLORS.successBg,
             border: "1px solid #a7f3d0",
           }}
         >
@@ -351,11 +352,11 @@ export default function Calculo() {
 
       <div
         style={{
-          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+          background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
           borderRadius: 14,
-          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
+          boxShadow: COLORS.cardShadow,
           overflowX: "auto",
-          border: "1px solid rgba(166, 116, 71, 0.2)",
+          border: COLORS.cardBorder,
         }}
       >
         <table
@@ -416,7 +417,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.insumoCost.toFixed(2)}
@@ -433,7 +434,7 @@ export default function Calculo() {
                           onClick={() => toggleRowDetails(modelo.id)}
                           style={{
                             padding: "6px 10px",
-                            background: "rgb(167, 117, 75)",
+                            background: COLORS.primary,
                             color: "white",
                             border: "none",
                             borderRadius: 6,
@@ -448,7 +449,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.fixedCost.toFixed(2)}
@@ -458,7 +459,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.totalCost.toFixed(2)}
@@ -468,7 +469,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         {Math.round(modelo.margemLucro)}%
@@ -478,7 +479,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.priceSuggested.toFixed(2)}
@@ -488,7 +489,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.profit.toFixed(2)}
@@ -498,7 +499,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.actualProfit.toFixed(2)}
@@ -508,7 +509,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         <div
@@ -544,7 +545,7 @@ export default function Calculo() {
                                   width: "80px",
                                   padding: 6,
                                   textAlign: "right",
-                                  background: "rgb(255, 255, 255)",
+                                  background: COLORS.white,
                                   border: "1px solid rgb(167, 117, 75)",
                                   borderRadius: 6,
                                 }}
@@ -555,7 +556,7 @@ export default function Calculo() {
                                 title="Salvar"
                                 style={{
                                   padding: "4px 8px",
-                                  background: "rgb(34, 197, 94)",
+                                  background: COLORS.success,
                                   color: "white",
                                   border: "none",
                                   borderRadius: 4,
@@ -571,7 +572,7 @@ export default function Calculo() {
                                 title="Limpar"
                                 style={{
                                   padding: "4px 8px",
-                                  background: "rgb(239, 68, 68)",
+                                  background: COLORS.dangerLight,
                                   color: "white",
                                   border: "none",
                                   borderRadius: 4,
@@ -594,7 +595,7 @@ export default function Calculo() {
                           padding: 12,
                           borderTop: "1px solid rgb(167, 117, 75)",
                           textAlign: "center",
-                          color: "rgb(167, 117, 75)",
+                          color: COLORS.primary,
                         }}
                       >
                         R$ {values.finalSalePrice.toFixed(2)}
@@ -706,7 +707,7 @@ export default function Calculo() {
                                         textAlign: "center",
                                         fontSize: 12,
                                         fontWeight: 600,
-                                        color: "rgb(167, 117, 75)",
+                                        color: COLORS.primary,
                                       }}
                                     >
                                       R$ {item.value.toFixed(2)}
@@ -715,7 +716,7 @@ export default function Calculo() {
                                 ))}
                                 <tr
                                   style={{
-                                    background: "rgba(167, 117, 75, 0.08)",
+                                    background: COLORS.primarySoftAlt,
                                     fontWeight: 600,
                                   }}
                                 >
@@ -734,7 +735,7 @@ export default function Calculo() {
                                       padding: 8,
                                       textAlign: "center",
                                       fontSize: 12,
-                                      color: "rgb(167, 117, 75)",
+                                      color: COLORS.primary,
                                     }}
                                   >
                                     R$ {values.insumoCost.toFixed(2)}
@@ -783,7 +784,7 @@ export default function Calculo() {
                                       padding: 8,
                                       textAlign: "center",
                                       fontSize: 12,
-                                      color: "rgb(34, 197, 94)",
+                                      color: COLORS.success,
                                     }}
                                   >
                                     R$ {values.totalCost.toFixed(2)}

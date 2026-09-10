@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context";
+import { COLORS } from "../styles/theme";
 import Head from "next/head";
 
 export default function Login() {
@@ -96,10 +97,10 @@ export default function Login() {
           }}
         >
           <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <h1 style={{ color: "#6b3b12", margin: 0, fontSize: 26 }}>
+            <h1 style={{ color: COLORS.primaryDark, margin: 0, fontSize: 26 }}>
               Aromas e Momentos
             </h1>
-            <p style={{ color: "#6b7280", marginTop: 8 }}>
+            <p style={{ color: COLORS.grayText, marginTop: 8 }}>
               {step === "email"
                 ? "Acesso administrativo"
                 : `Digite o código enviado para ${email}`}
@@ -149,7 +150,7 @@ export default function Login() {
                 disabled={loading}
                 style={{
                   padding: "12px 16px",
-                  background: "rgb(167, 117, 75)",
+                  background: COLORS.primary,
                   color: "white",
                   border: "none",
                   borderRadius: 999,
@@ -170,7 +171,7 @@ export default function Login() {
                 <p
                   style={{
                     color: "#166534",
-                    background: "#ecfdf5",
+                    background: COLORS.successBg,
                     padding: 10,
                     borderRadius: 8,
                     fontSize: 14,
@@ -224,7 +225,7 @@ export default function Login() {
                 disabled={loading}
                 style={{
                   padding: "12px 16px",
-                  background: "rgb(167, 117, 75)",
+                  background: COLORS.primary,
                   color: "white",
                   border: "none",
                   borderRadius: 999,
@@ -247,7 +248,7 @@ export default function Login() {
                 style={{
                   background: "transparent",
                   border: "none",
-                  color: "#6b7280",
+                  color: COLORS.grayText,
                   cursor: "pointer",
                   fontSize: 13,
                 }}

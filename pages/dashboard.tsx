@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { COLORS } from "../styles/theme";
 
 type Product = {
   id: number;
@@ -40,8 +41,8 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, color: "#6b3b12" }}>Resumo e dashboard</h2>
-      <p style={{ marginTop: 0, color: "#8a5a2b" }}>
+      <h2 style={{ marginBottom: 6, color: COLORS.primaryDark }}>Resumo e dashboard</h2>
+      <p style={{ marginTop: 0, color: COLORS.primaryDarkAlt }}>
         Use este painel como ponto de partida para acompanhar seu negócio.
       </p>
 
@@ -58,8 +59,8 @@ export default function Dashboard() {
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Total de insumos</p>
@@ -72,8 +73,8 @@ export default function Dashboard() {
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Total de vendas</p>
@@ -86,8 +87,8 @@ export default function Dashboard() {
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             padding: 20,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <p style={{ margin: 0, color: "#6b7280" }}>Receita</p>
@@ -98,7 +99,7 @@ export default function Dashboard() {
       </section>
 
       <section style={{ marginTop: 28 }}>
-        <h3 style={{ marginBottom: 10, color: "#6b3b12" }}>Vendas recentes</h3>
+        <h3 style={{ marginBottom: 10, color: COLORS.primaryDark }}>Vendas recentes</h3>
         <table
           style={{
             width: "100%",
@@ -162,8 +163,8 @@ export default function Dashboard() {
           background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
           padding: 20,
           borderRadius: 14,
-          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-          border: "1px solid rgba(166, 116, 71, 0.2)",
+          boxShadow: COLORS.cardShadow,
+          border: COLORS.cardBorder,
         }}
       >
         <h3>Próximo passo</h3>

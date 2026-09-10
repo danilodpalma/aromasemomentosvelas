@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Insumo = {
   id: number;
@@ -84,8 +85,8 @@ export default function Estoque() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, color: "#6b3b12" }}>Estoque</h2>
-      <p style={{ marginTop: 0, color: "#8a5a2b" }}>
+      <h2 style={{ marginBottom: 6, color: COLORS.primaryDark }}>Estoque</h2>
+      <p style={{ marginTop: 0, color: COLORS.primaryDarkAlt }}>
         Acompanhe o saldo atual, a unidade e o custo médio dos insumos.
       </p>
 
@@ -103,11 +104,11 @@ export default function Estoque() {
 
       <section
         style={{
-          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+          background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
           padding: 20,
           borderRadius: 14,
-          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-          border: "1px solid rgba(166, 116, 71, 0.2)",
+          boxShadow: COLORS.cardShadow,
+          border: COLORS.cardBorder,
           overflowX: "auto",
         }}
       >
@@ -134,7 +135,7 @@ export default function Estoque() {
                   <td
                     style={{
                       padding: 12,
-                      borderTop: "1px solid rgba(166, 116, 71, 0.2)",
+                      borderTop: COLORS.cardBorder,
                     }}
                   >
                     {insumo.name}
@@ -142,7 +143,7 @@ export default function Estoque() {
                   <td
                     style={{
                       padding: 12,
-                      borderTop: "1px solid rgba(166, 116, 71, 0.2)",
+                      borderTop: COLORS.cardBorder,
                     }}
                   >
                     {insumo.unit || "-"}
@@ -151,7 +152,7 @@ export default function Estoque() {
                     style={{
                       padding: 12,
                       textAlign: "center",
-                      borderTop: "1px solid rgba(166, 116, 71, 0.2)",
+                      borderTop: COLORS.cardBorder,
                     }}
                   >
                     {editingId === insumo.id ? (
@@ -177,7 +178,7 @@ export default function Estoque() {
                     style={{
                       padding: 12,
                       textAlign: "center",
-                      borderTop: "1px solid rgba(166, 116, 71, 0.2)",
+                      borderTop: COLORS.cardBorder,
                     }}
                   >
                     R$ {Number(insumo.unitCost || 0).toFixed(3)}
@@ -186,7 +187,7 @@ export default function Estoque() {
                     style={{
                       padding: 12,
                       textAlign: "center",
-                      borderTop: "1px solid rgba(166, 116, 71, 0.2)",
+                      borderTop: COLORS.cardBorder,
                     }}
                   >
                     {isAuthenticated ? (
@@ -203,7 +204,7 @@ export default function Estoque() {
                             onClick={() => saveStock(insumo.id)}
                             style={{
                               padding: "6px 10px",
-                              background: "rgb(167, 117, 75)",
+                              background: COLORS.primary,
                               color: "white",
                               border: "none",
                               borderRadius: 6,
@@ -217,7 +218,7 @@ export default function Estoque() {
                             onClick={cancelEdit}
                             style={{
                               padding: "10px 16px",
-                              background: "rgb(239, 68, 68)",
+                              background: COLORS.dangerLight,
                               color: "white",
                               border: "none",
                               borderRadius: 6,
@@ -233,7 +234,7 @@ export default function Estoque() {
                           onClick={() => startEdit(insumo)}
                           style={{
                             padding: "8px 16px",
-                            background: "rgb(167, 117, 75)",
+                            background: COLORS.primary,
                             color: "white",
                             border: "none",
                             borderRadius: 6,

@@ -22,7 +22,7 @@ export default withApiErrorHandling(async function handler(
 
   const normalizedEmail = String(email).toLowerCase().trim();
 
-  const user = await (prisma as any).user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   });
 
@@ -30,7 +30,7 @@ export default withApiErrorHandling(async function handler(
     return res.status(401).json({ message: "Código inválido ou expirado." });
   }
 
-  const candidates = await (prisma as any).loginCode.findMany({
+  const candidates = await prisma.loginCode.findMany({
     where: {
       email: normalizedEmail,
       used: false,
@@ -51,7 +51,7 @@ export default withApiErrorHandling(async function handler(
     return res.status(401).json({ message: "Código inválido ou expirado." });
   }
 
-  await (prisma as any).loginCode.update({
+  await prisma.loginCode.update({
     where: { id: matched.id },
     data: { used: true },
   });

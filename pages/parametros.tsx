@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Parameter = {
   id: number;
@@ -167,11 +168,11 @@ export default function Parametros() {
           boxShadow: "0 4px 12px rgba(92, 54, 24, 0.06)",
         }}
       >
-        <h3 style={{ margin: "0 0 10px", color: "#6b3b12", fontSize: 15 }}>
+        <h3 style={{ margin: "0 0 10px", color: COLORS.primaryDark, fontSize: 15 }}>
           {title}
         </h3>
         {items.length === 0 ? (
-          <p style={{ margin: 0, color: "#7c3d12" }}>{emptyText}</p>
+          <p style={{ margin: 0, color: COLORS.primaryDarkText }}>{emptyText}</p>
         ) : (
           <div style={{ display: "grid", gap: 8 }}>
             {items.map((t) => (
@@ -188,7 +189,7 @@ export default function Parametros() {
                   border: "1px solid rgba(166, 116, 71, 0.18)",
                 }}
               >
-                <span style={{ fontWeight: 600, color: "#6b3b12" }}>
+                <span style={{ fontWeight: 600, color: COLORS.primaryDark }}>
                   {t.name}
                 </span>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
@@ -201,7 +202,7 @@ export default function Parametros() {
                           borderRadius: 999,
                           border: "1px solid rgba(166, 116, 71, 0.3)",
                           background: "#fff",
-                          color: "#6b3b12",
+                          color: COLORS.primaryDark,
                           cursor: "pointer",
                           fontSize: 12,
                           fontWeight: 600,
@@ -248,7 +249,7 @@ export default function Parametros() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "#ecfdf5",
+            background: COLORS.successBg,
             border: "1px solid #a7f3d0",
           }}
         >
@@ -269,14 +270,14 @@ export default function Parametros() {
         {isAuthenticated && (
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 18,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
-          <h3 style={{ margin: "0 0 12px", color: "#6b3b12" }}>
+          <h3 style={{ margin: "0 0 12px", color: COLORS.primaryDark }}>
             {editingId ? "Editar parâmetro" : "Novo parâmetro"}
           </h3>
           <form onSubmit={handleSubmit}>
@@ -288,7 +289,7 @@ export default function Parametros() {
               }}
             >
               <label
-                style={{ display: "block", fontWeight: 600, color: "#6b3b12" }}
+                style={{ display: "block", fontWeight: 600, color: COLORS.primaryDark }}
               >
                 Categoria do parâmetro
                 <select
@@ -315,7 +316,7 @@ export default function Parametros() {
                 </select>
               </label>
               <label
-                style={{ display: "block", fontWeight: 600, color: "#6b3b12" }}
+                style={{ display: "block", fontWeight: 600, color: COLORS.primaryDark }}
               >
                 Nome do parâmetro
                 <input
@@ -384,11 +385,11 @@ export default function Parametros() {
 
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 18,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div

@@ -6,6 +6,7 @@ import {
 } from "../lib/currency";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
+import { COLORS } from "../styles/theme";
 
 type Venda = {
   id: number;
@@ -385,8 +386,8 @@ export default function Vendas() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+            border: COLORS.cardBorder,
           }}
         >
           {message}
@@ -403,11 +404,11 @@ export default function Vendas() {
         {isAuthenticated && (
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 15,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -462,7 +463,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -483,7 +484,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -504,7 +505,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -533,7 +534,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -566,7 +567,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -587,7 +588,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -614,7 +615,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -641,7 +642,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     background:
-                      formMode === "idle" ? "#f3f4f6" : "rgb(255, 255, 255)",
+                      formMode === "idle" ? COLORS.grayLight : COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -663,7 +664,7 @@ export default function Vendas() {
                 style={{
                   padding: "10px 16px",
                   background:
-                    formMode === "idle" ? "#a78b58" : "rgb(167, 117, 75)",
+                    formMode === "idle" ? "#a78b58" : COLORS.primary,
                   color: "white",
                   border: "none",
                   borderRadius: 6,
@@ -678,7 +679,7 @@ export default function Vendas() {
                   onClick={resetForm}
                   style={{
                     padding: "10px 16px",
-                    background: "#ef4444",
+                    background: COLORS.dangerLight,
                     color: "white",
                     border: "none",
                     borderRadius: 6,
@@ -695,11 +696,11 @@ export default function Vendas() {
 
         <div
           style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
             padding: 20,
             borderRadius: 14,
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-            border: "1px solid rgba(166, 116, 71, 0.2)",
+            boxShadow: COLORS.cardShadow,
+            border: COLORS.cardBorder,
           }}
         >
           <div
@@ -723,8 +724,8 @@ export default function Vendas() {
                       padding: "8px 16px",
                       background:
                         selectedItems.size === 1
-                          ? "rgb(167, 117, 75)"
-                          : "rgb(200, 200, 200)",
+                          ? COLORS.primary
+                          : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -740,7 +741,7 @@ export default function Vendas() {
                     style={{
                       padding: "8px 16px",
                       background:
-                        selectedItems.size === 1 ? "#ef4444" : "rgb(200, 200, 200)",
+                        selectedItems.size === 1 ? COLORS.dangerLight : COLORS.gray,
                       color: "white",
                       border: "none",
                       borderRadius: 6,
@@ -753,7 +754,7 @@ export default function Vendas() {
               )}
             </div>
           </div>
-          <div style={{ color: "#6b7280", fontSize: 14, marginTop: 8 }}>
+          <div style={{ color: COLORS.grayText, fontSize: 14, marginTop: 8 }}>
             Exibindo {filteredVendas.length} venda
             {filteredVendas.length === 1 ? "" : "s"}
           </div>
@@ -786,7 +787,7 @@ export default function Vendas() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -805,7 +806,7 @@ export default function Vendas() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -823,7 +824,7 @@ export default function Vendas() {
                     width: "100%",
                     marginTop: 6,
                     padding: 8,
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                     textAlign: "left",
@@ -842,7 +843,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     textAlign: "left",
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                   }}
@@ -867,7 +868,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     textAlign: "left",
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                   }}
@@ -892,7 +893,7 @@ export default function Vendas() {
                     marginTop: 6,
                     padding: 8,
                     textAlign: "left",
-                    background: "rgb(255, 255, 255)",
+                    background: COLORS.white,
                     border: "1px solid rgb(167, 117, 75)",
                     borderRadius: 6,
                   }}
@@ -921,7 +922,7 @@ export default function Vendas() {
               style={{
                 marginTop: 12,
                 padding: "10px 16px",
-                background: "rgb(167, 117, 75)",
+                background: COLORS.primary,
                 color: "white",
                 border: "none",
                 borderRadius: 6,
@@ -1080,11 +1081,11 @@ export default function Vendas() {
       </div>
       <div
         style={{
-          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+          background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
           padding: 20,
           borderRadius: 14,
-          boxShadow: "0 10px 24px rgba(92, 54, 24, 0.1)",
-          border: "1px solid rgba(166, 116, 71, 0.2)",
+          boxShadow: COLORS.cardShadow,
+          border: COLORS.cardBorder,
         }}
       >
         <h3>Resumo de Pagamentos</h3>
@@ -1100,7 +1101,7 @@ export default function Vendas() {
               background: "white",
               padding: 16,
               borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              boxShadow: COLORS.subtleShadowSmall,
             }}
           >
             <strong>Total Vendido</strong>
@@ -1113,7 +1114,7 @@ export default function Vendas() {
               background: "white",
               padding: 16,
               borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              boxShadow: COLORS.subtleShadowSmall,
             }}
           >
             <strong>Receita</strong>
@@ -1124,7 +1125,7 @@ export default function Vendas() {
               background: "white",
               padding: 16,
               borderRadius: 10,
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+              boxShadow: COLORS.subtleShadowSmall,
             }}
           >
             <strong>Velas Vendidas</strong>
@@ -1137,7 +1138,7 @@ export default function Vendas() {
                 background: "white",
                 padding: 16,
                 borderRadius: 10,
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                boxShadow: COLORS.subtleShadowSmall,
               }}
             >
               <strong>{item.name}</strong>
@@ -1153,7 +1154,7 @@ export default function Vendas() {
                 background: "white",
                 padding: 16,
                 borderRadius: 10,
-                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                boxShadow: COLORS.subtleShadowSmall,
               }}
             >
               <strong>{item.name}</strong>

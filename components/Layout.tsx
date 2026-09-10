@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useAuth } from "../context";
+import { COLORS } from "../styles/theme";
 
 const menuItems = [
   { href: "/dashboard", label: "Resumo" },
@@ -37,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       style={{
         minHeight: "100vh",
         background: "rgb(255, 246, 235)",
-        color: "rgb(166, 116, 71)",
+        color: COLORS.primaryBorder,
       }}
     >
       {/* O componente Head agora utiliza a variável pageTitle para atualizar o título automaticamente */}
@@ -48,8 +49,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <header
         style={{
-          borderBottom: "1px solid rgba(166, 116, 71, 0.2)",
-          background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
+          borderBottom: COLORS.cardBorder,
+          background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
           padding: "16px 24px",
           boxShadow: "0 6px 18px rgba(92, 54, 24, 0.08)",
         }}
@@ -102,14 +103,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   textDecoration: "none",
                   color:
                     router.pathname === item.href
-                      ? "rgb(255, 255, 255)"
-                      : "rgb(166, 116, 71)",
+                      ? COLORS.white
+                      : COLORS.primaryBorder,
                   fontWeight: router.pathname === item.href ? 700 : 500,
                   padding: "7px 12px",
                   borderRadius: 999,
                   background:
                     router.pathname === item.href
-                      ? "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)"
+                      ? `linear-gradient(135deg, ${COLORS.buttonGradientFrom} 0%, ${COLORS.buttonGradientTo} 100%)`
                       : "transparent",
                 }}
               >
@@ -123,14 +124,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   textDecoration: "none",
                   color:
                     router.pathname === "/usuarios"
-                      ? "rgb(255, 255, 255)"
-                      : "rgb(166, 116, 71)",
+                      ? COLORS.white
+                      : COLORS.primaryBorder,
                   fontWeight: router.pathname === "/usuarios" ? 700 : 500,
                   padding: "7px 12px",
                   borderRadius: 999,
                   background:
                     router.pathname === "/usuarios"
-                      ? "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)"
+                      ? `linear-gradient(135deg, ${COLORS.buttonGradientFrom} 0%, ${COLORS.buttonGradientTo} 100%)`
                       : "transparent",
                 }}
               >
@@ -146,7 +147,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   borderRadius: 999,
                   border: "1px solid rgb(167, 117, 75)",
                   background: "transparent",
-                  color: "rgb(166, 116, 71)",
+                  color: COLORS.primaryBorder,
                   fontWeight: 600,
                   cursor: "pointer",
                 }}
@@ -162,7 +163,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   padding: "7px 14px",
                   borderRadius: 999,
                   border: "1px solid rgb(167, 117, 75)",
-                  color: "rgb(166, 116, 71)",
+                  color: COLORS.primaryBorder,
                   fontWeight: 600,
                 }}
               >
