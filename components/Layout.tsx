@@ -69,7 +69,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Link href="/">
               <img
-                src="/Logo.png"
+                src="/Logo2.png"
                 alt="Aromase Momentos"
                 style={{
                   height: 60,
