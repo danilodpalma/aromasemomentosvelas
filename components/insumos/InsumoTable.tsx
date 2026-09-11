@@ -16,6 +16,7 @@ type Insumo = {
 type Props = {
   items: Insumo[];
   isAuthenticated: boolean;
+  canDelete: boolean;
   selectedItems: Set<number>;
   onToggleSelect: (id: number) => void;
   showActiveOnly: boolean;
@@ -29,6 +30,7 @@ type Props = {
 export default function InsumoTable({
   items,
   isAuthenticated,
+  canDelete,
   selectedItems,
   onToggleSelect,
   showActiveOnly,
@@ -97,39 +99,39 @@ export default function InsumoTable({
             </button>
           </label>
           {isAuthenticated && (
-            <>
-              <button
-                type="button"
-                onClick={onEdit}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background: selectedItems.size === 1 ? COLORS.primary : COLORS.gray,
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Editar
-              </button>
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={selectedItems.size !== 1}
-                style={{
-                  padding: "8px 16px",
-                  background:
-                    selectedItems.size === 1 ? COLORS.dangerRgb : COLORS.gray,
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-                }}
-              >
-                Excluir
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={onEdit}
+              disabled={selectedItems.size !== 1}
+              style={{
+                padding: "8px 16px",
+                background: selectedItems.size === 1 ? COLORS.primary : COLORS.gray,
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+              }}
+            >
+              Editar
+            </button>
+          )}
+          {canDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={selectedItems.size !== 1}
+              style={{
+                padding: "8px 16px",
+                background:
+                  selectedItems.size === 1 ? COLORS.dangerRgb : COLORS.gray,
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
+              }}
+            >
+              Excluir
+            </button>
           )}
         </div>
       </div>

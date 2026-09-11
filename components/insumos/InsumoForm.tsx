@@ -1,8 +1,5 @@
 import { RefObject } from "react";
-import {
-  formatCurrencyInput,
-  sanitizeCurrencyInput,
-} from "../../lib/currency";
+import { formatCurrencyInput, sanitizeCurrencyInput } from "../../lib/currency";
 import { COLORS } from "../../styles/theme";
 
 export type InsumoFormState = {
@@ -162,7 +159,7 @@ export default function InsumoForm({
           >
             {(Array.isArray(productTypeOptions) ? productTypeOptions : [])
               .length === 0 && (
-              <span style={{ color: "#888", fontSize: "0.95em" }}>
+              <span style={{ color: "#889", fontSize: "0.95em" }}>
                 Nenhum tipo de produto cadastrado.
               </span>
             )}
@@ -181,7 +178,9 @@ export default function InsumoForm({
                       alignItems: "center",
                       gap: 8,
                       padding: "8px 10px",
-                      background: checked ? COLORS.primarySoftAlt : "transparent",
+                      background: checked
+                        ? COLORS.primarySoftAlt
+                        : "transparent",
                       borderRadius: 6,
                       cursor: formMode === "idle" ? "not-allowed" : "pointer",
                       color: formMode === "idle" ? "#8a8a8a" : "inherit",
@@ -307,7 +306,9 @@ export default function InsumoForm({
                   borderRadius: 13,
                   border: "none",
                   cursor: "pointer",
-                  background: form.active ? COLORS.success : "rgb(156, 163, 175)",
+                  background: form.active
+                    ? COLORS.success
+                    : "rgb(156, 163, 175)",
                   position: "relative",
                   padding: 0,
                 }}
