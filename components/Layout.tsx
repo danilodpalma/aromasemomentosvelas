@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         style={{
           borderBottom: COLORS.cardBorder,
           background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-          padding: "16px 24px",
+          padding: "24px 24px",
           boxShadow: "0 6px 18px rgba(92, 54, 24, 0.08)",
         }}
       >
@@ -60,21 +60,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             maxWidth: 1200,
             margin: "0 auto",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 24,
+            justifyContent: "center",
+            gap: 20,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Link href="/">
               <img
-                src="/Logo2.png"
+                src="/Logo1.png"
                 alt="Aromase Momentos"
                 style={{
-                  height: 60,
+                  height: 70,
                   width: "auto",
-                  maxWidth: 270,
+                  maxWidth: 600,
                   cursor: "pointer",
                   transition: "transform 0.2s ease",
                 }}
@@ -93,6 +99,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               gap: 12,
               flexWrap: "wrap",
               alignItems: "center",
+              justifyContent: "center",
             }}
           >
             {menuItems.map((item) => (
