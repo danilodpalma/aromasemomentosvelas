@@ -9,7 +9,10 @@ const resend = process.env.RESEND_API_KEY
 // ser este endereço padrão do próprio Resend.
 const FROM = process.env.EMAIL_FROM || "Aromas e Momentos <onboarding@resend.dev>";
 
-export async function sendLoginCodeEmail(to: string, code: string) {
+export async function sendLoginCodeEmail(
+  to: string,
+  code: string,
+): Promise<{ delivered: boolean }> {
   if (!resend) {
     throw new Error(
       "RESEND_API_KEY não configurada. Defina essa variável de ambiente para enviar e-mails.",
@@ -35,6 +38,16 @@ export async function sendLoginCodeEmail(to: string, code: string) {
   });
 
   if (error) {
-    throw new Error(`Falha ao enviar e-mail: ${error.message || JSON.stringify(error)}`);
+    // Limitação conhecida do modo de teste do Resend (sem domínio verificado):
+    // só entrega pro e-mail dono da conta. Nesse caso específico, não travamos
+    // o login — devolvemos "não entregue" e quem chamou decide o que fazer
+    // (ex: registrar o código no log do servidor pra testes).
+    const message = error.message || "";
+    if (message.includes("You can only send testing emails")) {
+      return { delivered: false };
+    }
+    throw new Error(`Falha ao enviar e-mail: ${message || JSON.stringify(error)}`);
   }
+
+  return { delivered: true };
 }

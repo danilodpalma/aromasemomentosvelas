@@ -51,7 +51,16 @@ export default withApiErrorHandling(async function handler(
     data: { email: normalizedEmail, codeHash, expiresAt },
   });
 
-  await sendLoginCodeEmail(normalizedEmail, code);
+  const { delivered } = await sendLoginCodeEmail(normalizedEmail, code);
+
+  if (!delivered) {
+    // Modo de teste do Resend (sem domínio verificado): não entregou de
+    // verdade. Registramos no log do servidor só pra permitir testar o
+    // sistema com outros e-mails enquanto o domínio não é verificado.
+    console.log(
+      `[MODO TESTE - e-mail não entregue] Código de acesso para ${normalizedEmail}: ${code}`,
+    );
+  }
 
   return res.status(200).json(genericResponse);
 });
