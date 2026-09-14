@@ -1223,7 +1223,7 @@ export default function ModeloForm({
         </div>
         <div style={{ marginTop: 16 }}>
           <h4 style={{ margin: "0 0 8px", color: COLORS.primaryDark }}>
-            Ingredientes e custos
+            Insumos e Custos
           </h4>
           <p
             style={{
@@ -1232,7 +1232,7 @@ export default function ModeloForm({
               fontSize: 13,
             }}
           >
-            Ajuste os componentes da receita e os valores de produção.
+            Insumos para Velas e Sabonetes.
           </p>
         </div>
         <div
@@ -1450,9 +1450,6 @@ export default function ModeloForm({
           </label>
         </div>
         <div style={{ marginTop: 16 }}>
-          <h4 style={{ margin: "0 0 8px", color: COLORS.primaryDark }}>
-            Ingredientes e custos
-          </h4>
           <p
             style={{
               margin: "0 0 12px",
@@ -1460,7 +1457,7 @@ export default function ModeloForm({
               fontSize: 13,
             }}
           >
-            Ajuste os componentes da receita e os valores de produção.
+            Insumos usados somente para Sabonetes.
           </p>
         </div>
         <div
@@ -1712,7 +1709,17 @@ export default function ModeloForm({
             />
           </label>
         </div>
-
+        <div style={{ marginTop: 16 }}>
+          <p
+            style={{
+              margin: "0 0 12px",
+              color: COLORS.primaryDarkAlt,
+              fontSize: 13,
+            }}
+          >
+            Custos Fixos e Margem %.
+          </p>
+        </div>
         <div
           style={{
             display: "grid",
