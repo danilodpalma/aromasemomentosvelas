@@ -116,11 +116,6 @@ export default function ModeloForm({
     overflow: "hidden",
   };
 
-  const isFieldEnabled = (allowedTypes: ("Vela" | "Sabonete")[]) => {
-    if (formMode === "idle") return false;
-    return allowedTypes.includes(form.tipoProduto as "Vela" | "Sabonete");
-  };
-
   return (
     <div
       style={{
@@ -314,8 +309,7 @@ export default function ModeloForm({
             Base (g)
             <input
               type="number"
-              //disabled={formMode === "idle"}
-              disabled={!isFieldEnabled(["Vela", "Sabonete"])}
+              disabled={formMode === "idle"}
               value={form.ceraGr}
               onChange={(e) => setForm({ ...form, ceraGr: e.target.value })}
               style={{
@@ -332,8 +326,7 @@ export default function ModeloForm({
             Base 2 (g) (opcional)
             <input
               type="number"
-              //disabled={formMode === "idle"}
-              disabled={!isFieldEnabled(["Vela", "Sabonete"])}
+              disabled={formMode === "idle"}
               value={form.cera2Gr}
               onChange={(e) => setForm({ ...form, cera2Gr: e.target.value })}
               style={{
@@ -521,8 +514,7 @@ export default function ModeloForm({
           <label style={{ display: "block" }}>
             Extrato
             <select
-              //disabled={formMode === "idle"}
-              disabled={!isFieldEnabled(["Vela", "Sabonete"])}
+              disabled={formMode === "idle"}
               value={form.extrato}
               onChange={(e) => setForm({ ...form, extrato: e.target.value })}
               style={{
