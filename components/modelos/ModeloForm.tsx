@@ -1116,6 +1116,7 @@ export default function ModeloForm({
               <input
                 ref={nomeInputRef}
                 required
+                placeholder="Ex.: Vala Eir, Sabonete Aconchego"
                 disabled={formMode === "idle"}
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
