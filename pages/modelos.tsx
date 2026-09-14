@@ -6,7 +6,6 @@ import { COLORS } from "../styles/theme";
 import ModeloForm, { ModeloFormState } from "../components/modelos/ModeloForm";
 import ModeloTable from "../components/modelos/ModeloTable";
 
-
 type Insumo = {
   id: number;
   name: string;
@@ -63,7 +62,7 @@ export default function Modelos() {
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [productTypes, setProductTypes] = useState<Parameter[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formMode, setFormMode] = useState<"idle" | "new" | "edit">("idle");
+  const [formMode, setFormMode] = useState<"idle" | "create" | "edit">("idle");
   const [form, setForm] = useState({
     nome: "",
     ativo: true,
@@ -218,7 +217,7 @@ export default function Modelos() {
   }, []);
 
   useEffect(() => {
-    if (formMode === "new" || formMode === "edit") {
+    if (formMode === "create" || formMode === "edit") {
       requestAnimationFrame(() => {
         nomeInputRef.current?.focus();
       });
@@ -268,7 +267,7 @@ export default function Modelos() {
 
   function startNew() {
     setEditingId(null);
-    setFormMode("new");
+    setFormMode("create");
     setForm({
       nome: "",
       ativo: true,
