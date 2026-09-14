@@ -1448,15 +1448,17 @@ export default function ModeloForm({
               }}
             />
           </label>
-          <p
-            style={{
-              margin: "0 0 12px",
-              color: COLORS.primaryDarkAlt,
-              fontSize: 13,
-            }}
-          >
-            Insumos Usados Somente para Sabonetes.
-          </p>
+          <br>
+            <p
+              style={{
+                margin: "0 0 12px",
+                color: COLORS.primaryDarkAlt,
+                fontSize: 13,
+              }}
+            >
+              Insumos Usados Somente para Sabonetes.
+            </p>
+          </br>
           <label style={{ display: "block" }}>
             Extrato
             <select
@@ -1697,7 +1699,7 @@ export default function ModeloForm({
               }}
             />
           </label>
-           <p
+          <p
             style={{
               margin: "0 0 12px",
               color: COLORS.primaryDarkAlt,
