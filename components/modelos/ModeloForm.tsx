@@ -1448,6 +1448,15 @@ export default function ModeloForm({
               }}
             />
           </label>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
           <label style={{ display: "block" }}>
             Extrato
             <select
@@ -1688,6 +1697,15 @@ export default function ModeloForm({
               }}
             />
           </label>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: 10,
+          }}
+        >
           <label style={{ display: "block" }}>
             Embalagem (R$)
             <input
