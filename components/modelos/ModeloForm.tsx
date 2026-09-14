@@ -512,7 +512,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Extrato - P/Sabonete
+            Extrato
             <select
               disabled={formMode === "idle"}
               value={form.extrato}
@@ -535,7 +535,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Extrato (g) - P/Sabonete
+            Extrato (g)
             <input
               type="number"
               disabled={formMode === "idle"}
@@ -552,7 +552,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Lauril - P/Sabonete
+            Lauril
             <select
               disabled={formMode === "idle"}
               value={form.lauril}
@@ -575,7 +575,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Lauril (g) - P/Sabonete
+            Lauril (g)
             <input
               type="number"
               disabled={formMode === "idle"}
@@ -592,7 +592,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Óleo - P/Sabonete
+            Óleo
             <select
               disabled={formMode === "idle"}
               value={form.oleo}
@@ -615,7 +615,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Óleo (g) - P/Sabonete
+            Óleo (g)
             <input
               type="number"
               disabled={formMode === "idle"}
@@ -632,7 +632,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Argila - P/Sabonete
+            Argila
             <select
               disabled={formMode === "idle"}
               value={form.argila}
@@ -655,7 +655,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Argila (g) - P/Sabonete
+            Argila (g)
             <input
               type="number"
               disabled={formMode === "idle"}
@@ -672,7 +672,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Dióxido - P/Sabonete
+            Dióxido
             <select
               disabled={formMode === "idle"}
               value={form.dioxido}
@@ -695,7 +695,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Dióxido (g) - P/Sabonete
+            Dióxido (g)
             <input
               type="number"
               disabled={formMode === "idle"}
@@ -712,7 +712,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Manteiga - P/Sabonete
+            Manteiga
             <select
               disabled={formMode === "idle"}
               value={form.manteiga}
@@ -735,7 +735,7 @@ export default function ModeloForm({
             </select>
           </label>
           <label style={{ display: "block" }}>
-            Manteiga (g) - P/Sabonete
+            Manteiga (g)
             <input
               type="number"
               disabled={formMode === "idle"}
