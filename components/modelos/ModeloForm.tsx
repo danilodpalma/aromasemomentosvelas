@@ -1228,7 +1228,7 @@ export default function ModeloForm({
           <p
             style={{
               margin: "0 0 12px",
-              color: COLORS.primaryDarkAlt,
+              color: COLORS.primaryDarkText,
               fontSize: 16,
             }}
           >
@@ -1453,7 +1453,7 @@ export default function ModeloForm({
           <p
             style={{
               margin: "0 0 12px",
-              color: COLORS.primaryDarkAlt,
+              color: COLORS.primaryDarkText,
               fontSize: 16,
             }}
           >
@@ -1713,7 +1713,7 @@ export default function ModeloForm({
           <p
             style={{
               margin: "0 0 12px",
-              color: COLORS.primaryDarkAlt,
+              color: COLORS.primaryDarkText,
               fontSize: 16,
             }}
           >
