@@ -1,5 +1,9 @@
 // components/modelos/ModeloForm.tsx
 import { RefObject } from "react";
+import {
+  formatCurrencyInput,
+  sanitizeCurrencyInput,
+} from "../../lib/currency";
 import { COLORS } from "../../styles/theme";
 
 type Insumo = {
@@ -71,6 +75,7 @@ type Props = {
   handleSubmit: (event: React.FormEvent) => void;
   startNew: () => void;
   resetForm: (shouldClearMessage?: boolean) => void;
+  handleProductTypeChange: (value: string) => void;
 };
 
 export default function ModeloForm({
@@ -95,6 +100,7 @@ export default function ModeloForm({
   handleSubmit,
   startNew,
   resetForm,
+  handleProductTypeChange,
 }: Props) {
   const fieldLabelStyle = {
     display: "block" as const,

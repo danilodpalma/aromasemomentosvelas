@@ -560,6 +560,7 @@ export default function Modelos() {
             handleSubmit={handleSubmit}
             startNew={startNew}
             resetForm={resetForm}
+            handleProductTypeChange={handleProductTypeChange}
           />
         )}
 
