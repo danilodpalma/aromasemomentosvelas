@@ -1112,7 +1112,7 @@ export default function ModeloForm({
             }}
           >
             <label style={fieldLabelStyle}>
-              Nome da vela
+              Nome do Produto
               <input
                 ref={nomeInputRef}
                 required
@@ -1132,7 +1132,7 @@ export default function ModeloForm({
               />
             </label>
             <label style={fieldLabelStyle}>
-              Tipo de produto
+              Tipo de Produto
               <select
                 disabled={formMode === "idle"}
                 value={form.tipoProduto}
@@ -1191,7 +1191,7 @@ export default function ModeloForm({
               </select>
               <div style={{ marginTop: 8 }}>
                 <label style={{ fontSize: 13, color: COLORS.primaryDarkText }}>
-                  Base secundária (opcional)
+                  Base Secundária (opcional)
                 </label>
                 <select
                   disabled={formMode === "idle"}
@@ -1277,23 +1277,6 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Essência (ml)
-            <input
-              type="number"
-              disabled={!isFieldEnabled(["Vela", "Sabonete"])}
-              value={form.esenciaMl}
-              onChange={(e) => setForm({ ...form, esenciaMl: e.target.value })}
-              style={{
-                width: "100%",
-                marginTop: 6,
-                padding: 8,
-                background: COLORS.white,
-                border: "1px solid rgb(166, 116, 71)",
-                borderRadius: 6,
-              }}
-            />
-          </label>
-          <label style={{ display: "block" }}>
             Essência Nome
             <select
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
@@ -1317,6 +1300,23 @@ export default function ModeloForm({
                 </option>
               ))}
             </select>
+          </label>
+          <label style={{ display: "block" }}>
+            Essência (ml)
+            <input
+              type="number"
+              disabled={!isFieldEnabled(["Vela", "Sabonete"])}
+              value={form.esenciaMl}
+              onChange={(e) => setForm({ ...form, esenciaMl: e.target.value })}
+              style={{
+                width: "100%",
+                marginTop: 6,
+                padding: 8,
+                background: COLORS.white,
+                border: "1px solid rgb(166, 116, 71)",
+                borderRadius: 6,
+              }}
+            />
           </label>
           <label style={{ display: "block" }}>
             Pavio
@@ -1721,7 +1721,7 @@ export default function ModeloForm({
             />
           </label>
           <label style={{ display: "block" }}>
-            Mão de obra (R$)
+            Mão de Obra (R$)
             <input
               type="text"
               inputMode="decimal"
