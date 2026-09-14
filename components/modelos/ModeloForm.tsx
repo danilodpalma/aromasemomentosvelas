@@ -1229,7 +1229,7 @@ export default function ModeloForm({
             style={{
               margin: "0 0 12px",
               color: COLORS.primaryDarkAlt,
-              fontSize: 13,
+              fontSize: 16,
             }}
           >
             Insumos para Velas e Sabonetes.
@@ -1454,7 +1454,7 @@ export default function ModeloForm({
             style={{
               margin: "0 0 12px",
               color: COLORS.primaryDarkAlt,
-              fontSize: 13,
+              fontSize: 16,
             }}
           >
             Insumos usados somente para Sabonetes.
@@ -1714,7 +1714,7 @@ export default function ModeloForm({
             style={{
               margin: "0 0 12px",
               color: COLORS.primaryDarkAlt,
-              fontSize: 13,
+              fontSize: 16,
             }}
           >
             Custos Fixos e Margem %.
