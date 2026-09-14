@@ -1457,6 +1457,17 @@ export default function ModeloForm({
             marginBottom: 16,
           }}
         >
+          <div style={{ marginTop: 16 }}>
+          <p
+            style={{
+              margin: "0 0 12px",
+              color: COLORS.primaryDarkAlt,
+              fontSize: 13,
+            }}
+          >
+            Insumos usados somente para Sabonetes.
+          </p>
+        </div>
           <label style={{ display: "block" }}>
             Extrato
             <select
