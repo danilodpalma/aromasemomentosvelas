@@ -41,7 +41,6 @@ export type CompraFormState = {
 
 type Props = {
   isCreating: boolean;
-  editingId: boolean;
   form: CompraFormState;
   setForm: React.Dispatch<React.SetStateAction<CompraFormState>>;
   isFormEditable: boolean;
@@ -61,7 +60,6 @@ type Props = {
 
 export default function CompraForm({
   isCreating,
-  editingId,
   form,
   setForm,
   isFormEditable,
@@ -438,7 +436,7 @@ export default function CompraForm({
               cursor: "pointer",
             }}
           >
-            {editingId ? "Salvar alterações" : "Salvar lançamento"}
+            {!isCreating ? "Salvar alterações" : "Salvar lançamento"}
           </button>
         </div>
       </form>
