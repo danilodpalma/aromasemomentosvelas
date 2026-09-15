@@ -197,7 +197,7 @@ export default function ModeloForm({
                   background: COLORS.white,
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  fontSize: 12,
+                  fontSize: 13,
                   boxSizing: "border-box",
                 }}
               />
@@ -215,7 +215,7 @@ export default function ModeloForm({
                   background: COLORS.white,
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  fontSize: 12,
+                  fontSize: 13,
                   boxSizing: "border-box",
                 }}
               >
@@ -231,7 +231,7 @@ export default function ModeloForm({
               <div
                 style={{
                   marginTop: 6,
-                  fontSize: 12,
+                  fontSize: 13,
                   color: COLORS.primaryDarkText,
                 }}
               ></div>
@@ -249,7 +249,7 @@ export default function ModeloForm({
                   background: COLORS.white,
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  fontSize: 12,
+                  fontSize: 13,
                   boxSizing: "border-box",
                 }}
               >
@@ -277,7 +277,7 @@ export default function ModeloForm({
                     background: COLORS.white,
                     border: "1px solid rgb(166, 116, 71)",
                     borderRadius: 8,
-                    fontSize: 12,
+                    fontSize: 13,
                     boxSizing: "border-box",
                   }}
                 >
