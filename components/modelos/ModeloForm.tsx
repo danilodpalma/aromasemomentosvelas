@@ -108,7 +108,7 @@ export default function ModeloForm({
   };
 
   const sectionCardStyle = {
-    padding: 14,
+    padding: 12,
     borderRadius: 12,
     border: "1px solid rgba(166, 116, 71, 0.24)",
     background: "rgba(255, 255, 255, 0.58)",
@@ -318,7 +318,7 @@ export default function ModeloForm({
             <input
               type="number"
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               value={form.ceraGr}
               onChange={(e) => setForm({ ...form, ceraGr: e.target.value })}
               style={{
@@ -335,7 +335,7 @@ export default function ModeloForm({
             Base 2 (g) (opcional)
             <input
               type="number"
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
               value={form.cera2Gr}
               onChange={(e) => setForm({ ...form, cera2Gr: e.target.value })}
@@ -366,7 +366,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhuma</option>
               {essencias.map((e) => (
                 <option key={e.id} value={e.name}>
                   {e.name}
@@ -378,7 +378,7 @@ export default function ModeloForm({
             Essência (ml)
             <input
               type="number"
-              placeholder="Qtd de ml que usa"
+              placeholder="ml"
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
               value={form.esenciaMl}
               onChange={(e) => setForm({ ...form, esenciaMl: e.target.value })}
@@ -407,7 +407,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {wicks.map((p) => (
                 <option key={p.id} value={p.name}>
                   {p.name}
@@ -432,7 +432,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {dyes.map((c) => (
                 <option key={c.id} value={c.name}>
                   {c.name}
@@ -473,7 +473,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {recipients.map((r) => (
                 <option key={r.id} value={r.name}>
                   {r.name}
@@ -496,7 +496,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhuma</option>
               {stones.map((p) => (
                 <option key={p.id} value={p.name}>
                   {p.name}
@@ -511,7 +511,7 @@ export default function ModeloForm({
               type="number"
               step={0.01}
               min={0}
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               value={form.pedraGr}
               onChange={(e) => setForm({ ...form, pedraGr: e.target.value })}
               style={{
@@ -559,7 +559,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {extracts.map((e) => (
                 <option key={e.id} value={e.name}>
                   {e.name}
@@ -571,7 +571,7 @@ export default function ModeloForm({
             Extrato (ml)
             <input
               type="number"
-              placeholder="Qtd de ml que usa"
+              placeholder="ml"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.extratoGr}
               onChange={(e) => setForm({ ...form, extratoGr: e.target.value })}
@@ -600,7 +600,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {surfactants.map((l) => (
                 <option key={l.id} value={l.name}>
                   {l.name}
@@ -612,7 +612,7 @@ export default function ModeloForm({
             Lauril (ml)
             <input
               type="number"
-              placeholder="Qtd de ml que usa"
+              placeholder="ml"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.laurilGr}
               onChange={(e) => setForm({ ...form, laurilGr: e.target.value })}
@@ -641,7 +641,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {oils.map((item) => (
                 <option key={item.id} value={item.name}>
                   {item.name}
@@ -653,7 +653,7 @@ export default function ModeloForm({
             Óleo (ml)
             <input
               type="number"
-              placeholder="Qtd de ml que usa"
+              placeholder="ml"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.oleoGr}
               onChange={(e) => setForm({ ...form, oleoGr: e.target.value })}
@@ -682,7 +682,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhuma</option>
               {clays.map((item) => (
                 <option key={item.id} value={item.name}>
                   {item.name}
@@ -694,7 +694,7 @@ export default function ModeloForm({
             Argila (g)
             <input
               type="number"
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.argilaGr}
               onChange={(e) => setForm({ ...form, argilaGr: e.target.value })}
@@ -723,7 +723,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhum</option>
               {dioxides.map((item) => (
                 <option key={item.id} value={item.name}>
                   {item.name}
@@ -735,7 +735,7 @@ export default function ModeloForm({
             Dióxido (g)
             <input
               type="number"
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.dioxidoGr}
               onChange={(e) => setForm({ ...form, dioxidoGr: e.target.value })}
@@ -764,7 +764,7 @@ export default function ModeloForm({
                 borderRadius: 6,
               }}
             >
-              <option value="">Opcional</option>
+              <option value="">Nenhuma</option>
               {butters.map((item) => (
                 <option key={item.id} value={item.name}>
                   {item.name}
@@ -776,7 +776,7 @@ export default function ModeloForm({
             Manteiga (g)
             <input
               type="number"
-              placeholder="Qtd de gramas que usa"
+              placeholder="g"
               disabled={!isFieldEnabled(["Sabonete"])}
               value={form.manteigaGr}
               onChange={(e) => setForm({ ...form, manteigaGr: e.target.value })}
@@ -815,7 +815,7 @@ export default function ModeloForm({
               type="text"
               inputMode="decimal"
               step="0.001"
-              placeholder="Somar tudo o que usa Ex.:Etiqueta, Fita, Caixa, etc."
+              placeholder="Somar o que usa. Ex.:Etiqueta, Fita, Caixa, etc."
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
               value={form.embalagem}
               onChange={(e) =>
@@ -879,7 +879,7 @@ export default function ModeloForm({
             Margem Lucro (%)
             <input
               type="number"
-              placeholder="Quanto será a Margem de Lucro que deseja aplicar"
+              placeholder="%"
               disabled={!isFieldEnabled(["Vela", "Sabonete"])}
               value={form.margemLucro}
               onChange={(e) =>
