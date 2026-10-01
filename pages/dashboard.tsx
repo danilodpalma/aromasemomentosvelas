@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatDateOnly } from "../lib/date";
 import { COLORS } from "../styles/theme";
 
 type Venda = {
@@ -323,7 +324,7 @@ export default function Dashboard() {
                     {venda.status}
                   </td>
                   <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
-                    {new Date(venda.dataVenda).toLocaleDateString("pt-BR")}
+                    {formatDateOnly(venda.dataVenda)}
                   </td>
                 </tr>
               ))

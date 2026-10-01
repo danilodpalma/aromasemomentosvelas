@@ -1,5 +1,6 @@
 // components/vendas/VendaTable.tsx
 import { COLORS } from "../../styles/theme";
+import { formatDateOnly } from "../../lib/date";
 
 type Venda = {
   id: number;
@@ -309,7 +310,7 @@ export default function VendaTable({
                       textAlign: "center",
                     }}
                   >
-                    {new Date(venda.dataVenda).toLocaleDateString()}
+                    {formatDateOnly(venda.dataVenda)}
                   </td>
                   <td
                     style={{
