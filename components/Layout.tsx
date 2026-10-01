@@ -5,7 +5,7 @@ import { useAuth } from "../context";
 import { COLORS } from "../styles/theme";
 
 const menuItems = [
-  { href: "/dashboard", label: "Resumo" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/insumos", label: "Insumos" },
   { href: "/modelos", label: "Modelos" },
   { href: "/calculo", label: "Cálculo" },

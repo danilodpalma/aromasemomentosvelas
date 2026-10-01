@@ -89,7 +89,7 @@ model Sale {
 }
 
 model Venda {
-  id             Int      @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   dataVenda      DateTime
   cliente        String
   modeloVela     String
@@ -99,7 +99,20 @@ model Venda {
   formaPagamento String
   status         String
   observacao     String?
+  createdAt      DateTime   @default(now())
+  itens          VendaItem[]
+}
+
+model VendaItem {
+  id             Int      @id @default(autoincrement())
+  vendaId        Int
+  modeloVela     String
+  quantidade     Int
+  precoUnitario  Float
+  total          Float
+  observacao     String?
   createdAt      DateTime @default(now())
+  venda          Venda    @relation(fields: [vendaId], references: [id])
 }
 
 model Compra {
@@ -129,7 +142,9 @@ model CompraItem {
 
 model ProductType {
   id        Int      @id @default(autoincrement())
-  name      String   @unique
+  name      String
   category  String   @default("productType")
   createdAt DateTime @default(now())
+
+  @@unique([name, category])
 }

@@ -76,6 +76,9 @@ export default function Estoque() {
       setEditingId(null);
       setDraftStock("");
       setMessage("Estoque atualizado com sucesso.");
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Erro ao atualizar o estoque.",
@@ -130,8 +133,16 @@ export default function Estoque() {
                 </td>
               </tr>
             ) : (
-              sortedInsumos.map((insumo) => (
-                <tr key={insumo.id}>
+              sortedInsumos.map((insumo, index) => (
+                <tr
+                  key={insumo.id}
+                  style={{
+                    background:
+                      index % 2 === 0
+                        ? COLORS.tableRowEven
+                        : COLORS.tableRowOdd,
+                  }}
+                >
                   <td
                     style={{
                       padding: 12,
@@ -218,11 +229,13 @@ export default function Estoque() {
                             onClick={cancelEdit}
                             style={{
                               padding: "10px 16px",
-                              background: COLORS.dangerLight,
+                              background: COLORS.cancelButtonBackground,
                               color: "white",
                               border: "none",
                               borderRadius: 6,
                               cursor: "pointer",
+                              fontWeight: 600,
+                              height: 40,
                             }}
                           >
                             Cancelar

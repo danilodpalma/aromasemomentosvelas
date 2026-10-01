@@ -12,6 +12,14 @@ type Venda = {
   formaPagamento: string;
   status: string;
   observacao?: string;
+  itens?: Array<{
+    id: number;
+    modeloVela: string;
+    quantidade: number;
+    precoUnitario: number;
+    total: number;
+    observacao?: string;
+  }>;
 };
 
 type Modelo = { id: number; nome: string };
@@ -30,10 +38,8 @@ type Props = {
   vendas: Venda[];
   isAuthenticated: boolean;
   canDelete: boolean;
-  selectedItems: Set<number>;
-  onToggleSelect: (id: number) => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
   filters: VendaFilters;
   setFilters: React.Dispatch<React.SetStateAction<VendaFilters>>;
   modelos: Modelo[];
@@ -46,8 +52,6 @@ export default function VendaTable({
   vendas,
   isAuthenticated,
   canDelete,
-  selectedItems,
-  onToggleSelect,
   onEdit,
   onDelete,
   filters,
@@ -77,43 +81,6 @@ export default function VendaTable({
         }}
       >
         <h3>Vendas Registradas</h3>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {isAuthenticated && (
-            <button
-              type="button"
-              onClick={onEdit}
-              disabled={selectedItems.size !== 1}
-              style={{
-                padding: "8px 16px",
-                background: selectedItems.size === 1 ? COLORS.primary : COLORS.gray,
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-              }}
-            >
-              Editar
-            </button>
-          )}
-          {canDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              disabled={selectedItems.size !== 1}
-              style={{
-                padding: "8px 16px",
-                background:
-                  selectedItems.size === 1 ? COLORS.dangerLight : COLORS.gray,
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-              }}
-            >
-              Excluir
-            </button>
-          )}
-        </div>
       </div>
       <div style={{ color: COLORS.grayText, fontSize: 14, marginTop: 8 }}>
         Exibindo {vendas.length} venda
@@ -160,7 +127,9 @@ export default function VendaTable({
             <input
               type="date"
               value={filters.dataFim}
-              onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, dataFim: e.target.value })
+              }
               style={{
                 width: "100%",
                 marginTop: 6,
@@ -176,7 +145,9 @@ export default function VendaTable({
             Cliente
             <input
               value={filters.cliente}
-              onChange={(e) => setFilters({ ...filters, cliente: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, cliente: e.target.value })
+              }
               style={{
                 width: "100%",
                 marginTop: 6,
@@ -217,7 +188,9 @@ export default function VendaTable({
             Status
             <select
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) =>
+                setFilters({ ...filters, status: e.target.value })
+              }
               style={{
                 width: "100%",
                 marginTop: 6,
@@ -259,7 +232,9 @@ export default function VendaTable({
                   {opt.name}
                 </option>
               ))}
-              <option value="Outros">Outros</option>
+              {!paymentMethods.some(
+                (method) => method.name.trim().toLowerCase() === "consignação",
+              ) && <option value="Consignação">Consignação</option>}
             </select>
           </label>
         </div>
@@ -288,7 +263,6 @@ export default function VendaTable({
         >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: 12, textAlign: "center" }}>Selecionar</th>
               <th style={{ padding: 12, textAlign: "center" }}>Data Venda</th>
               <th style={{ padding: 12, textAlign: "center" }}>Cliente</th>
               <th style={{ padding: 12, textAlign: "center" }}>Modelo</th>
@@ -300,114 +274,169 @@ export default function VendaTable({
               <th style={{ padding: 12, textAlign: "center" }}>Pagamento</th>
               <th style={{ padding: 12, textAlign: "center" }}>Status</th>
               <th style={{ padding: 12, textAlign: "center" }}>Observação</th>
+              <th style={{ padding: 12, textAlign: "center" }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {vendas.map((venda, index) => (
-              <tr
-                key={venda.id}
-                style={{
-                  background:
-                    index % 2 === 0 ? "rgba(255, 255, 255, 0.92)" : "transparent",
-                }}
-              >
-                <td
+            {vendas.map((venda, index) => {
+              const modeloResumo =
+                venda.itens && venda.itens.length > 0
+                  ? venda.itens.map((item) => item.modeloVela).join(" / ")
+                  : venda.modeloVela;
+              const quantidadeTotal =
+                venda.itens && venda.itens.length > 0
+                  ? venda.itens.reduce((sum, item) => sum + item.quantidade, 0)
+                  : venda.quantidade;
+              const precoMedio =
+                venda.total > 0 && quantidadeTotal > 0
+                  ? venda.total / quantidadeTotal
+                  : venda.precoUnitario;
+
+              return (
+                <tr
+                  key={venda.id}
                   style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
+                    background:
+                      index % 2 === 0
+                        ? COLORS.tableRowEven
+                        : COLORS.tableRowOdd,
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.has(venda.id)}
-                    onChange={() => onToggleSelect(venda.id)}
-                    style={{ width: 18, height: 18 }}
-                  />
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {new Date(venda.dataVenda).toLocaleDateString()}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.cliente}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.modeloVela}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.quantidade}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  R$ {venda.precoUnitario.toFixed(2)}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  R$ {venda.total.toFixed(2)}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.formaPagamento}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.status}
-                </td>
-                <td
-                  style={{
-                    padding: 12,
-                    borderTop: "1px solid rgb(167, 117, 75)",
-                    textAlign: "center",
-                  }}
-                >
-                  {venda.observacao}
-                </td>
-              </tr>
-            ))}
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {new Date(venda.dataVenda).toLocaleDateString()}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {venda.cliente}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {modeloResumo}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {quantidadeTotal}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    R$ {precoMedio.toFixed(2)}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    R$ {venda.total.toFixed(2)}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {venda.formaPagamento}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {venda.status}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    {venda.observacao}
+                  </td>
+                  <td
+                    style={{
+                      padding: 8,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: 6,
+                      }}
+                    >
+                      {isAuthenticated && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(venda.id)}
+                          aria-label={`Editar venda de ${venda.cliente}`}
+                          style={{
+                            padding: "5px 8px",
+                            background: COLORS.primary,
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Editar
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(venda.id)}
+                          aria-label={`Excluir venda de ${venda.cliente}`}
+                          style={{
+                            padding: "5px 8px",
+                            background: COLORS.dangerLight,
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

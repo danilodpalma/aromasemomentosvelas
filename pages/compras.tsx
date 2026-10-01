@@ -6,7 +6,6 @@ import { COLORS } from "../styles/theme";
 import CompraForm, { CompraFormState } from "../components/compras/CompraForm";
 import CompraTable from "../components/compras/CompraTable";
 
-
 type Insumo = {
   id: number;
   name: string;
@@ -293,6 +292,9 @@ export default function Compras() {
     resetForm();
     const refreshed = await fetch("/api/compras");
     setCompras(await refreshed.json());
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   async function deleteCompra(id: number) {
@@ -308,7 +310,9 @@ export default function Compras() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 6, color: COLORS.primaryDark }}>Compras e despesas</h2>
+      <h2 style={{ marginBottom: 6, color: COLORS.primaryDark }}>
+        Compras e despesas
+      </h2>
       <p style={{ marginTop: 0, color: COLORS.primaryDarkAlt }}>
         Registre compras de insumos e despesas financeiras, com atualização
         automática do estoque quando a compra for aprovada.

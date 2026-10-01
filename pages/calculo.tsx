@@ -111,6 +111,9 @@ export default function Calculo() {
       return newObj;
     });
     setMessage("Valor salvo com sucesso.");
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   // Limpar valor vendido
@@ -399,11 +402,19 @@ export default function Calculo() {
                 </td>
               </tr>
             ) : (
-              modelos.map((modelo) => {
+              modelos.map((modelo, index) => {
                 const values = calculateCosts(modelo);
                 return (
                   <>
-                    <tr key={modelo.id}>
+                    <tr
+                      key={modelo.id}
+                      style={{
+                        background:
+                          index % 2 === 0
+                            ? COLORS.tableRowEven
+                            : COLORS.tableRowOdd,
+                      }}
+                    >
                       <td
                         style={{
                           padding: 12,
@@ -525,7 +536,9 @@ export default function Calculo() {
                               <input
                                 type="text"
                                 value={
-                                  tempValues[modelo.id] ?? calculos[modelo.id] ?? ""
+                                  tempValues[modelo.id] ??
+                                  calculos[modelo.id] ??
+                                  ""
                                 }
                                 onChange={(e) =>
                                   updateTempValue(modelo.id, e.target.value)
@@ -536,7 +549,10 @@ export default function Calculo() {
                                     if (!current) return prev;
                                     return {
                                       ...prev,
-                                      [modelo.id]: formatCurrencyInput(current, 3),
+                                      [modelo.id]: formatCurrencyInput(
+                                        current,
+                                        3,
+                                      ),
                                     };
                                   })
                                 }
@@ -584,9 +600,7 @@ export default function Calculo() {
                               </button>
                             </>
                           ) : (
-                            <span>
-                              R$ {calculos[modelo.id] ?? "0.00"}
-                            </span>
+                            <span>R$ {calculos[modelo.id] ?? "0.00"}</span>
                           )}
                         </div>
                       </td>

@@ -27,8 +27,11 @@ export default function Usuarios() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("VIEWER");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
   const [loadingList, setLoadingList] = useState(true);
+  const isFormActive = isCreating || editingId !== null;
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
@@ -60,22 +63,39 @@ export default function Usuarios() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isFormActive) return;
     setMessage("");
 
     try {
-      const res = await authFetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, role }),
-      });
+      const res = await authFetch(
+        editingId ? `/api/users?id=${editingId}` : "/api/users",
+        {
+          method: editingId ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, role }),
+        },
+      );
       const data = await res.json();
 
       if (res.ok) {
-        setUsers((prev) => [...prev, data]);
+        setUsers((prev) =>
+          editingId
+            ? prev.map((user) => (user.id === data.id ? data : user))
+            : [...prev, data],
+        );
         setName("");
         setEmail("");
         setRole("VIEWER");
-        setMessage("Usuário cadastrado com sucesso.");
+        setEditingId(null);
+        setIsCreating(false);
+        setMessage(
+          editingId
+            ? "Usuário atualizado com sucesso."
+            : "Usuário cadastrado com sucesso.",
+        );
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       } else {
         setMessage(data.error || "Erro ao cadastrar usuário.");
       }
@@ -84,12 +104,43 @@ export default function Usuarios() {
     }
   }
 
+  function startNew() {
+    setEditingId(null);
+    setName("");
+    setEmail("");
+    setRole("VIEWER");
+    setIsCreating(true);
+    setMessage("");
+  }
+
+  function startEdit(user: UserRow) {
+    setEditingId(user.id);
+    setIsCreating(false);
+    setName(user.name);
+    setEmail(user.email);
+    setRole(user.role);
+    setMessage("Edição de usuário ativa. Faça as alterações e salve.");
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  function cancelForm() {
+    setEditingId(null);
+    setIsCreating(false);
+    setName("");
+    setEmail("");
+    setRole("VIEWER");
+    setMessage("");
+  }
+
   async function handleDelete(id: number) {
     if (!confirm("Remover o acesso deste usuário?")) return;
     try {
       const res = await authFetch(`/api/users?id=${id}`, { method: "DELETE" });
       if (res.ok || res.status === 204) {
         setUsers((prev) => prev.filter((u) => u.id !== id));
+        if (editingId === id) cancelForm();
         setMessage("Usuário removido.");
       } else {
         const data = await res.json().catch(() => ({}));
@@ -117,9 +168,10 @@ export default function Usuarios() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: message.includes("sucesso") || message.includes("removido")
-              ? COLORS.successBg
-              : "#fef2f2",
+            background:
+              message.includes("sucesso") || message.includes("removido")
+                ? COLORS.successBg
+                : "#fef2f2",
             border: COLORS.cardBorder,
             borderRadius: 8,
           }}
@@ -148,9 +200,41 @@ export default function Usuarios() {
             border: COLORS.cardBorder,
           }}
         >
-          <h3 style={{ margin: "0 0 12px", color: COLORS.primaryDark }}>
-            Novo usuário
-          </h3>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
+              {editingId
+                ? "Editar usuário"
+                : isCreating
+                  ? "Novo usuário"
+                  : "Usuários"}
+            </h3>
+            {!isFormActive && (
+              <button
+                type="button"
+                onClick={startNew}
+                style={{
+                  padding: "8px 14px",
+                  background: COLORS.newButtonGradient,
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                + Novo
+              </button>
+            )}
+          </div>
           <form
             onSubmit={handleSubmit}
             style={{
@@ -163,6 +247,7 @@ export default function Usuarios() {
             <label style={{ fontWeight: 600, color: COLORS.primaryDark }}>
               Nome
               <input
+                disabled={!isFormActive}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -172,13 +257,14 @@ export default function Usuarios() {
                   padding: "8px 10px",
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  background: "#fff",
+                  background: isFormActive ? "#fff" : COLORS.grayLight,
                 }}
               />
             </label>
             <label style={{ fontWeight: 600, color: COLORS.primaryDark }}>
               E-mail
               <input
+                disabled={!isFormActive}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -189,13 +275,14 @@ export default function Usuarios() {
                   padding: "8px 10px",
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  background: "#fff",
+                  background: isFormActive ? "#fff" : COLORS.grayLight,
                 }}
               />
             </label>
             <label style={{ fontWeight: 600, color: COLORS.primaryDark }}>
               Perfil
               <select
+                disabled={!isFormActive}
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 style={{
@@ -204,7 +291,7 @@ export default function Usuarios() {
                   padding: "8px 10px",
                   border: "1px solid rgb(166, 116, 71)",
                   borderRadius: 8,
-                  background: "#fff",
+                  background: isFormActive ? "#fff" : COLORS.grayLight,
                 }}
               >
                 <option value="VIEWER">Visualizador</option>
@@ -214,6 +301,7 @@ export default function Usuarios() {
             </label>
             <button
               type="submit"
+              disabled={!isFormActive}
               style={{
                 padding: "10px 16px",
                 background: `linear-gradient(135deg, ${COLORS.buttonGradientFrom} 0%, ${COLORS.buttonGradientTo} 100%)`,
@@ -221,12 +309,31 @@ export default function Usuarios() {
                 border: "none",
                 borderRadius: 999,
                 fontWeight: 600,
-                cursor: "pointer",
+                cursor: isFormActive ? "pointer" : "not-allowed",
                 height: 40,
+                opacity: isFormActive ? 1 : 0.6,
               }}
             >
-              Cadastrar
+              {editingId ? "Atualizar" : "Cadastrar"}
             </button>
+            {isFormActive && (
+              <button
+                type="button"
+                onClick={cancelForm}
+                style={{
+                  padding: "10px 16px",
+                  background: COLORS.cancelButtonBackground,
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  height: 40,
+                }}
+              >
+                Cancelar
+              </button>
+            )}
           </form>
         </section>
 
@@ -257,7 +364,10 @@ export default function Usuarios() {
               <tbody>
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ padding: 16, textAlign: "center" }}>
+                    <td
+                      colSpan={4}
+                      style={{ padding: 16, textAlign: "center" }}
+                    >
                       Nenhum usuário cadastrado ainda.
                     </td>
                   </tr>
@@ -295,6 +405,21 @@ export default function Usuarios() {
                           textAlign: "center",
                         }}
                       >
+                        <button
+                          type="button"
+                          onClick={() => startEdit(u)}
+                          style={{
+                            padding: "6px 10px",
+                            marginRight: 6,
+                            background: COLORS.primary,
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Editar
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(u.id)}

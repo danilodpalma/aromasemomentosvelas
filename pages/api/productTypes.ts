@@ -10,6 +10,7 @@ const validCategories = [
   "saleStatus",
   "purchaseStatus",
   "purchaseType",
+  "netWithdrawalPercent",
 ];
 
 export default withApiErrorHandling(async function handler(
@@ -49,12 +50,31 @@ export default withApiErrorHandling(async function handler(
     const { name, category: bodyCategory } = req.body;
     if (!name) return res.status(400).json({ error: "Nome é obrigatório." });
 
+    const finalCategory = validCategories.includes(bodyCategory)
+      ? bodyCategory
+      : "productType";
+    const finalName = String(name).trim();
+    if (finalCategory === "netWithdrawalPercent") {
+      const percentage = Number(finalName);
+      if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
+        return res
+          .status(400)
+          .json({ error: "Informe um percentual entre 0 e 100." });
+      }
+    }
+    const duplicate = await prisma.productType.findFirst({
+      where: { name: finalName, category: finalCategory },
+    });
+    if (duplicate) {
+      return res.status(409).json({
+        error: "Já existe um parâmetro com esse nome nesta categoria.",
+      });
+    }
+
     const created = await prisma.productType.create({
       data: {
-        name,
-        category: validCategories.includes(bodyCategory)
-          ? bodyCategory
-          : "productType",
+        name: finalName,
+        category: finalCategory,
       } as any,
     });
     res.status(201).json(created);
@@ -69,13 +89,32 @@ export default withApiErrorHandling(async function handler(
     if (!existing)
       return res.status(404).json({ error: "Tipo não encontrado." });
 
+    const finalCategory = validCategories.includes(bodyCategory)
+      ? bodyCategory
+      : existing.category;
+    const finalName = String(name ?? existing.name).trim();
+    if (finalCategory === "netWithdrawalPercent") {
+      const percentage = Number(finalName);
+      if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
+        return res
+          .status(400)
+          .json({ error: "Informe um percentual entre 0 e 100." });
+      }
+    }
+    const duplicate = await prisma.productType.findFirst({
+      where: { name: finalName, category: finalCategory, id: { not: id } },
+    });
+    if (duplicate) {
+      return res.status(409).json({
+        error: "Já existe um parâmetro com esse nome nesta categoria.",
+      });
+    }
+
     const updated = await prisma.productType.update({
       where: { id },
       data: {
-        name: name ?? existing.name,
-        category: validCategories.includes(bodyCategory)
-          ? bodyCategory
-          : existing.category,
+        name: finalName,
+        category: finalCategory,
       } as any,
     });
     res.status(200).json(updated);

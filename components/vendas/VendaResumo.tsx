@@ -18,6 +18,7 @@ export default function VendaResumo({ resumo }: Props) {
     <div
       style={{
         background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+        marginTop: 24,
         padding: 20,
         borderRadius: 14,
         boxShadow: COLORS.cardShadow,
@@ -41,7 +42,9 @@ export default function VendaResumo({ resumo }: Props) {
           }}
         >
           <strong>Total Vendido</strong>
-          <div style={{ marginTop: 8 }}>R$ {resumo.totalVendido.toFixed(2)}</div>
+          <div style={{ marginTop: 8 }}>
+            R$ {resumo.totalVendido.toFixed(2)}
+          </div>
         </div>
         <div
           style={{

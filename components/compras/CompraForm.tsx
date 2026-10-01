@@ -102,7 +102,7 @@ export default function CompraForm({
           onClick={startNew}
           style={{
             padding: "8px 16px",
-            background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+            background: COLORS.newButtonGradient,
             color: "white",
             border: "none",
             borderRadius: 999,
@@ -415,11 +415,13 @@ export default function CompraForm({
             onClick={resetForm}
             style={{
               padding: "10px 16px",
-              background: COLORS.dangerLight,
+              background: COLORS.cancelButtonBackground,
               color: "white",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
+              fontWeight: 600,
+              height: 40,
             }}
           >
             Cancelar

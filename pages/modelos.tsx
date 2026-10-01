@@ -97,7 +97,6 @@ export default function Modelos() {
   });
   const [message, setMessage] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
   function normalizeModelName(value: string) {
@@ -137,27 +136,7 @@ export default function Modelos() {
     .filter((m) => m.nome.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 
-  // Alternar seleção de item
-  function toggleSelect(id: number) {
-    if (selectedItems.has(id)) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set([id]));
-    }
-  }
-
-  // Editar itens selecionados
-  function editSelected() {
-    if (selectedItems.size === 1) {
-      const item = modelos.find((m) => m.id === Array.from(selectedItems)[0]);
-      if (item) startEdit(item);
-    }
-  }
-
-  async function deleteSelected() {
-    if (selectedItems.size !== 1) return;
-
-    const id = Array.from(selectedItems)[0];
+  async function deleteModelo(id: number) {
     const item = modelos.find((m) => m.id === id);
     if (!item) return;
 
@@ -170,7 +149,6 @@ export default function Modelos() {
       });
       if (response.ok || response.status === 204) {
         setModelos((prev) => prev.filter((m) => m.id !== id));
-        setSelectedItems(new Set());
         if (editingId === id) {
           resetForm(true);
         }
@@ -262,7 +240,6 @@ export default function Modelos() {
     if (shouldClearMessage) {
       setMessage("");
     }
-    setSelectedItems(new Set());
   }
 
   function startNew() {
@@ -300,7 +277,6 @@ export default function Modelos() {
       maoDeObra: "",
       margemLucro: "",
     });
-    setSelectedItems(new Set());
     setMessage("");
   }
 
@@ -341,6 +317,11 @@ export default function Modelos() {
     });
     setMessage("Edição de modelo ativa. Faça as alterações e salve.");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function editModelo(id: number) {
+    const modelo = modelos.find((item) => item.id === id);
+    if (modelo) startEdit(modelo);
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -417,6 +398,9 @@ export default function Modelos() {
           resetForm();
           setMessage("Modelo cadastrado com sucesso.");
         }
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       } else {
         setMessage(parsed?.error || "Erro ao salvar modelo.");
       }
@@ -567,15 +551,12 @@ export default function Modelos() {
           filteredModelos={filteredModelos}
           isAuthenticated={isAuthenticated}
           canDelete={canDelete}
-          selectedItems={selectedItems}
-          toggleSelect={toggleSelect}
-          editSelected={editSelected}
-          deleteSelected={deleteSelected}
+          onEdit={editModelo}
+          onDelete={deleteModelo}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           showActiveOnly={showActiveOnly}
           setShowActiveOnly={setShowActiveOnly}
-          setSelectedItems={setSelectedItems}
         />
       </div>
     </div>

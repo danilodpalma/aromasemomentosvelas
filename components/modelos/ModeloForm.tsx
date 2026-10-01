@@ -161,7 +161,7 @@ export default function ModeloForm({
           onClick={startNew}
           style={{
             padding: "8px 16px",
-            background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+            background: COLORS.newButtonGradient,
             color: "white",
             border: "none",
             borderRadius: 999,
@@ -177,7 +177,7 @@ export default function ModeloForm({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
               gap: 10,
             }}
           >
@@ -236,6 +236,15 @@ export default function ModeloForm({
                 }}
               ></div>
             </label>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 10,
+              marginTop: 10,
+            }}
+          >
             <label style={fieldLabelStyle}>
               Base
               <select
@@ -260,35 +269,33 @@ export default function ModeloForm({
                   </option>
                 ))}
               </select>
-              <div style={{ marginTop: 8 }}>
-                <label style={{ fontSize: 13, color: COLORS.primaryDarkText }}>
-                  Base Secundária (opcional)
-                </label>
-                <select
-                  disabled={formMode === "idle"}
-                  value={form.base2Nome}
-                  onChange={(e) =>
-                    setForm({ ...form, base2Nome: e.target.value })
-                  }
-                  style={{
-                    width: "100%",
-                    marginTop: 6,
-                    padding: "8px 10px",
-                    background: COLORS.white,
-                    border: "1px solid rgb(166, 116, 71)",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <option value="">Opcional</option>
-                  {bases.map((insumo) => (
-                    <option key={insumo.id} value={insumo.name}>
-                      {insumo.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            </label>
+            <label style={fieldLabelStyle}>
+              Base Secundária (opcional)
+              <select
+                disabled={formMode === "idle"}
+                value={form.base2Nome}
+                onChange={(e) =>
+                  setForm({ ...form, base2Nome: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  marginTop: 6,
+                  padding: "8px 10px",
+                  background: COLORS.white,
+                  border: "1px solid rgb(166, 116, 71)",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  boxSizing: "border-box",
+                }}
+              >
+                <option value="">Opcional</option>
+                {bases.map((insumo) => (
+                  <option key={insumo.id} value={insumo.name}>
+                    {insumo.name}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
         </div>
@@ -415,6 +422,15 @@ export default function ModeloForm({
               ))}
             </select>
           </label>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: 10,
+            marginTop: 10,
+          }}
+        >
           <label style={{ display: "block" }}>
             Nome do Corante
             <select
@@ -976,11 +992,13 @@ export default function ModeloForm({
               onClick={() => resetForm(true)}
               style={{
                 padding: "10px 16px",
-                background: "rgb(107, 114, 128)",
+                background: COLORS.cancelButtonBackground,
                 color: "white",
                 border: "none",
-                borderRadius: 999,
+                borderRadius: 6,
                 fontWeight: 600,
+                cursor: "pointer",
+                height: 40,
               }}
             >
               Cancelar

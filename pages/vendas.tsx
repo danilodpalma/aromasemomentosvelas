@@ -18,6 +18,14 @@ type Venda = {
   formaPagamento: string;
   status: string;
   observacao?: string;
+  itens?: Array<{
+    id: number;
+    modeloVela: string;
+    quantidade: number;
+    precoUnitario: number;
+    total: number;
+    observacao?: string;
+  }>;
 };
 
 type Modelo = {
@@ -49,6 +57,8 @@ type Parameter = {
   category: string;
 };
 
+type MessageKind = "success" | "error" | "info";
+
 export default function Vendas() {
   const { isAuthenticated, canDelete } = useAuth();
   const [vendas, setVendas] = useState<Venda[]>([]);
@@ -63,34 +73,90 @@ export default function Vendas() {
     status: "",
     formaPagamento: "",
   });
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [form, setForm] = useState<VendaFormState>({
     dataVenda: "",
     cliente: "",
-    modeloVela: "",
-    quantidade: "",
-    precoUnitario: "",
     formaPagamento: "",
     status: "",
     observacao: "",
+    itens: [
+      { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
+    ],
   });
   const [message, setMessage] = useState<string>("");
+  const [messageKind, setMessageKind] = useState<MessageKind>("info");
   const [paymentMethods, setPaymentMethods] = useState<Parameter[]>([]);
   const [saleStatuses, setSaleStatuses] = useState<Parameter[]>([]);
   const dataVendaInputRef = useRef<HTMLInputElement>(null);
+  const vendasLista = Array.isArray(vendas) ? vendas : [];
+
+  function showMessage(text: string, kind: MessageKind = "success") {
+    setMessage(text);
+    setMessageKind(kind);
+  }
 
   useEffect(() => {
     async function load() {
-      const [vendasRes, modelosRes, paymentRes, statusRes] = await Promise.all([
-        fetch("/api/vendas"),
-        fetch("/api/modelos"),
-        fetch("/api/productTypes?category=paymentMethod"),
-        fetch("/api/productTypes?category=saleStatus"),
-      ]);
-      setVendas(await vendasRes.json());
-      setModelos(await modelosRes.json());
-      setPaymentMethods(await paymentRes.json());
-      setSaleStatuses(await statusRes.json());
+      try {
+        const [vendasRes, modelosRes, paymentRes, statusRes] =
+          await Promise.all([
+            fetch("/api/vendas"),
+            fetch("/api/modelos"),
+            fetch("/api/productTypes?category=paymentMethod"),
+            fetch("/api/productTypes?category=saleStatus"),
+          ]);
+        const [vendasData, modelosData, paymentData, statusData]: unknown[] =
+          await Promise.all([
+            vendasRes.json(),
+            modelosRes.json(),
+            paymentRes.json(),
+            statusRes.json(),
+          ]);
+
+        const responses = [
+          { name: "vendas", response: vendasRes, data: vendasData },
+          { name: "modelos", response: modelosRes, data: modelosData },
+          {
+            name: "formas de pagamento",
+            response: paymentRes,
+            data: paymentData,
+          },
+          { name: "status", response: statusRes, data: statusData },
+        ];
+        const failedResponse = responses.find(
+          ({ response, data }) => !response.ok || !Array.isArray(data),
+        );
+
+        setVendas(Array.isArray(vendasData) ? (vendasData as Venda[]) : []);
+        setModelos(Array.isArray(modelosData) ? (modelosData as Modelo[]) : []);
+        setPaymentMethods(
+          Array.isArray(paymentData) ? (paymentData as Parameter[]) : [],
+        );
+        setSaleStatuses(
+          Array.isArray(statusData) ? (statusData as Parameter[]) : [],
+        );
+
+        if (failedResponse) {
+          const errorData = failedResponse.data;
+          const detail =
+            typeof errorData === "object" &&
+            errorData !== null &&
+            "error" in errorData &&
+            typeof errorData.error === "string"
+              ? errorData.error
+              : "resposta inválida da API";
+          showMessage(
+            `Erro ao carregar ${failedResponse.name}: ${detail}`,
+            "error",
+          );
+        }
+      } catch {
+        setVendas([]);
+        showMessage(
+          "Não foi possível carregar as vendas. Verifique a conexão e tente novamente.",
+          "error",
+        );
+      }
     }
 
     load();
@@ -107,16 +173,15 @@ export default function Vendas() {
   function resetForm() {
     setEditingId(null);
     setFormMode("idle");
-    setSelectedItems(new Set());
     setForm({
       dataVenda: "",
       cliente: "",
-      modeloVela: "",
-      quantidade: "",
-      precoUnitario: "",
       formaPagamento: "",
       status: "",
       observacao: "",
+      itens: [
+        { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
+      ],
     });
     setMessage("");
   }
@@ -124,16 +189,15 @@ export default function Vendas() {
   function startNew() {
     setEditingId(null);
     setFormMode("new");
-    setSelectedItems(new Set());
     setForm({
       dataVenda: "",
       cliente: "",
-      modeloVela: "",
-      quantidade: "",
-      precoUnitario: "",
       formaPagamento: "",
       status: "",
       observacao: "",
+      itens: [
+        { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
+      ],
     });
     setMessage("");
   }
@@ -141,64 +205,66 @@ export default function Vendas() {
   function startEdit(venda: Venda) {
     setEditingId(venda.id);
     setFormMode("edit");
+    const itemRows =
+      venda.itens && venda.itens.length > 0
+        ? venda.itens.map((item) => ({
+            modeloVela: item.modeloVela,
+            quantidade: item.quantidade.toString(),
+            precoUnitario: formatCurrencyInput(item.precoUnitario, 2),
+            observacao: item.observacao ?? "",
+          }))
+        : [
+            {
+              modeloVela: venda.modeloVela,
+              quantidade: venda.quantidade.toString(),
+              precoUnitario: formatCurrencyInput(venda.precoUnitario, 2),
+              observacao: venda.observacao ?? "",
+            },
+          ];
+
     setForm({
       dataVenda: venda.dataVenda.split("T")[0],
       cliente: venda.cliente,
-      modeloVela: venda.modeloVela,
-      quantidade: venda.quantidade.toString(),
-      precoUnitario: formatCurrencyInput(venda.precoUnitario, 3),
       formaPagamento: venda.formaPagamento,
       status: venda.status,
       observacao: venda.observacao ?? "",
+      itens: itemRows,
     });
-    setMessage("Edição de venda ativa. Faça as alterações e salve.");
+    showMessage("Edição de venda ativa. Faça as alterações e salve.", "info");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function toggleSelect(id: number) {
-    if (selectedItems.has(id)) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set([id]));
-    }
-  }
-
-  function editSelected() {
-    if (selectedItems.size === 1) {
-      const selectedId = Array.from(selectedItems)[0];
-      const venda = vendas.find((v) => v.id === selectedId);
-      if (venda) {
-        startEdit(venda);
-      }
-    }
-  }
-
-  function deleteSelected() {
-    if (selectedItems.size === 1) {
-      const selectedId = Array.from(selectedItems)[0];
-      deleteVenda(selectedId);
-    }
+  function editVenda(id: number) {
+    const venda = vendasLista.find((item) => item.id === id);
+    if (venda) startEdit(venda);
   }
 
   async function deleteVenda(id: number) {
     if (!confirm("Tem certeza que deseja excluir esta venda?")) return;
 
-    const response = await authFetch(`/api/vendas?id=${id}`, { method: "DELETE" });
+    const response = await authFetch(`/api/vendas?id=${id}`, {
+      method: "DELETE",
+    });
     if (response.ok) {
-      setVendas((prev) => prev.filter((v) => v.id !== id));
-      setSelectedItems(new Set());
-      setMessage("Venda excluída com sucesso.");
+      setVendas((prev) =>
+        Array.isArray(prev) ? prev.filter((v) => v.id !== id) : [],
+      );
+      showMessage("Venda excluída com sucesso.");
     } else {
       const error = await response.json();
-      setMessage(error.error || "Erro ao excluir venda.");
+      showMessage(error.error || "Erro ao excluir venda.", "error");
     }
   }
 
   async function suggestPrice() {
-    if (!form.modeloVela) {
-      setMessage("Selecione um modelo primeiro.");
+    const selectedItemIndex = form.itens.findIndex((item) => item.modeloVela);
+
+    if (selectedItemIndex === -1) {
+      showMessage("Selecione um modelo primeiro.", "error");
       return;
     }
+
+    const selectedModel = form.itens[selectedItemIndex].modeloVela;
 
     const [insumosRes, modelosRes] = await Promise.all([
       fetch("/api/products"),
@@ -206,10 +272,10 @@ export default function Vendas() {
     ]);
     const insumos = await insumosRes.json();
     const modelosData = await modelosRes.json();
-    const modelo = modelosData.find((m: Modelo) => m.nome === form.modeloVela);
+    const modelo = modelosData.find((m: Modelo) => m.nome === selectedModel);
 
     if (!modelo) {
-      setMessage("Modelo não encontrado.");
+      showMessage("Modelo não encontrado.", "error");
       return;
     }
 
@@ -250,20 +316,63 @@ export default function Vendas() {
       totalCost * (1 + modelo.margemLucro / 100),
     );
 
-    setForm({ ...form, precoUnitario: formatCurrencyInput(priceSuggested, 3) });
-    setMessage(`Preço sugerido calculado: R$ ${priceSuggested.toFixed(3)}`);
+    setForm((prev) => ({
+      ...prev,
+      itens: prev.itens.map((item, index) =>
+        index === selectedItemIndex
+          ? { ...item, precoUnitario: formatCurrencyInput(priceSuggested, 3) }
+          : item,
+      ),
+    }));
+    showMessage(`Preço sugerido calculado: R$ ${priceSuggested.toFixed(3)}`);
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (formMode === "idle") return;
 
+    const itemRows = form.itens.filter(
+      (item) => item.modeloVela && Number(item.quantidade || 0) > 0,
+    );
+
+    if (itemRows.length === 0) {
+      showMessage(
+        "Adicione pelo menos um item com quantidade válida.",
+        "error",
+      );
+      return;
+    }
+
     const method = editingId ? "PATCH" : "POST";
     const url = editingId ? `/api/vendas?id=${editingId}` : "/api/vendas";
 
+    const normalizedItens = itemRows.map((item) => ({
+      modeloVela: item.modeloVela,
+      quantidade: Number(item.quantidade || 0),
+      precoUnitario: parseCurrencyInput(item.precoUnitario || "0"),
+      observacao: item.observacao || "",
+    }));
+
+    const firstItem = normalizedItens[0];
+    const totalPedido = normalizedItens.reduce(
+      (sum, item) => sum + item.quantidade * item.precoUnitario,
+      0,
+    );
+
     const payload = {
-      ...form,
-      precoUnitario: parseCurrencyInput(form.precoUnitario),
+      dataVenda: form.dataVenda,
+      cliente: form.cliente,
+      modeloVela: firstItem.modeloVela,
+      quantidade: normalizedItens.reduce(
+        (sum, item) => sum + item.quantidade,
+        0,
+      ),
+      precoUnitario: firstItem.precoUnitario,
+      total: totalPedido,
+      formaPagamento: form.formaPagamento,
+      status: form.status,
+      observacao: form.observacao,
+      itens: normalizedItens,
     };
 
     const response = await authFetch(url, {
@@ -276,37 +385,48 @@ export default function Vendas() {
       const saved = await response.json();
       if (editingId) {
         setVendas((prev) =>
-          prev.map((item) => (item.id === saved.id ? saved : item)),
+          Array.isArray(prev)
+            ? prev.map((item) => (item.id === saved.id ? saved : item))
+            : [saved],
         );
-        setMessage("Venda atualizada com sucesso.");
       } else {
-        setVendas((prev) => [saved, ...prev]);
-        setMessage("Venda registrada com sucesso.");
+        setVendas((prev) => [saved, ...(Array.isArray(prev) ? prev : [])]);
       }
       resetForm();
+      showMessage(
+        editingId
+          ? "Venda atualizada com sucesso."
+          : "Venda registrada com sucesso.",
+      );
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     } else {
       const error = await response.json();
-      setMessage(error.error || "Erro ao salvar venda.");
+      showMessage(error.error || "Erro ao salvar venda.", "error");
     }
   }
 
   function calculateResumo() {
-    const totalVendido = vendas.reduce((sum, v) => sum + v.total, 0);
-    const totalVelasVendidas = vendas.reduce((sum, v) => sum + v.quantidade, 0);
+    const totalVendido = vendasLista.reduce((sum, v) => sum + v.total, 0);
+    const totalVelasVendidas = vendasLista.reduce(
+      (sum, v) => sum + v.quantidade,
+      0,
+    );
     const receita = totalVendido;
 
     const paymentSummary = paymentMethods.map((method) => {
-      const value = vendas
+      const value = vendasLista
         .filter((v) => v.formaPagamento === method.name)
         .reduce((sum, v) => sum + v.total, 0);
-      const count = vendas.filter(
+      const count = vendasLista.filter(
         (v) => v.formaPagamento === method.name,
       ).length;
       return { name: method.name, value, count };
     });
 
     const statusSummary = saleStatuses.map((status) => {
-      const count = vendas.filter((v) => v.status === status.name).length;
+      const count = vendasLista.filter((v) => v.status === status.name).length;
       return { name: status.name, count };
     });
 
@@ -341,7 +461,7 @@ export default function Vendas() {
   const filteredVendas = getFilteredVendas();
 
   function getFilteredVendas() {
-    return vendas.filter((venda) => {
+    return vendasLista.filter((venda) => {
       const vendaDate = new Date(venda.dataVenda);
       const inicio = filters.dataInicio ? new Date(filters.dataInicio) : null;
       const fim = filters.dataFim ? new Date(filters.dataFim) : null;
@@ -353,8 +473,13 @@ export default function Vendas() {
         !venda.cliente.toLowerCase().includes(filters.cliente.toLowerCase())
       )
         return false;
-      if (filters.modeloVela && venda.modeloVela !== filters.modeloVela)
-        return false;
+      if (filters.modeloVela) {
+        const modelosDaVenda =
+          venda.itens && venda.itens.length > 0
+            ? venda.itens.map((item) => item.modeloVela)
+            : [venda.modeloVela];
+        if (!modelosDaVenda.includes(filters.modeloVela)) return false;
+      }
       if (filters.status && venda.status !== filters.status) return false;
       if (
         filters.formaPagamento &&
@@ -385,8 +510,13 @@ export default function Vendas() {
           style={{
             margin: "16px 0",
             padding: 14,
-            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-            border: COLORS.cardBorder,
+            background: messageKind === "error" ? "#fef2f2" : COLORS.successBg,
+            border:
+              messageKind === "error"
+                ? "1px solid #fecaca"
+                : "1px solid #a7f3d0",
+            color: messageKind === "error" ? "#b91c1c" : "#166534",
+            borderRadius: 8,
           }}
         >
           {message}
@@ -400,7 +530,7 @@ export default function Vendas() {
           marginTop: 24,
         }}
       >
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <VendaForm
             formMode={formMode}
             editingId={editingId}
@@ -414,16 +544,44 @@ export default function Vendas() {
             onStartNew={startNew}
             onCancel={resetForm}
           />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              flexWrap: "wrap",
+              padding: 16,
+              background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+              border: COLORS.cardBorder,
+              borderRadius: 10,
+            }}
+          >
+            <span>Entre na sua conta para lançar uma venda.</span>
+            <a
+              href="/login"
+              style={{
+                display: "inline-block",
+                padding: "10px 16px",
+                background: COLORS.primary,
+                color: "white",
+                borderRadius: 6,
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Entrar
+            </a>
+          </div>
         )}
 
         <VendaTable
           vendas={filteredVendas}
           isAuthenticated={isAuthenticated}
           canDelete={canDelete}
-          selectedItems={selectedItems}
-          onToggleSelect={toggleSelect}
-          onEdit={editSelected}
-          onDelete={deleteSelected}
+          onEdit={editVenda}
+          onDelete={deleteVenda}
           filters={filters}
           setFilters={setFilters}
           modelos={modelos}

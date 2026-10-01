@@ -12,6 +12,8 @@ export const COLORS = {
   primaryShadow: "rgba(92, 54, 24, 0.1)",
   primarySoft: "rgba(167, 117, 75, 0.12)",
   primarySoftAlt: "rgba(167, 117, 75, 0.08)",
+  tableRowEven: "rgba(255, 255, 255, 0.8)",
+  tableRowOdd: "rgba(167, 117, 75, 0.08)",
 
   // Gradiente dos cartões (fundo bege)
   cardGradientFrom: "#f7e8d7",
@@ -20,6 +22,7 @@ export const COLORS = {
   // Gradiente dos botões principais
   buttonGradientFrom: "#a76f4b",
   buttonGradientTo: "#8c5331",
+  newButtonGradient: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
 
   // Neutros
   white: "rgb(255, 255, 255)",
@@ -34,6 +37,7 @@ export const COLORS = {
   danger: "#dc2626",
   dangerRgb: "rgb(220, 38, 38)",
   dangerLight: "#ef4444",
+  cancelButtonBackground: "#ef4444",
 
   // Combinações prontas (borda/sombra) que se repetem em quase todo cartão
   cardBorder: "1px solid rgba(166, 116, 71, 0.2)",

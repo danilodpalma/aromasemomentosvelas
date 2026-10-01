@@ -15,24 +15,22 @@ type Insumo = {
 
 type Props = {
   items: Insumo[];
+  totalCount: number;
   isAuthenticated: boolean;
   canDelete: boolean;
-  selectedItems: Set<number>;
-  onToggleSelect: (id: number) => void;
   showActiveOnly: boolean;
   onToggleActiveFilter: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (item: Insumo) => void;
+  onDelete: (id: number) => void;
 };
 
 export default function InsumoTable({
   items,
+  totalCount,
   isAuthenticated,
   canDelete,
-  selectedItems,
-  onToggleSelect,
   showActiveOnly,
   onToggleActiveFilter,
   searchTerm,
@@ -58,7 +56,12 @@ export default function InsumoTable({
           marginBottom: 16,
         }}
       >
-        <h3>Lista de insumos</h3>
+        <div>
+          <h3 style={{ marginBottom: 4 }}>Lista de insumos</h3>
+          <div style={{ color: COLORS.grayText, fontSize: 14 }}>
+            Total de insumos: {totalCount}
+          </div>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <label
             style={{
@@ -72,14 +75,18 @@ export default function InsumoTable({
             <button
               type="button"
               onClick={onToggleActiveFilter}
-              aria-label={showActiveOnly ? "Filtro em ativos" : "Filtro em inativos"}
+              aria-label={
+                showActiveOnly ? "Filtro em ativos" : "Filtro em inativos"
+              }
               style={{
                 width: 46,
                 height: 26,
                 borderRadius: 13,
                 border: "none",
                 cursor: "pointer",
-                background: showActiveOnly ? COLORS.success : "rgb(156, 163, 175)",
+                background: showActiveOnly
+                  ? COLORS.success
+                  : "rgb(156, 163, 175)",
                 position: "relative",
                 padding: 0,
               }}
@@ -98,41 +105,6 @@ export default function InsumoTable({
               />
             </button>
           </label>
-          {isAuthenticated && (
-            <button
-              type="button"
-              onClick={onEdit}
-              disabled={selectedItems.size !== 1}
-              style={{
-                padding: "8px 16px",
-                background: selectedItems.size === 1 ? COLORS.primary : COLORS.gray,
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-              }}
-            >
-              Editar
-            </button>
-          )}
-          {canDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              disabled={selectedItems.size !== 1}
-              style={{
-                padding: "8px 16px",
-                background:
-                  selectedItems.size === 1 ? COLORS.dangerRgb : COLORS.gray,
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: selectedItems.size === 1 ? "pointer" : "not-allowed",
-              }}
-            >
-              Excluir
-            </button>
-          )}
         </div>
       </div>
 
@@ -155,35 +127,95 @@ export default function InsumoTable({
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Status
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
-              Selecionar
-            </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Insumo
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Unidade
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Tipos de produto
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Custo compra
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Qtd comprada
             </th>
-            <th style={{ padding: 12, textAlign: "center", color: COLORS.primary }}>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
               Custo unitário
+            </th>
+            <th
+              style={{
+                padding: 12,
+                textAlign: "center",
+                color: COLORS.primary,
+              }}
+            >
+              Ações
             </th>
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
+          {items.map((item, index) => (
+            <tr
+              key={item.id}
+              style={{
+                background:
+                  (item.active ?? true)
+                    ? index % 2 === 0
+                      ? COLORS.tableRowEven
+                      : COLORS.tableRowOdd
+                    : index % 2 === 0
+                      ? "#f3f4f6"
+                      : "#e5e7eb",
+              }}
+            >
               <td
                 style={{
                   padding: 12,
@@ -192,20 +224,6 @@ export default function InsumoTable({
                 }}
               >
                 {(item.active ?? true) ? "Ativo" : "Inativo"}
-              </td>
-              <td
-                style={{
-                  padding: 15,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedItems.has(item.id)}
-                  onChange={() => onToggleSelect(item.id)}
-                  style={{ width: 18, height: 18 }}
-                />
               </td>
               <td
                 style={{
@@ -262,6 +280,53 @@ export default function InsumoTable({
                 }}
               >
                 R$ {item.unitCost.toFixed(3)}
+              </td>
+              <td
+                style={{
+                  padding: 8,
+                  borderTop: "1px solid rgb(167, 117, 75)",
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <div
+                  style={{ display: "flex", justifyContent: "center", gap: 6 }}
+                >
+                  {isAuthenticated && (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(item)}
+                      aria-label={`Editar insumo ${item.name}`}
+                      style={{
+                        padding: "5px 8px",
+                        background: COLORS.primary,
+                        color: "white",
+                        border: "none",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(item.id)}
+                      aria-label={`Excluir insumo ${item.name}`}
+                      style={{
+                        padding: "5px 8px",
+                        background: COLORS.dangerRgb,
+                        color: "white",
+                        border: "none",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Excluir
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

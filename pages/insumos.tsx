@@ -62,7 +62,6 @@ export default function Insumos() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -90,26 +89,7 @@ export default function Insumos() {
       item.name.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  // Alternar seleção de item
-  function toggleSelect(id: number) {
-    if (selectedItems.has(id)) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set([id]));
-    }
-  }
-  // Editar itens selecionados
-  function editSelected() {
-    if (selectedItems.size === 1) {
-      const item = insumos.find((i) => i.id === Array.from(selectedItems)[0]);
-      if (item) startEdit(item);
-    }
-  }
-
-  async function deleteSelected() {
-    if (selectedItems.size !== 1) return;
-
-    const id = Array.from(selectedItems)[0];
+  async function deleteInsumo(id: number) {
     const item = insumos.find((i) => i.id === id);
     if (!item) return;
 
@@ -122,7 +102,6 @@ export default function Insumos() {
       });
       if (response.ok || response.status === 204) {
         setInsumos((prev) => prev.filter((i) => i.id !== id));
-        setSelectedItems(new Set());
         if (editingId === id) {
           resetForm(true);
         }
@@ -227,7 +206,6 @@ export default function Insumos() {
     if (shouldClearMessage) {
       setMessage("");
     }
-    setSelectedItems(new Set());
   }
 
   function startNew() {
@@ -243,7 +221,6 @@ export default function Insumos() {
       active: true,
       isBase: false,
     });
-    setSelectedItems(new Set());
     setMessage("");
   }
 
@@ -324,6 +301,9 @@ export default function Insumos() {
           resetForm();
           setMessage("Insumo cadastrado com sucesso.");
         }
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       } else {
         setMessage(parsed?.error || "Erro ao salvar insumo.");
       }
@@ -378,19 +358,17 @@ export default function Insumos() {
 
         <InsumoTable
           items={filteredInsumos}
+          totalCount={insumos.length}
           isAuthenticated={isAuthenticated}
           canDelete={canDelete}
-          selectedItems={selectedItems}
-          onToggleSelect={toggleSelect}
           showActiveOnly={showActiveOnly}
           onToggleActiveFilter={() => {
             setShowActiveOnly((prev) => !prev);
-            setSelectedItems(new Set());
           }}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onEdit={editSelected}
-          onDelete={deleteSelected}
+          onEdit={startEdit}
+          onDelete={deleteInsumo}
         />
       </div>
     </div>

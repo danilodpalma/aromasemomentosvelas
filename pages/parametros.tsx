@@ -12,7 +12,8 @@ type Parameter = {
     | "paymentMethod"
     | "saleStatus"
     | "purchaseStatus"
-    | "purchaseType";
+    | "purchaseType"
+    | "netWithdrawalPercent";
 };
 
 export default function Parametros() {
@@ -22,7 +23,9 @@ export default function Parametros() {
   const [category, setCategory] =
     useState<Parameter["category"]>("productType");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
+  const isFormActive = isCreating || editingId !== null;
 
   useEffect(() => {
     async function loadParameters() {
@@ -42,6 +45,10 @@ export default function Parametros() {
           { category: "purchaseStatus" as const, name: "Recebido" },
           { category: "purchaseType" as const, name: "Despesa" },
           { category: "purchaseType" as const, name: "Compra de Insumo" },
+          { category: "paymentMethod" as const, name: "A Receber" },
+          { category: "paymentMethod" as const, name: "Consignação" },
+          { category: "paymentMethod" as const, name: "Troca de Serviços" },
+          { category: "netWithdrawalPercent" as const, name: "35" },
         ];
 
         const missingDefaults = defaults.filter(
@@ -92,6 +99,7 @@ export default function Parametros() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!isFormActive) return;
     if (!name.trim()) return setMessage("Nome obrigatório.");
 
     const url = editingId
@@ -115,7 +123,11 @@ export default function Parametros() {
       setName("");
       setCategory("productType");
       setEditingId(null);
+      setIsCreating(false);
       setMessage("Salvo com sucesso.");
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     } else {
       const err = await res.json();
       setMessage(err?.error || "Erro ao salvar.");
@@ -124,7 +136,9 @@ export default function Parametros() {
 
   async function handleDelete(id: number) {
     if (!confirm("Excluir esse parâmetro?")) return;
-    const res = await authFetch(`/api/productTypes?id=${id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/productTypes?id=${id}`, {
+      method: "DELETE",
+    });
     if (res.ok || res.status === 204) {
       setTypes((prev) => prev.filter((t) => t.id !== id));
       setMessage("Excluído.");
@@ -134,11 +148,27 @@ export default function Parametros() {
   }
 
   function startEdit(t: Parameter) {
+    setIsCreating(false);
     setEditingId(t.id);
     setName(t.name);
     setCategory(t.category);
     setMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function startNew() {
+    setEditingId(null);
+    setName("");
+    setCategory("productType");
+    setIsCreating(true);
+    setMessage("");
+  }
+
+  function cancelForm() {
+    setEditingId(null);
+    setName("");
+    setCategory("productType");
+    setIsCreating(false);
   }
 
   const safeTypes = Array.isArray(types) ? types : [];
@@ -152,6 +182,9 @@ export default function Parametros() {
     (t) => t.category === "purchaseStatus",
   );
   const purchaseTypes = safeTypes.filter((t) => t.category === "purchaseType");
+  const netWithdrawalPercent = safeTypes.filter(
+    (t) => t.category === "netWithdrawalPercent",
+  );
 
   function renderParameterGroup(
     title: string,
@@ -168,11 +201,19 @@ export default function Parametros() {
           boxShadow: "0 4px 12px rgba(92, 54, 24, 0.06)",
         }}
       >
-        <h3 style={{ margin: "0 0 10px", color: COLORS.primaryDark, fontSize: 15 }}>
+        <h3
+          style={{
+            margin: "0 0 10px",
+            color: COLORS.primaryDark,
+            fontSize: 15,
+          }}
+        >
           {title}
         </h3>
         {items.length === 0 ? (
-          <p style={{ margin: 0, color: COLORS.primaryDarkText }}>{emptyText}</p>
+          <p style={{ margin: 0, color: COLORS.primaryDarkText }}>
+            {emptyText}
+          </p>
         ) : (
           <div style={{ display: "grid", gap: 8 }}>
             {items.map((t) => (
@@ -268,119 +309,163 @@ export default function Parametros() {
         }}
       >
         {isAuthenticated && (
-        <div
-          style={{
-            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-            padding: 18,
-            borderRadius: 14,
-            boxShadow: COLORS.cardShadow,
-            border: COLORS.cardBorder,
-          }}
-        >
-          <h3 style={{ margin: "0 0 12px", color: COLORS.primaryDark }}>
-            {editingId ? "Editar parâmetro" : "Novo parâmetro"}
-          </h3>
-          <form onSubmit={handleSubmit}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 12,
-              }}
-            >
-              <label
-                style={{ display: "block", fontWeight: 600, color: COLORS.primaryDark }}
-              >
-                Categoria do parâmetro
-                <select
-                  value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value as Parameter["category"])
-                  }
-                  style={{
-                    width: "100%",
-                    marginTop: 6,
-                    padding: "8px 10px",
-                    border: "1px solid rgb(166, 116, 71)",
-                    borderRadius: 8,
-                    background: "#fff",
-                    fontSize: 13,
-                  }}
-                >
-                  <option value="productType">Tipo de produto</option>
-                  <option value="unit">Unidade</option>
-                  <option value="paymentMethod">Forma de pagamento</option>
-                  <option value="saleStatus">Status da venda</option>
-                  <option value="purchaseStatus">Status da compra</option>
-                  <option value="purchaseType">Tipo de lançamento</option>
-                </select>
-              </label>
-              <label
-                style={{ display: "block", fontWeight: 600, color: COLORS.primaryDark }}
-              >
-                Nome do parâmetro
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  style={{
-                    width: "100%",
-                    marginTop: 6,
-                    padding: "8px 10px",
-                    border: "1px solid rgb(166, 116, 71)",
-                    borderRadius: 8,
-                    background: "#fff",
-                    fontSize: 13,
-                  }}
-                />
-              </label>
-            </div>
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+              padding: 18,
+              borderRadius: 14,
+              boxShadow: COLORS.cardShadow,
+              border: COLORS.cardBorder,
+            }}
+          >
             <div
               style={{
                 display: "flex",
-                gap: 10,
-                marginTop: 14,
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 12,
                 flexWrap: "wrap",
               }}
             >
-              <button
-                type="submit"
-                style={{
-                  padding: "10px 16px",
-                  background:
-                    "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 999,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                {editingId ? "Atualizar" : "Criar"}
-              </button>
-              {editingId && (
+              <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
+                {editingId
+                  ? "Editar parâmetro"
+                  : isCreating
+                    ? "Novo parâmetro"
+                    : "Parâmetros"}
+              </h3>
+              {!isFormActive && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingId(null);
-                    setName("");
-                    setCategory("productType");
-                  }}
+                  onClick={startNew}
                   style={{
-                    padding: "10px 16px",
-                    background: "rgb(107, 114, 128)",
+                    padding: "8px 14px",
+                    background: COLORS.newButtonGradient,
                     color: "white",
                     border: "none",
-                    borderRadius: 999,
+                    borderRadius: 6,
                     fontWeight: 600,
                     cursor: "pointer",
                   }}
                 >
-                  Cancelar
+                  + Novo
                 </button>
               )}
             </div>
-          </form>
-        </div>
+            <form onSubmit={handleSubmit}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: 600,
+                    color: COLORS.primaryDark,
+                  }}
+                >
+                  Categoria do parâmetro
+                  <select
+                    disabled={!isFormActive}
+                    value={category}
+                    onChange={(e) =>
+                      setCategory(e.target.value as Parameter["category"])
+                    }
+                    style={{
+                      width: "100%",
+                      marginTop: 6,
+                      padding: "8px 10px",
+                      border: "1px solid rgb(166, 116, 71)",
+                      borderRadius: 8,
+                      background: isFormActive ? "#fff" : COLORS.grayLight,
+                      fontSize: 13,
+                    }}
+                  >
+                    <option value="productType">Tipo de produto</option>
+                    <option value="unit">Unidade</option>
+                    <option value="paymentMethod">Forma de pagamento</option>
+                    <option value="saleStatus">Status da venda</option>
+                    <option value="purchaseStatus">Status da compra</option>
+                    <option value="purchaseType">Tipo de lançamento</option>
+                    <option value="netWithdrawalPercent">
+                      Percentual líquido a retirar (%)
+                    </option>
+                  </select>
+                </label>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: 600,
+                    color: COLORS.primaryDark,
+                  }}
+                >
+                  Nome do parâmetro
+                  <input
+                    disabled={!isFormActive}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={{
+                      width: "100%",
+                      marginTop: 6,
+                      padding: "8px 10px",
+                      border: "1px solid rgb(166, 116, 71)",
+                      borderRadius: 8,
+                      background: isFormActive ? "#fff" : COLORS.grayLight,
+                      fontSize: 13,
+                    }}
+                  />
+                </label>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  marginTop: 14,
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="submit"
+                  disabled={!isFormActive}
+                  style={{
+                    padding: "10px 16px",
+                    background:
+                      "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 999,
+                    fontWeight: 600,
+                    cursor: isFormActive ? "pointer" : "not-allowed",
+                    opacity: isFormActive ? 1 : 0.6,
+                  }}
+                >
+                  {editingId ? "Atualizar" : "Criar"}
+                </button>
+                {isFormActive && (
+                  <button
+                    type="button"
+                    onClick={cancelForm}
+                    style={{
+                      padding: "10px 16px",
+                      background: COLORS.cancelButtonBackground,
+                      color: "white",
+                      border: "none",
+                      borderRadius: 6,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      height: 40,
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         )}
 
         <div
@@ -428,6 +513,11 @@ export default function Parametros() {
               "Tipos de lançamento cadastrados",
               "Nenhum tipo de lançamento cadastrado.",
               purchaseTypes,
+            )}
+            {renderParameterGroup(
+              "Percentual líquido a retirar",
+              "35% (padrão)",
+              netWithdrawalPercent,
             )}
           </div>
         </div>

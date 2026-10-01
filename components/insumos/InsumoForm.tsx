@@ -1,8 +1,5 @@
 import { RefObject } from "react";
-import {
-  formatCurrencyInput,
-  sanitizeCurrencyInput,
-} from "../../lib/currency";
+import { formatCurrencyInput, sanitizeCurrencyInput } from "../../lib/currency";
 import { COLORS } from "../../styles/theme";
 
 export type InsumoFormState = {
@@ -73,7 +70,7 @@ export default function InsumoForm({
           onClick={onStartNew}
           style={{
             padding: "8px 16px",
-            background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+            background: COLORS.newButtonGradient,
             color: "white",
             border: "none",
             borderRadius: 999,
@@ -181,7 +178,9 @@ export default function InsumoForm({
                       alignItems: "center",
                       gap: 8,
                       padding: "8px 10px",
-                      background: checked ? COLORS.primarySoftAlt : "transparent",
+                      background: checked
+                        ? COLORS.primarySoftAlt
+                        : "transparent",
                       borderRadius: 6,
                       cursor: formMode === "idle" ? "not-allowed" : "pointer",
                       color: formMode === "idle" ? "#8a8a8a" : "inherit",
@@ -307,7 +306,9 @@ export default function InsumoForm({
                   borderRadius: 13,
                   border: "none",
                   cursor: "pointer",
-                  background: form.active ? COLORS.success : "rgb(156, 163, 175)",
+                  background: form.active
+                    ? COLORS.success
+                    : "rgb(156, 163, 175)",
                   position: "relative",
                   padding: 0,
                 }}
@@ -354,10 +355,13 @@ export default function InsumoForm({
               onClick={onCancel}
               style={{
                 padding: "10px 16px",
-                background: COLORS.dangerLight,
+                background: COLORS.cancelButtonBackground,
                 color: "white",
                 border: "none",
                 borderRadius: 6,
+                cursor: "pointer",
+                fontWeight: 600,
+                height: 40,
               }}
             >
               Cancelar
