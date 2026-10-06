@@ -31,6 +31,8 @@ export default withApiErrorHandling(async function handler(
       modeloVela,
       quantidade,
       precoUnitario,
+      desconto,
+      obsDesconto,
       formaPagamento,
       status,
       observacao,
@@ -67,10 +69,12 @@ export default withApiErrorHandling(async function handler(
       });
     }
 
-    const total = normalizedItems.reduce(
+    const subtotal = normalizedItems.reduce(
       (sum, item) => sum + item.quantidade * item.precoUnitario,
       0,
     );
+    const descontoValor = Number(desconto || 0);
+    const total = Math.max(subtotal - descontoValor, 0);
     const firstItem = normalizedItems[0];
 
     const venda = await prisma.venda.create({
@@ -84,6 +88,8 @@ export default withApiErrorHandling(async function handler(
         ),
         precoUnitario: firstItem.precoUnitario,
         total,
+        desconto: descontoValor,
+        obsDesconto: obsDesconto ?? "",
         formaPagamento,
         status,
         observacao: observacao ?? firstItem.observacao ?? "",
@@ -110,6 +116,8 @@ export default withApiErrorHandling(async function handler(
       modeloVela,
       quantidade,
       precoUnitario,
+      desconto,
+      obsDesconto,
       formaPagamento,
       status,
       observacao,
@@ -140,13 +148,15 @@ export default withApiErrorHandling(async function handler(
         observacao: item.observacao ?? "",
       }));
 
-    const total =
+    const subtotal =
       normalizedItems.length > 0
         ? normalizedItems.reduce(
             (sum, item) => sum + item.quantidade * item.precoUnitario,
             0,
           )
         : Number(existing.total || 0);
+    const descontoValor = Number(desconto ?? existing.desconto ?? 0);
+    const total = Math.max(subtotal - descontoValor, 0);
 
     const firstItem = normalizedItems[0] ?? {
       modeloVela: existing.modeloVela,
@@ -168,6 +178,8 @@ export default withApiErrorHandling(async function handler(
           existing.quantidade,
         precoUnitario: firstItem.precoUnitario || existing.precoUnitario,
         total,
+        desconto: descontoValor,
+        obsDesconto: obsDesconto ?? existing.obsDesconto ?? "",
         formaPagamento: formaPagamento ?? existing.formaPagamento,
         status: status ?? existing.status,
         observacao: observacao ?? firstItem.observacao ?? existing.observacao,

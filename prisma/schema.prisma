@@ -96,6 +96,8 @@ model Venda {
   quantidade     Int
   precoUnitario  Float
   total          Float
+  desconto       Float      @default(0)
+  obsDesconto    String?
   formaPagamento String
   status         String
   observacao     String?

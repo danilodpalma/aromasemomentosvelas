@@ -10,6 +10,8 @@ type Venda = {
   quantidade: number;
   precoUnitario: number;
   total: number;
+  desconto?: number;
+  obsDesconto?: string;
   formaPagamento: string;
   status: string;
   observacao?: string;
@@ -271,9 +273,13 @@ export default function VendaTable({
               <th style={{ padding: 12, textAlign: "center" }}>
                 Preço Unit. (R$)
               </th>
+              <th style={{ padding: 12, textAlign: "center" }}>Desconto</th>
               <th style={{ padding: 12, textAlign: "center" }}>Total (R$)</th>
               <th style={{ padding: 12, textAlign: "center" }}>Pagamento</th>
               <th style={{ padding: 12, textAlign: "center" }}>Status</th>
+              <th style={{ padding: 12, textAlign: "center" }}>
+                Obs. desconto
+              </th>
               <th style={{ padding: 12, textAlign: "center" }}>Observação</th>
               <th style={{ padding: 12, textAlign: "center" }}>Ações</th>
             </tr>
@@ -292,6 +298,8 @@ export default function VendaTable({
                 venda.total > 0 && quantidadeTotal > 0
                   ? venda.total / quantidadeTotal
                   : venda.precoUnitario;
+              const descontoValor = Number(venda.desconto ?? 0);
+              const temDesconto = descontoValor > 0;
 
               return (
                 <tr
@@ -355,7 +363,43 @@ export default function VendaTable({
                       textAlign: "center",
                     }}
                   >
-                    R$ {venda.total.toFixed(2)}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        background: temDesconto
+                          ? "rgba(220, 38, 38, 0.12)"
+                          : "rgba(148, 163, 184, 0.12)",
+                        color: temDesconto ? "#b91c1c" : "#64748b",
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
+                    >
+                      {temDesconto
+                        ? `-R$ ${descontoValor.toFixed(2)}`
+                        : "-R$ 0,00"}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        background: "rgba(34, 197, 94, 0.12)",
+                        color: "#166534",
+                        fontWeight: 800,
+                      }}
+                    >
+                      R$ {venda.total.toFixed(2)}
+                    </span>
                   </td>
                   <td
                     style={{
@@ -374,6 +418,30 @@ export default function VendaTable({
                     }}
                   >
                     {venda.status}
+                  </td>
+                  <td
+                    style={{
+                      padding: 12,
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        maxWidth: 160,
+                        padding: "4px 8px",
+                        borderRadius: 8,
+                        background: venda.obsDesconto
+                          ? "rgba(255, 255, 255, 0.4)"
+                          : "transparent",
+                        color: venda.obsDesconto ? "#334155" : "#64748b",
+                        fontSize: 12,
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {venda.obsDesconto || "-"}
+                    </span>
                   </td>
                   <td
                     style={{

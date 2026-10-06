@@ -40,7 +40,7 @@ export default async function handler(
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email },
       SECRET_KEY,
-      { expiresIn: "7d" },
+      { expiresIn: "90d" },
     );
 
     return res.status(200).json({

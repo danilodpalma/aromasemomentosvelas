@@ -69,6 +69,12 @@ function findUnitCost(insumos: Insumo[], name?: string) {
   return item ? item.unitCost : 0;
 }
 
+function sortModelosByNome(modelos: Modelo[]) {
+  return [...modelos].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" }),
+  );
+}
+
 export default function Calculo() {
   const { isAuthenticated } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -168,9 +174,10 @@ export default function Calculo() {
       ]);
       setInsumos(await insumosRes.json());
       const modelosData = (await modelosRes.json()) as Modelo[];
-      setModelos(modelosData);
+      const modelosOrdenados = sortModelosByNome(modelosData);
+      setModelos(modelosOrdenados);
       const persistedValues: Record<number, string> = {};
-      modelosData.forEach((modelo) => {
+      modelosOrdenados.forEach((modelo) => {
         persistedValues[modelo.id] = (modelo.valorVendido ?? 0).toFixed(2);
       });
       setCalculos(persistedValues);
@@ -178,6 +185,11 @@ export default function Calculo() {
 
     load();
   }, []);
+
+  const modelosOrdenados = sortModelosByNome(modelos);
+  const filteredModelos = modelosOrdenados.filter(
+    (modelo) => modelo.ativo !== false,
+  );
 
   function calculateCosts(modelo: Modelo) {
     const baseName = modelo.baseNome || "Cera de Coco";
@@ -402,7 +414,7 @@ export default function Calculo() {
                 </td>
               </tr>
             ) : (
-              modelos.map((modelo, index) => {
+              filteredModelos.map((modelo, index) => {
                 const values = calculateCosts(modelo);
                 return (
                   <>

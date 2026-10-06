@@ -15,6 +15,8 @@ type Venda = {
   quantidade: number;
   precoUnitario: number;
   total: number;
+  desconto?: number;
+  obsDesconto?: string;
   formaPagamento: string;
   status: string;
   observacao?: string;
@@ -79,6 +81,8 @@ export default function Vendas() {
     formaPagamento: "",
     status: "",
     observacao: "",
+    desconto: "0.00",
+    observacaoDesconto: "",
     itens: [
       { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
     ],
@@ -179,6 +183,8 @@ export default function Vendas() {
       formaPagamento: "",
       status: "",
       observacao: "",
+      desconto: "0.00",
+      observacaoDesconto: "",
       itens: [
         { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
       ],
@@ -195,6 +201,8 @@ export default function Vendas() {
       formaPagamento: "",
       status: "",
       observacao: "",
+      desconto: "0.00",
+      observacaoDesconto: "",
       itens: [
         { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
       ],
@@ -228,6 +236,8 @@ export default function Vendas() {
       formaPagamento: venda.formaPagamento,
       status: venda.status,
       observacao: venda.observacao ?? "",
+      desconto: formatCurrencyInput(venda.desconto ?? 0, 2),
+      observacaoDesconto: venda.obsDesconto ?? "",
       itens: itemRows,
     });
     showMessage("Edição de venda ativa. Faça as alterações e salve.", "info");
@@ -354,10 +364,12 @@ export default function Vendas() {
     }));
 
     const firstItem = normalizedItens[0];
-    const totalPedido = normalizedItens.reduce(
+    const subtotalPedido = normalizedItens.reduce(
       (sum, item) => sum + item.quantidade * item.precoUnitario,
       0,
     );
+    const descontoValor = Number(parseCurrencyInput(form.desconto || "0"));
+    const totalPedido = Math.max(subtotalPedido - descontoValor, 0);
 
     const payload = {
       dataVenda: form.dataVenda,
@@ -369,6 +381,8 @@ export default function Vendas() {
       ),
       precoUnitario: firstItem.precoUnitario,
       total: totalPedido,
+      desconto: descontoValor,
+      obsDesconto: form.observacaoDesconto,
       formaPagamento: form.formaPagamento,
       status: form.status,
       observacao: form.observacao,

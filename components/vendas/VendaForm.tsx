@@ -20,6 +20,8 @@ export type VendaFormState = {
   formaPagamento: string;
   status: string;
   observacao: string;
+  desconto: string;
+  observacaoDesconto: string;
   itens: VendaItemForm[];
 };
 
@@ -53,11 +55,13 @@ export default function VendaForm({
   onStartNew,
   onCancel,
 }: Props) {
-  const totalPedido = form.itens.reduce((sum, item) => {
+  const subtotalPedido = form.itens.reduce((sum, item) => {
     const quantidade = Number(item.quantidade || 0);
     const precoUnitario = Number(parseCurrencyInput(item.precoUnitario || "0"));
     return sum + quantidade * precoUnitario;
   }, 0);
+  const descontoPedido = Number(parseCurrencyInput(form.desconto || "0"));
+  const totalPedido = Math.max(subtotalPedido - descontoPedido, 0);
 
   return (
     <div
@@ -398,14 +402,76 @@ export default function VendaForm({
         </div>
 
         <div
-          style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: 12,
+            marginTop: 12,
+            alignItems: "end",
+          }}
         >
+          <label style={{ display: "block" }}>
+            Desconto
+            <input
+              type="text"
+              disabled={formMode === "idle"}
+              value={form.desconto}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  desconto: sanitizeCurrencyInput(e.target.value),
+                }))
+              }
+              onBlur={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  desconto: prev.desconto
+                    ? formatCurrencyInput(prev.desconto, 2)
+                    : "0.00",
+                }))
+              }
+              style={{
+                width: "100%",
+                marginTop: 6,
+                padding: 8,
+                background:
+                  formMode === "idle" ? COLORS.grayLight : COLORS.white,
+                border: "1px solid rgb(167, 117, 75)",
+                borderRadius: 6,
+                textAlign: "left",
+              }}
+            />
+          </label>
+
+          <label style={{ display: "block" }}>
+            Obs. do desconto
+            <input
+              disabled={formMode === "idle"}
+              value={form.observacaoDesconto}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  observacaoDesconto: e.target.value,
+                }))
+              }
+              style={{
+                width: "100%",
+                marginTop: 6,
+                padding: 8,
+                background:
+                  formMode === "idle" ? COLORS.grayLight : COLORS.white,
+                border: "1px solid rgb(167, 117, 75)",
+                borderRadius: 6,
+                textAlign: "left",
+              }}
+            />
+          </label>
+
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              minWidth: 220,
               minHeight: 48,
               padding: "8px 16px",
               border: "1px solid rgb(167, 117, 75)",

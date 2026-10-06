@@ -5,6 +5,7 @@ import { COLORS } from "../styles/theme";
 type Venda = {
   id: number;
   total: number;
+  desconto?: number;
   createdAt: string;
   dataVenda: string;
   cliente: string;
@@ -54,6 +55,10 @@ function normalizePaymentMethod(paymentMethod: string) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getEffectiveSaleTotal(sale: Pick<Venda, "total" | "desconto">) {
+  return Number.isFinite(sale.total) ? Number(sale.total) : 0;
 }
 
 export default function Dashboard() {
@@ -112,7 +117,10 @@ export default function Dashboard() {
     (venda) => venda.dataVenda?.slice(0, 7) === mesAtivo,
   );
   const totalVendas = vendasDoMes.length;
-  const receita = vendasDoMes.reduce((sum, item) => sum + item.total, 0);
+  const receita = vendasDoMes.reduce(
+    (sum, item) => sum + getEffectiveSaleTotal(item),
+    0,
+  );
   const vendasRecentes = vendas.slice(0, 5);
   const anoAtual = hoje.getFullYear();
   const monthlySales = MONTHS.map((month, index) => {
@@ -120,7 +128,10 @@ export default function Dashboard() {
     const sales = vendas.filter(
       (venda) => venda.dataVenda?.slice(0, 7) === monthKey,
     );
-    const grossRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+    const grossRevenue = sales.reduce(
+      (sum, sale) => sum + getEffectiveSaleTotal(sale),
+      0,
+    );
 
     return {
       month,
@@ -156,9 +167,12 @@ export default function Dashboard() {
   const serviceExchangeSales = vendas.filter((sale) =>
     isServiceExchangePaymentMethod(sale.formaPagamento),
   );
-  const totalVendido = vendas.reduce((sum, sale) => sum + sale.total, 0);
+  const totalVendido = vendas.reduce(
+    (sum, sale) => sum + getEffectiveSaleTotal(sale),
+    0,
+  );
   const totalAReceber = receivableSales.reduce(
-    (sum, sale) => sum + sale.total,
+    (sum, sale) => sum + getEffectiveSaleTotal(sale),
     0,
   );
   const totalUnidadesVendidas = vendas.reduce(
@@ -170,11 +184,11 @@ export default function Dashboard() {
     0,
   );
   const totalPresentes = presentSales.reduce(
-    (sum, sale) => sum + sale.total,
+    (sum, sale) => sum + getEffectiveSaleTotal(sale),
     0,
   );
   const totalTrocasServicos = serviceExchangeSales.reduce(
-    (sum, sale) => sum + sale.total,
+    (sum, sale) => sum + getEffectiveSaleTotal(sale),
     0,
   );
   const paymentMethodNames = Array.from(
@@ -196,7 +210,10 @@ export default function Dashboard() {
       );
       return {
         name,
-        total: methodSales.reduce((sum, sale) => sum + sale.total, 0),
+        total: methodSales.reduce(
+          (sum, sale) => sum + getEffectiveSaleTotal(sale),
+          0,
+        ),
         orderCount: methodSales.length,
       };
     });
