@@ -262,26 +262,46 @@ export default function VendaTable({
             width: "100%",
             borderCollapse: "collapse",
             minWidth: 1000,
+            fontSize: 12,
+            tableLayout: "fixed",
           }}
         >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: 12, textAlign: "center" }}>Data Venda</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Cliente</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Modelo</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Qtd</th>
-              <th style={{ padding: 12, textAlign: "center" }}>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Data Venda
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Cliente
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Modelo
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>Qtd</th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
                 Preço Unit. (R$)
               </th>
-              <th style={{ padding: 12, textAlign: "center" }}>Desconto</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Total (R$)</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Pagamento</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Status</th>
-              <th style={{ padding: 12, textAlign: "center" }}>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Desconto
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Total (R$)
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Pagamento
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Status
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
                 Obs. desconto
               </th>
-              <th style={{ padding: 12, textAlign: "center" }}>Observação</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Ações</th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Observação
+              </th>
+              <th style={{ padding: "10px 8px", textAlign: "center" }}>
+                Ações
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -313,59 +333,100 @@ export default function VendaTable({
                 >
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {formatDateOnly(venda.dataVenda)}
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {venda.cliente}
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {modeloResumo}
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
-                    }}
-                  >
-                    {quantidadeTotal}
-                  </td>
-                  <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid rgb(167, 117, 75)",
-                      textAlign: "center",
-                    }}
-                  >
-                    R$ {precoMedio.toFixed(2)}
-                  </td>
-                  <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid rgb(167, 117, 75)",
-                      textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     <span
                       style={{
-                        display: "inline-block",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 32,
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        background: "rgba(167, 117, 75, 0.12)",
+                        color: "#5b3a22",
+                        fontWeight: 700,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {quantidadeTotal}
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 10px",
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4,
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        background: "rgba(59, 130, 246, 0.10)",
+                        color: "#1d4ed8",
+                        fontWeight: 700,
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <span>R$</span>
+                      <span>{precoMedio.toFixed(2)}</span>
+                    </span>
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px 10px",
+                      borderTop: "1px solid rgb(167, 117, 75)",
+                      textAlign: "center",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4,
                         padding: "4px 8px",
                         borderRadius: 999,
                         background: temDesconto
@@ -374,56 +435,71 @@ export default function VendaTable({
                         color: temDesconto ? "#b91c1c" : "#64748b",
                         fontWeight: 700,
                         fontSize: 12,
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      {temDesconto
-                        ? `-R$ ${descontoValor.toFixed(2)}`
-                        : "-R$ 0,00"}
+                      <span>R$</span>
+                      <span>
+                        {temDesconto
+                          ? `${(-descontoValor).toFixed(2)}`
+                          : "0,00"}
+                      </span>
                     </span>
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     <span
                       style={{
-                        display: "inline-block",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4,
                         padding: "4px 10px",
                         borderRadius: 999,
                         background: "rgba(34, 197, 94, 0.12)",
                         color: "#166534",
                         fontWeight: 800,
+                        lineHeight: 1.2,
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      R$ {venda.total.toFixed(2)}
+                      <span>R$</span>
+                      <span>{venda.total.toFixed(2)}</span>
                     </span>
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {venda.formaPagamento}
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {venda.status}
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     <span
@@ -445,9 +521,10 @@ export default function VendaTable({
                   </td>
                   <td
                     style={{
-                      padding: 12,
+                      padding: "8px 10px",
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
+                      verticalAlign: "middle",
                     }}
                   >
                     {venda.observacao}
@@ -458,6 +535,7 @@ export default function VendaTable({
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
                       whiteSpace: "nowrap",
+                      verticalAlign: "middle",
                     }}
                   >
                     <div
