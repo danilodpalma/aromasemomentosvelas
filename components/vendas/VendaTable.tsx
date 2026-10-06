@@ -256,20 +256,26 @@ export default function VendaTable({
         </button>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
+      <div style={{ overflowX: "hidden" }}>
         <table
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            minWidth: 1000,
-            fontSize: 12,
+            minWidth: 820,
+            fontSize: 11.5,
             tableLayout: "fixed",
           }}
         >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: "10px 8px", textAlign: "center" }}>
-                Data Venda
+              <th
+                style={{
+                  padding: "10px 8px",
+                  textAlign: "center",
+                  width: 78,
+                }}
+              >
+                Data
               </th>
               <th style={{ padding: "10px 8px", textAlign: "center" }}>
                 Cliente
@@ -277,7 +283,11 @@ export default function VendaTable({
               <th style={{ padding: "10px 8px", textAlign: "center" }}>
                 Modelo
               </th>
-              <th style={{ padding: "10px 8px", textAlign: "center" }}>Qtd</th>
+              <th
+                style={{ padding: "10px 8px", textAlign: "center", width: 44 }}
+              >
+                Qtd
+              </th>
               <th style={{ padding: "10px 8px", textAlign: "center" }}>
                 Preço Unit. (R$)
               </th>
@@ -337,6 +347,7 @@ export default function VendaTable({
                       borderTop: "1px solid rgb(167, 117, 75)",
                       textAlign: "center",
                       verticalAlign: "middle",
+                      width: 78,
                     }}
                   >
                     {formatDateOnly(venda.dataVenda)}
