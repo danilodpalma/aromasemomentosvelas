@@ -4,7 +4,9 @@ body,
   padding: 0;
   margin: 0;
   width: 100%;
-  overflow-x: hidden;
+  /* "clip" (e não "hidden") corta a rolagem horizontal sem criar um container
+     de rolagem, o que quebraria o cabeçalho fixo (position: sticky). */
+  overflow-x: clip;
   font-family:
     Inter,
     system-ui,

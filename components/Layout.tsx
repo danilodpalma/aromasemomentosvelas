@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -27,6 +27,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mustLogin) router.replace("/login");
   }, [mustLogin, router]);
+
+  // Ao rolar a página, o cabeçalho fica fixo e compacto (só o menu, sem o logo).
+  // Limites diferentes para recolher e expandir evitam que o cabeçalho
+  // "pisque" quando a rolagem para perto do ponto de troca.
+  const [compactHeader, setCompactHeader] = useState(false);
+  useEffect(() => {
+    function handleScroll() {
+      const y = window.scrollY;
+      setCompactHeader((compact) => (compact ? y > 10 : y > 80));
+    }
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   function handleLogout() {
     logout();
@@ -57,10 +71,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <header
         style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
           borderBottom: COLORS.cardBorder,
           background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-          padding: "24px 24px",
-          boxShadow: "0 6px 18px rgba(92, 54, 24, 0.08)",
+          padding: compactHeader ? "10px 24px" : "24px 24px",
+          boxShadow: compactHeader
+            ? "0 6px 18px rgba(92, 54, 24, 0.16)"
+            : "0 6px 18px rgba(92, 54, 24, 0.08)",
+          transition: "padding 0.25s ease, box-shadow 0.25s ease",
         }}
       >
         <div
@@ -71,14 +91,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: 20,
+            gap: compactHeader ? 0 : 20,
+            transition: "gap 0.25s ease",
           }}
         >
           <div
+            aria-hidden={compactHeader}
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              maxHeight: compactHeader ? 0 : 90,
+              opacity: compactHeader ? 0 : 1,
+              overflow: "hidden",
+              transition: "max-height 0.25s ease, opacity 0.2s ease",
             }}
           >
             <Link href="/">
