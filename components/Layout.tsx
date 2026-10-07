@@ -182,7 +182,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </header>
       <main
         style={{
-          maxWidth: 1240,
+          maxWidth: 1440,
           margin: "24px auto",
           padding: "0 24px 40px",
         }}

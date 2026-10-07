@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   formatCurrencyInput,
   parseCurrencyInput,
@@ -74,6 +74,59 @@ function sortModelosByNome(modelos: Modelo[]) {
     a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" }),
   );
 }
+
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
+const qtyBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  minWidth: 32,
+  background: "rgba(167, 117, 75, 0.12)",
+  color: "#5b3a22",
+};
+
+const priceBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  background: "rgba(59, 130, 246, 0.10)",
+  color: "#1d4ed8",
+};
+
+const totalBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  padding: "4px 10px",
+  background: "rgba(34, 197, 94, 0.12)",
+  color: "#166534",
+  fontWeight: 800,
+};
+
+const actionButtonStyle: React.CSSProperties = {
+  padding: "5px 8px",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
 
 export default function Calculo() {
   const { isAuthenticated } = useAuth();
@@ -372,36 +425,43 @@ export default function Calculo() {
           boxShadow: COLORS.cardShadow,
           overflowX: "auto",
           border: COLORS.cardBorder,
+          padding: 20,
         }}
       >
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ marginBottom: 4 }}>Modelos</h3>
+          <div style={{ color: COLORS.grayText, fontSize: 14 }}>
+            Total de modelos: {filteredModelos.length}
+          </div>
+        </div>
         <table
-          style={{ width: "100%", borderCollapse: "collapse", minWidth: 200 }}
+          style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}
         >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: 10, textAlign: "center" }}>Nome da Vela</th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>Nome da Vela</th>
+              <th style={thStyle}>
                 Custo Insumos (R$)
               </th>
-              <th style={{ padding: 10, textAlign: "center" }}>Detalhes</th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>Detalhes</th>
+              <th style={thStyle}>
                 Custos Fixos (R$)
               </th>
-              <th style={{ padding: 15, textAlign: "center" }}>
+              <th style={thStyle}>
                 Custo Total (R$)
               </th>
-              <th style={{ padding: 10, textAlign: "center" }}>Margem (%)</th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>Margem (%)</th>
+              <th style={thStyle}>
                 Preço Sugerido (R$)
               </th>
-              <th style={{ padding: 25, textAlign: "center" }}>Lucro (R$)</th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>Lucro (R$)</th>
+              <th style={thStyle}>
                 Lucro sobre a venda
               </th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>
                 Valor Vendido
               </th>
-              <th style={{ padding: 10, textAlign: "center" }}>
+              <th style={thStyle}>
                 Preço Final P/ Venda
               </th>
             </tr>
@@ -409,7 +469,7 @@ export default function Calculo() {
           <tbody>
             {modelos.length === 0 ? (
               <tr>
-                <td colSpan={10} style={{ padding: 16, textAlign: "center" }}>
+                <td colSpan={11} style={{ ...tdStyle, padding: 16 }}>
                   Nenhum modelo cadastrado ainda.
                 </td>
               </tr>
@@ -417,9 +477,8 @@ export default function Calculo() {
               filteredModelos.map((modelo, index) => {
                 const values = calculateCosts(modelo);
                 return (
-                  <>
+                  <Fragment key={modelo.id}>
                     <tr
-                      key={modelo.id}
                       style={{
                         background:
                           index % 2 === 0
@@ -428,117 +487,67 @@ export default function Calculo() {
                       }}
                     >
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                        }}
+                        style={tdStyle}
                       >
                         {modelo.nome}
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.insumoCost.toFixed(2)}
+                        <span style={qtyBadgeStyle}><span>R$</span><span>{values.insumoCost.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                        }}
+                        style={tdStyle}
                       >
                         <button
                           type="button"
                           onClick={() => toggleRowDetails(modelo.id)}
                           style={{
-                            padding: "6px 10px",
+                            ...actionButtonStyle,
                             background: COLORS.primary,
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
                           }}
                         >
                           {expandedRows.has(modelo.id) ? "Esconder" : "Ver"}
                         </button>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.fixedCost.toFixed(2)}
+                        <span style={qtyBadgeStyle}><span>R$</span><span>{values.fixedCost.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.totalCost.toFixed(2)}
+                        <span style={qtyBadgeStyle}><span>R$</span><span>{values.totalCost.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        {Math.round(modelo.margemLucro)}%
+                        <span style={qtyBadgeStyle}>{Math.round(modelo.margemLucro)}%</span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.priceSuggested.toFixed(2)}
+                        <span style={priceBadgeStyle}><span>R$</span><span>{values.priceSuggested.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.profit.toFixed(2)}
+                        <span style={totalBadgeStyle}><span>R$</span><span>{values.profit.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.actualProfit.toFixed(2)}
+                        <span style={totalBadgeStyle}><span>R$</span><span>{values.actualProfit.toFixed(2)}</span></span>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "center",
                             gap: 4,
                           }}
                         >
@@ -617,14 +626,9 @@ export default function Calculo() {
                         </div>
                       </td>
                       <td
-                        style={{
-                          padding: 12,
-                          borderTop: "1px solid rgb(167, 117, 75)",
-                          textAlign: "center",
-                          color: COLORS.primary,
-                        }}
+                        style={tdStyle}
                       >
-                        R$ {values.finalSalePrice.toFixed(2)}
+                        <span style={totalBadgeStyle}><span>R$</span><span>{values.finalSalePrice.toFixed(2)}</span></span>
                       </td>
                     </tr>
                     {expandedRows.has(modelo.id) && (
@@ -822,7 +826,7 @@ export default function Calculo() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })
             )}

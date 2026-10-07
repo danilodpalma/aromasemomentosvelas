@@ -6,6 +6,7 @@ type Venda = {
   id: number;
   total: number;
   desconto?: number;
+  frete?: number;
   createdAt: string;
   dataVenda: string;
   cliente: string;
@@ -60,6 +61,51 @@ function normalizePaymentMethod(paymentMethod: string) {
 function getEffectiveSaleTotal(sale: Pick<Venda, "total" | "desconto">) {
   return Number.isFinite(sale.total) ? Number(sale.total) : 0;
 }
+
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
+const qtyBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  minWidth: 32,
+  background: "rgba(167, 117, 75, 0.12)",
+  color: "#5b3a22",
+};
+
+const priceBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  background: "rgba(59, 130, 246, 0.10)",
+  color: "#1d4ed8",
+};
+
+const totalBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  padding: "4px 10px",
+  background: "rgba(34, 197, 94, 0.12)",
+  color: "#166534",
+  fontWeight: 800,
+};
 
 export default function Dashboard() {
   const [vendas, setVendas] = useState<Venda[]>([]);
@@ -191,6 +237,11 @@ export default function Dashboard() {
     (sum, sale) => sum + getEffectiveSaleTotal(sale),
     0,
   );
+  const freteSales = vendas.filter((sale) => Number(sale.frete ?? 0) > 0);
+  const totalFrete = freteSales.reduce(
+    (sum, sale) => sum + Number(sale.frete ?? 0),
+    0,
+  );
   const paymentMethodNames = Array.from(
     new Set([
       ...paymentMethods.map((method) => method.name),
@@ -283,6 +334,7 @@ export default function Dashboard() {
           style={{
             width: "100%",
             borderCollapse: "collapse",
+            fontSize: 11.5,
             background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
             borderRadius: 14,
             overflow: "hidden",
@@ -291,17 +343,17 @@ export default function Dashboard() {
         >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: 12, textAlign: "left" }}>Cliente</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Produto</th>
-              <th style={{ padding: 12, textAlign: "right" }}>Total</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Status</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Data</th>
+              <th style={thStyle}>Cliente</th>
+              <th style={thStyle}>Produto</th>
+              <th style={thStyle}>Total</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Data</th>
             </tr>
           </thead>
           <tbody>
             {vendasRecentes.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: 16, textAlign: "center" }}>
+                <td colSpan={5} style={{ ...tdStyle, padding: 16 }}>
                   Nenhuma venda registrada ainda.
                 </td>
               </tr>
@@ -316,31 +368,31 @@ export default function Dashboard() {
                         : COLORS.tableRowOdd,
                   }}
                 >
-                  <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
+                  <td style={tdStyle}>
                     {venda.cliente}
                   </td>
-                  <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
-                    {venda.itens?.length
-                      ? venda.itens
-                          .map(
-                            (item) => `${item.quantidade}x ${item.modeloVela}`,
-                          )
-                          .join(", ")
-                      : `${venda.quantidade}x ${venda.modeloVela}`}
+                  <td style={tdStyle}>
+                    {venda.itens?.length ? (
+                      venda.itens.map((item) => (
+                        <div key={item.id}>
+                          {item.quantidade}x {item.modeloVela}
+                        </div>
+                      ))
+                    ) : (
+                      <div>
+                        {venda.quantidade}x {venda.modeloVela}
+                      </div>
+                    )}
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid #e5e7eb",
-                      textAlign: "right",
-                    }}
+                    style={tdStyle}
                   >
-                    R$ {venda.total.toFixed(2)}
+                    <span style={totalBadgeStyle}><span>R$</span><span>{venda.total.toFixed(2)}</span></span>
                   </td>
-                  <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
+                  <td style={tdStyle}>
                     {venda.status}
                   </td>
-                  <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
+                  <td style={tdStyle}>
                     {formatDateOnly(venda.dataVenda)}
                   </td>
                 </tr>
@@ -358,8 +410,8 @@ export default function Dashboard() {
           <table
             style={{
               width: "100%",
-              minWidth: 620,
               borderCollapse: "collapse",
+              fontSize: 11.5,
               background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
               borderRadius: 14,
               overflow: "hidden",
@@ -368,14 +420,14 @@ export default function Dashboard() {
           >
             <thead style={{ background: "rgba(255,255,255,0.35)" }}>
               <tr>
-                <th style={{ padding: 12, textAlign: "left" }}>Mês</th>
-                <th style={{ padding: 12, textAlign: "right" }}>
+                <th style={thStyle}>Mês</th>
+                <th style={thStyle}>
                   Faturamento bruto
                 </th>
-                <th style={{ padding: 12, textAlign: "right" }}>
+                <th style={thStyle}>
                   Líquido ({netWithdrawalPercent}%)
                 </th>
-                <th style={{ padding: 12, textAlign: "right" }}>
+                <th style={thStyle}>
                   Quantidade de pedidos
                 </th>
               </tr>
@@ -391,41 +443,27 @@ export default function Dashboard() {
                         : COLORS.tableRowOdd,
                   }}
                 >
-                  <td style={{ padding: 12, borderTop: "1px solid #e5e7eb" }}>
+                  <td style={tdStyle}>
                     {month.month}
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid #e5e7eb",
-                      textAlign: "right",
-                    }}
+                    style={tdStyle}
                   >
-                    {month.grossRevenue.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
+                    <span style={totalBadgeStyle}>
+                      {formatCurrency(month.grossRevenue)}
+                    </span>
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid #e5e7eb",
-                      textAlign: "right",
-                    }}
+                    style={tdStyle}
                   >
-                    {month.netRevenue.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
+                    <span style={priceBadgeStyle}>
+                      {formatCurrency(month.netRevenue)}
+                    </span>
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: "1px solid #e5e7eb",
-                      textAlign: "right",
-                    }}
+                    style={tdStyle}
                   >
-                    {month.orderCount}
+                    <span style={qtyBadgeStyle}>{month.orderCount}</span>
                   </td>
                 </tr>
               ))}
@@ -572,6 +610,30 @@ export default function Dashboard() {
                     }}
                   >
                     {formatCurrency(totalTrocasServicos)}
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    style={{
+                      padding: 8,
+                      textAlign: "left",
+                      borderTop: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Total de frete
+                    <div style={{ color: COLORS.grayText, fontSize: 12 }}>
+                      {freteSales.length}{" "}
+                      {freteSales.length === 1 ? "pedido" : "pedidos"}
+                    </div>
+                  </th>
+                  <td
+                    style={{
+                      padding: 8,
+                      textAlign: "right",
+                      borderTop: "1px solid #e5e7eb",
+                    }}
+                  >
+                    {formatCurrency(totalFrete)}
                   </td>
                 </tr>
               </tbody>

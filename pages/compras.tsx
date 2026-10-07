@@ -337,9 +337,6 @@ export default function Compras() {
           flexDirection: "column",
           gap: 20,
           marginTop: 20,
-          maxWidth: 1120,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         {isAuthenticated && (

@@ -33,6 +33,8 @@ export default withApiErrorHandling(async function handler(
       precoUnitario,
       desconto,
       obsDesconto,
+      frete,
+      obsCliente,
       formaPagamento,
       status,
       observacao,
@@ -74,7 +76,8 @@ export default withApiErrorHandling(async function handler(
       0,
     );
     const descontoValor = Number(desconto || 0);
-    const total = Math.max(subtotal - descontoValor, 0);
+    const freteValor = Number(frete || 0);
+    const total = Math.max(subtotal - descontoValor, 0) + freteValor;
     const firstItem = normalizedItems[0];
 
     const venda = await prisma.venda.create({
@@ -90,6 +93,8 @@ export default withApiErrorHandling(async function handler(
         total,
         desconto: descontoValor,
         obsDesconto: obsDesconto ?? "",
+        frete: freteValor,
+        obsCliente: obsCliente ?? "",
         formaPagamento,
         status,
         observacao: observacao ?? firstItem.observacao ?? "",
@@ -118,6 +123,8 @@ export default withApiErrorHandling(async function handler(
       precoUnitario,
       desconto,
       obsDesconto,
+      frete,
+      obsCliente,
       formaPagamento,
       status,
       observacao,
@@ -156,7 +163,8 @@ export default withApiErrorHandling(async function handler(
           )
         : Number(existing.total || 0);
     const descontoValor = Number(desconto ?? existing.desconto ?? 0);
-    const total = Math.max(subtotal - descontoValor, 0);
+    const freteValor = Number(frete ?? existing.frete ?? 0);
+    const total = Math.max(subtotal - descontoValor, 0) + freteValor;
 
     const firstItem = normalizedItems[0] ?? {
       modeloVela: existing.modeloVela,
@@ -180,6 +188,8 @@ export default withApiErrorHandling(async function handler(
         total,
         desconto: descontoValor,
         obsDesconto: obsDesconto ?? existing.obsDesconto ?? "",
+        frete: freteValor,
+        obsCliente: obsCliente ?? existing.obsCliente ?? "",
         formaPagamento: formaPagamento ?? existing.formaPagamento,
         status: status ?? existing.status,
         observacao: observacao ?? firstItem.observacao ?? existing.observacao,

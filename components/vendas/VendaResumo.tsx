@@ -6,6 +6,7 @@ export type ResumoVendas = {
   receita: number;
   totalVelasVendidas: number;
   paymentSummary: { name: string; value: number; count: number }[];
+  freteSummary: { value: number; count: number };
   statusSummary: { name: string; count: number }[];
 };
 
@@ -84,6 +85,20 @@ export default function VendaResumo({ resumo }: Props) {
             </div>
           </div>
         ))}
+        <div
+          style={{
+            background: "white",
+            padding: 16,
+            borderRadius: 10,
+            boxShadow: COLORS.subtleShadowSmall,
+          }}
+        >
+          <strong>Frete</strong>
+          <div style={{ marginTop: 8 }}>
+            {resumo.freteSummary.count} pedidos — R${" "}
+            {resumo.freteSummary.value.toFixed(2)}
+          </div>
+        </div>
         {resumo.statusSummary.map((item) => (
           <div
             key={item.name}

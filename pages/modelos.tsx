@@ -515,9 +515,6 @@ export default function Modelos() {
           gap: 20,
           marginTop: 20,
           width: "100%",
-          maxWidth: 1120,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         {isAuthenticated && (
@@ -549,6 +546,7 @@ export default function Modelos() {
 
         <ModeloTable
           filteredModelos={filteredModelos}
+          totalCount={modelos.filter((modelo) => modelo.ativo !== false).length}
           isAuthenticated={isAuthenticated}
           canDelete={canDelete}
           onEdit={editModelo}

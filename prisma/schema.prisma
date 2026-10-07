@@ -98,6 +98,8 @@ model Venda {
   total          Float
   desconto       Float      @default(0)
   obsDesconto    String?
+  frete          Float      @default(0)
+  obsCliente     String?
   formaPagamento String
   status         String
   observacao     String?

@@ -336,9 +336,6 @@ export default function Insumos() {
           flexDirection: "column",
           gap: 20,
           marginTop: 20,
-          maxWidth: 1120,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         {isAuthenticated && (
@@ -358,7 +355,7 @@ export default function Insumos() {
 
         <InsumoTable
           items={filteredInsumos}
-          totalCount={insumos.length}
+          totalCount={insumos.filter((insumo) => insumo.active !== false).length}
           isAuthenticated={isAuthenticated}
           canDelete={canDelete}
           showActiveOnly={showActiveOnly}

@@ -26,6 +26,30 @@ type Props = {
   onDelete: (id: number) => void;
 };
 
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
 export default function InsumoTable({
   items,
   totalCount,
@@ -124,214 +148,135 @@ export default function InsumoTable({
         />
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Status
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Insumo
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Unidade
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Tipos de produto
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Custo compra
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Qtd comprada
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Custo unitário
-            </th>
-            <th
-              style={{
-                padding: 12,
-                textAlign: "center",
-                color: COLORS.primary,
-              }}
-            >
-              Ações
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, index) => (
-            <tr
-              key={item.id}
-              style={{
-                background:
-                  (item.active ?? true)
-                    ? index % 2 === 0
-                      ? COLORS.tableRowEven
-                      : COLORS.tableRowOdd
-                    : index % 2 === 0
-                      ? "#f3f4f6"
-                      : "#e5e7eb",
-              }}
-            >
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                {(item.active ?? true) ? "Ativo" : "Inativo"}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                {item.name}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                {item.unit || "-"}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                {item.productTypes && item.productTypes.length > 0
-                  ? item.productTypes.join(", ")
-                  : "-"}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                R$ {item.purchaseCost.toFixed(2)}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                {item.purchasedQuantity}
-              </td>
-              <td
-                style={{
-                  padding: 12,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                }}
-              >
-                R$ {item.unitCost.toFixed(3)}
-              </td>
-              <td
-                style={{
-                  padding: 8,
-                  borderTop: "1px solid rgb(167, 117, 75)",
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <div
-                  style={{ display: "flex", justifyContent: "center", gap: 6 }}
-                >
-                  {isAuthenticated && (
-                    <button
-                      type="button"
-                      onClick={() => onEdit(item)}
-                      aria-label={`Editar insumo ${item.name}`}
-                      style={{
-                        padding: "5px 8px",
-                        background: COLORS.primary,
-                        color: "white",
-                        border: "none",
-                        borderRadius: 6,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Editar
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button
-                      type="button"
-                      onClick={() => onDelete(item.id)}
-                      aria-label={`Excluir insumo ${item.name}`}
-                      style={{
-                        padding: "5px 8px",
-                        background: COLORS.dangerRgb,
-                        color: "white",
-                        border: "none",
-                        borderRadius: 6,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Excluir
-                    </button>
-                  )}
-                </div>
-              </td>
+      <div style={{ overflowX: "hidden" }}>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: 11.5,
+            tableLayout: "fixed",
+          }}
+        >
+          <thead style={{ background: "rgba(255,255,255,0.35)" }}>
+            <tr>
+              <th style={{ ...thStyle, width: 70 }}>Status</th>
+              <th style={thStyle}>Insumo</th>
+              <th style={{ ...thStyle, width: 70 }}>Unidade</th>
+              <th style={thStyle}>Tipos de produto</th>
+              <th style={thStyle}>Custo compra</th>
+              <th style={thStyle}>Qtd comprada</th>
+              <th style={thStyle}>Custo unitário</th>
+              <th style={thStyle}>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item, index) => (
+              <tr
+                key={item.id}
+                style={{
+                  background:
+                    (item.active ?? true)
+                      ? index % 2 === 0
+                        ? COLORS.tableRowEven
+                        : COLORS.tableRowOdd
+                      : index % 2 === 0
+                        ? "#f3f4f6"
+                        : "#e5e7eb",
+                }}
+              >
+                <td style={{ ...tdStyle, width: 70 }}>
+                  {(item.active ?? true) ? "Ativo" : "Inativo"}
+                </td>
+                <td style={tdStyle}>{item.name}</td>
+                <td style={{ ...tdStyle, width: 70 }}>{item.unit || "-"}</td>
+                <td style={tdStyle}>
+                  {item.productTypes && item.productTypes.length > 0
+                    ? item.productTypes.join(", ")
+                    : "-"}
+                </td>
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      ...badgeStyle,
+                      padding: "4px 10px",
+                      background: "rgba(34, 197, 94, 0.12)",
+                      color: "#166534",
+                      fontWeight: 800,
+                    }}
+                  >
+                    <span>R$</span>
+                    <span>{item.purchaseCost.toFixed(2)}</span>
+                  </span>
+                </td>
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      ...badgeStyle,
+                      minWidth: 32,
+                      background: "rgba(167, 117, 75, 0.12)",
+                      color: "#5b3a22",
+                    }}
+                  >
+                    {item.purchasedQuantity}
+                  </span>
+                </td>
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      ...badgeStyle,
+                      background: "rgba(59, 130, 246, 0.10)",
+                      color: "#1d4ed8",
+                    }}
+                  >
+                    <span>R$</span>
+                    <span>{item.unitCost.toFixed(3)}</span>
+                  </span>
+                </td>
+                <td style={{ ...tdStyle, padding: 8, whiteSpace: "nowrap" }}>
+                  <div
+                    style={{ display: "flex", justifyContent: "center", gap: 6 }}
+                  >
+                    {isAuthenticated && (
+                      <button
+                        type="button"
+                        onClick={() => onEdit(item)}
+                        aria-label={`Editar insumo ${item.name}`}
+                        style={{
+                          padding: "5px 8px",
+                          background: COLORS.primary,
+                          color: "white",
+                          border: "none",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Editar
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(item.id)}
+                        aria-label={`Excluir insumo ${item.name}`}
+                        style={{
+                          padding: "5px 8px",
+                          background: COLORS.dangerLight,
+                          color: "white",
+                          border: "none",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

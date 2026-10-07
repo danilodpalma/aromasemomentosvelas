@@ -22,6 +22,8 @@ export type VendaFormState = {
   observacao: string;
   desconto: string;
   observacaoDesconto: string;
+  frete: string;
+  obsCliente: string;
   itens: VendaItemForm[];
 };
 
@@ -61,7 +63,8 @@ export default function VendaForm({
     return sum + quantidade * precoUnitario;
   }, 0);
   const descontoPedido = Number(parseCurrencyInput(form.desconto || "0"));
-  const totalPedido = Math.max(subtotalPedido - descontoPedido, 0);
+  const fretePedido = Number(parseCurrencyInput(form.frete || "0"));
+  const totalPedido = Math.max(subtotalPedido - descontoPedido, 0) + fretePedido;
 
   return (
     <div
@@ -157,6 +160,32 @@ export default function VendaForm({
             />
           </label>
         </div>
+
+        <label style={{ display: "block", marginTop: 12 }}>
+          Observação do cliente
+          <textarea
+            rows={2}
+            disabled={formMode === "idle"}
+            value={form.obsCliente}
+            placeholder="Escreva aqui informações sobre o cliente, como entrega, endereço etc."
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, obsCliente: e.target.value }))
+            }
+            style={{
+              width: "100%",
+              marginTop: 6,
+              padding: 8,
+              background:
+                formMode === "idle" ? COLORS.grayLight : COLORS.white,
+              border: "1px solid rgb(167, 117, 75)",
+              borderRadius: 6,
+              textAlign: "left",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              resize: "vertical",
+            }}
+          />
+        </label>
 
         <div
           style={{
@@ -444,7 +473,40 @@ export default function VendaForm({
           </label>
 
           <label style={{ display: "block" }}>
-            Obs. do desconto
+            Frete
+            <input
+              type="text"
+              disabled={formMode === "idle"}
+              value={form.frete}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  frete: sanitizeCurrencyInput(e.target.value),
+                }))
+              }
+              onBlur={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  frete: prev.frete
+                    ? formatCurrencyInput(prev.frete, 2)
+                    : "0.00",
+                }))
+              }
+              style={{
+                width: "100%",
+                marginTop: 6,
+                padding: 8,
+                background:
+                  formMode === "idle" ? COLORS.grayLight : COLORS.white,
+                border: "1px solid rgb(167, 117, 75)",
+                borderRadius: 6,
+                textAlign: "left",
+              }}
+            />
+          </label>
+
+          <label style={{ display: "block" }}>
+            Obs. desconto/frete
             <input
               disabled={formMode === "idle"}
               value={form.observacaoDesconto}
@@ -554,7 +616,7 @@ export default function VendaForm({
           </label>
 
           <label style={{ display: "block" }}>
-            Observação
+            Observação do pedido
             <input
               disabled={formMode === "idle"}
               value={form.observacao}

@@ -33,6 +33,7 @@ type Modelo = {
 
 type Props = {
   filteredModelos: Modelo[];
+  totalCount: number;
   isAuthenticated: boolean;
   canDelete: boolean;
   onEdit: (id: number) => void;
@@ -43,8 +44,47 @@ type Props = {
   setShowActiveOnly: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+  whiteSpace: "nowrap",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
+const qtyBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  minWidth: 32,
+  background: "rgba(167, 117, 75, 0.12)",
+  color: "#5b3a22",
+};
+
+const priceBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  background: "rgba(59, 130, 246, 0.10)",
+  color: "#1d4ed8",
+};
+
 export default function ModeloTable({
   filteredModelos,
+  totalCount,
   isAuthenticated,
   canDelete,
   onEdit,
@@ -58,9 +98,9 @@ export default function ModeloTable({
     <div
       style={{
         background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-        padding: 22,
-        borderRadius: 16,
-        boxShadow: COLORS.cardShadowLarge,
+        padding: 20,
+        borderRadius: 14,
+        boxShadow: COLORS.cardShadow,
         border: COLORS.cardBorder,
       }}
     >
@@ -72,7 +112,12 @@ export default function ModeloTable({
           marginBottom: 16,
         }}
       >
-        <h3>Modelos cadastrados</h3>
+        <div>
+          <h3 style={{ marginBottom: 4 }}>Modelos cadastrados</h3>
+          <div style={{ color: COLORS.grayText, fontSize: 14 }}>
+            Total de modelos: {totalCount}
+          </div>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <label
             style={{
@@ -130,46 +175,44 @@ export default function ModeloTable({
               width: "100%",
               borderCollapse: "collapse",
               minWidth: 800,
+              fontSize: 11.5,
             }}
           >
-            <thead>
+            <thead style={{ background: "rgba(255,255,255,0.35)" }}>
               <tr>
-                <th style={{ padding: 8, textAlign: "center" }}>Ações</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Nome</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Base</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Base (g)</th>
-                <th style={{ padding: 8, textAlign: "right" }}>
-                  Essência (ml)
-                </th>
-                <th style={{ padding: 8, textAlign: "left" }}>Essência</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Pavio</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Corante</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Recipiente</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Pedra</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Óleo</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Óleo (g)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Argila</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Argila (g)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Dióxido</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Dióxido (g)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Manteiga</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Manteiga (g)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Extrato</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Extrato (g)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Lauril</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Lauril (g)</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Emb.</th>
-                <th style={{ padding: 8, textAlign: "right" }}>M.Obra</th>
-                <th style={{ padding: 8, textAlign: "right" }}>Margem</th>
+                <th style={thStyle}>Ações</th>
+                <th style={thStyle}>Nome</th>
+                <th style={thStyle}>Base</th>
+                <th style={thStyle}>Base (g)</th>
+                <th style={thStyle}>Essência (ml)</th>
+                <th style={thStyle}>Essência</th>
+                <th style={thStyle}>Pavio</th>
+                <th style={thStyle}>Corante</th>
+                <th style={thStyle}>Corante (g)</th>
+                <th style={thStyle}>Recipiente</th>
+                <th style={thStyle}>Pedra</th>
+                <th style={thStyle}>Óleo</th>
+                <th style={thStyle}>Óleo (g)</th>
+                <th style={thStyle}>Argila</th>
+                <th style={thStyle}>Argila (g)</th>
+                <th style={thStyle}>Dióxido</th>
+                <th style={thStyle}>Dióxido (g)</th>
+                <th style={thStyle}>Manteiga</th>
+                <th style={thStyle}>Manteiga (g)</th>
+                <th style={thStyle}>Extrato</th>
+                <th style={thStyle}>Extrato (g)</th>
+                <th style={thStyle}>Lauril</th>
+                <th style={thStyle}>Lauril (g)</th>
+                <th style={thStyle}>Emb.</th>
+                <th style={thStyle}>M.Obra</th>
+                <th style={thStyle}>Margem</th>
               </tr>
             </thead>
             <tbody>
-              <th style={{ padding: 8, textAlign: "right" }}>Corante (g)</th>
               {filteredModelos.map((modelo, index) => (
                 <tr
                   key={modelo.id}
                   style={{
-                    borderTop: "1px solid rgb(167, 117, 75)",
                     background: modelo.ativo
                       ? index % 2 === 0
                         ? COLORS.tableRowEven
@@ -179,13 +222,7 @@ export default function ModeloTable({
                         : "#e5e7eb",
                   }}
                 >
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "center",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                  <td style={{ ...tdStyle, padding: 8, whiteSpace: "nowrap" }}>
                     <div
                       style={{
                         display: "flex",
@@ -217,7 +254,7 @@ export default function ModeloTable({
                           aria-label={`Excluir modelo ${modelo.nome}`}
                           style={{
                             padding: "5px 8px",
-                            background: COLORS.dangerRgb,
+                            background: COLORS.dangerLight,
                             color: "white",
                             border: "none",
                             borderRadius: 6,
@@ -229,54 +266,72 @@ export default function ModeloTable({
                       )}
                     </div>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.nome}</td>
-                  <td style={{ padding: 8 }}>{modelo.tipoProduto || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.ceraGr}g
+                  <td style={{ ...tdStyle, fontWeight: 700 }}>{modelo.nome}</td>
+                  <td style={tdStyle}>{modelo.tipoProduto || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.ceraGr}g</span>
                   </td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.esenciaMl}ml
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.esenciaMl}ml</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.essenciaNome || "-"}</td>
-                  <td style={{ padding: 8 }}>{modelo.pavio || "-"}</td>
-                  <td style={{ padding: 8 }}>{modelo.coranteNome || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.coranteGr}g
+                  <td style={tdStyle}>{modelo.essenciaNome || "-"}</td>
+                  <td style={tdStyle}>{modelo.pavio || "-"}</td>
+                  <td style={tdStyle}>{modelo.coranteNome || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.coranteGr}g</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.recipiente || "-"}</td>
-                  <td style={{ padding: 8 }}>{modelo.pedra || "-"}</td>
-                  <td style={{ padding: 8 }}>{modelo.oleo || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.oleoGr || 0}g
+                  <td style={tdStyle}>{modelo.recipiente || "-"}</td>
+                  <td style={tdStyle}>{modelo.pedra || "-"}</td>
+                  <td style={tdStyle}>{modelo.oleo || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.oleoGr || 0}g</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.argila || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.argilaGr || 0}g
+                  <td style={tdStyle}>{modelo.argila || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.argilaGr || 0}g</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.dioxido || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.dioxidoGr || 0}g
+                  <td style={tdStyle}>{modelo.dioxido || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.dioxidoGr || 0}g</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.manteiga || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.manteigaGr || 0}g
+                  <td style={tdStyle}>{modelo.manteiga || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>
+                      {modelo.manteigaGr || 0}g
+                    </span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.extrato || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.extratoGr}g
+                  <td style={tdStyle}>{modelo.extrato || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.extratoGr}g</span>
                   </td>
-                  <td style={{ padding: 8 }}>{modelo.lauril || "-"}</td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.laurilGr}g
+                  <td style={tdStyle}>{modelo.lauril || "-"}</td>
+                  <td style={tdStyle}>
+                    <span style={qtyBadgeStyle}>{modelo.laurilGr}g</span>
                   </td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    R$ {modelo.embalagem.toFixed(3)}
+                  <td style={tdStyle}>
+                    <span style={priceBadgeStyle}>
+                      <span>R$</span>
+                      <span>{modelo.embalagem.toFixed(3)}</span>
+                    </span>
                   </td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    R$ {modelo.maoDeObra.toFixed(3)}
+                  <td style={tdStyle}>
+                    <span style={priceBadgeStyle}>
+                      <span>R$</span>
+                      <span>{modelo.maoDeObra.toFixed(3)}</span>
+                    </span>
                   </td>
-                  <td style={{ padding: 8, textAlign: "right" }}>
-                    {modelo.margemLucro}%
+                  <td style={tdStyle}>
+                    <span
+                      style={{
+                        ...badgeStyle,
+                        padding: "4px 10px",
+                        background: "rgba(34, 197, 94, 0.12)",
+                        color: "#166534",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {modelo.margemLucro}%
+                    </span>
                   </td>
                 </tr>
               ))}

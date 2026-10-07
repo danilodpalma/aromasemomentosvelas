@@ -303,9 +303,6 @@ export default function Parametros() {
           display: "grid",
           gap: 20,
           marginTop: 20,
-          maxWidth: 1120,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         {isAuthenticated && (

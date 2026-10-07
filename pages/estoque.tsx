@@ -13,6 +13,51 @@ type Insumo = {
   purchasedQuantity: number;
 };
 
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
+const qtyBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  minWidth: 32,
+  background: "rgba(167, 117, 75, 0.12)",
+  color: "#5b3a22",
+};
+
+const priceBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  background: "rgba(59, 130, 246, 0.10)",
+  color: "#1d4ed8",
+};
+
+const actionButtonStyle: React.CSSProperties = {
+  padding: "5px 8px",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+
 export default function Estoque() {
   const { isAuthenticated } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -115,20 +160,22 @@ export default function Estoque() {
           overflowX: "auto",
         }}
       >
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table
+          style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}
+        >
           <thead style={{ background: "rgba(255,255,255,0.35)" }}>
             <tr>
-              <th style={{ padding: 12, textAlign: "left" }}>Insumo</th>
-              <th style={{ padding: 12, textAlign: "left" }}>Unidade</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Estoque</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Custo Médio</th>
-              <th style={{ padding: 12, textAlign: "center" }}>Ações</th>
+              <th style={thStyle}>Insumo</th>
+              <th style={thStyle}>Unidade</th>
+              <th style={thStyle}>Estoque</th>
+              <th style={thStyle}>Custo Médio</th>
+              <th style={thStyle}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {sortedInsumos.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: 16, textAlign: "center" }}>
+                <td colSpan={5} style={{ ...tdStyle, padding: 16 }}>
                   Nenhum insumo cadastrado ainda.
                 </td>
               </tr>
@@ -144,27 +191,17 @@ export default function Estoque() {
                   }}
                 >
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: COLORS.cardBorder,
-                    }}
+                    style={tdStyle}
                   >
                     {insumo.name}
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      borderTop: COLORS.cardBorder,
-                    }}
+                    style={tdStyle}
                   >
                     {insumo.unit || "-"}
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      textAlign: "center",
-                      borderTop: COLORS.cardBorder,
-                    }}
+                    style={tdStyle}
                   >
                     {editingId === insumo.id ? (
                       <input
@@ -182,24 +219,16 @@ export default function Estoque() {
                         }}
                       />
                     ) : (
-                      insumo.stock
+                      <span style={qtyBadgeStyle}>{insumo.stock}</span>
                     )}
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      textAlign: "center",
-                      borderTop: COLORS.cardBorder,
-                    }}
+                    style={tdStyle}
                   >
-                    R$ {Number(insumo.unitCost || 0).toFixed(3)}
+                    <span style={priceBadgeStyle}><span>R$</span><span>{Number(insumo.unitCost || 0).toFixed(3)}</span></span>
                   </td>
                   <td
-                    style={{
-                      padding: 12,
-                      textAlign: "center",
-                      borderTop: COLORS.cardBorder,
-                    }}
+                    style={tdStyle}
                   >
                     {isAuthenticated ? (
                       editingId === insumo.id ? (
@@ -207,19 +236,15 @@ export default function Estoque() {
                           style={{
                             display: "flex",
                             justifyContent: "center",
-                            gap: 8,
+                            gap: 6,
                           }}
                         >
                           <button
                             type="button"
                             onClick={() => saveStock(insumo.id)}
                             style={{
-                              padding: "6px 10px",
+                              ...actionButtonStyle,
                               background: COLORS.primary,
-                              color: "white",
-                              border: "none",
-                              borderRadius: 6,
-                              cursor: "pointer",
                             }}
                           >
                             Salvar
@@ -228,14 +253,8 @@ export default function Estoque() {
                             type="button"
                             onClick={cancelEdit}
                             style={{
-                              padding: "10px 16px",
-                              background: COLORS.cancelButtonBackground,
-                              color: "white",
-                              border: "none",
-                              borderRadius: 6,
-                              cursor: "pointer",
-                              fontWeight: 600,
-                              height: 40,
+                              ...actionButtonStyle,
+                              background: COLORS.dangerLight,
                             }}
                           >
                             Cancelar
@@ -246,12 +265,8 @@ export default function Estoque() {
                           type="button"
                           onClick={() => startEdit(insumo)}
                           style={{
-                            padding: "8px 16px",
+                            ...actionButtonStyle,
                             background: COLORS.primary,
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
                           }}
                         >
                           Editar

@@ -19,6 +19,45 @@ const ROLE_LABELS: Record<string, string> = {
   VIEWER: "Visualizador",
 };
 
+const thStyle: React.CSSProperties = {
+  padding: "10px 8px",
+  textAlign: "center",
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  borderTop: "1px solid rgb(167, 117, 75)",
+  textAlign: "center",
+  verticalAlign: "middle",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "4px 8px",
+  borderRadius: 999,
+  fontWeight: 700,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
+};
+
+const qtyBadgeStyle: React.CSSProperties = {
+  ...badgeStyle,
+  minWidth: 32,
+  background: "rgba(167, 117, 75, 0.12)",
+  color: "#5b3a22",
+};
+
+const actionButtonStyle: React.CSSProperties = {
+  padding: "5px 8px",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+
 export default function Usuarios() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const router = useRouter();
@@ -186,9 +225,6 @@ export default function Usuarios() {
           flexDirection: "column",
           gap: 20,
           marginTop: 20,
-          maxWidth: 900,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
         <section
@@ -352,13 +388,15 @@ export default function Usuarios() {
           {loadingList ? (
             <p>Carregando...</p>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
+            <table
+              style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}
+            >
+              <thead style={{ background: "rgba(255,255,255,0.35)" }}>
                 <tr>
-                  <th style={{ padding: 10, textAlign: "left" }}>Nome</th>
-                  <th style={{ padding: 10, textAlign: "left" }}>E-mail</th>
-                  <th style={{ padding: 10, textAlign: "left" }}>Perfil</th>
-                  <th style={{ padding: 10, textAlign: "center" }}>Ações</th>
+                  <th style={thStyle}>Nome</th>
+                  <th style={thStyle}>E-mail</th>
+                  <th style={thStyle}>Perfil</th>
+                  <th style={thStyle}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -366,74 +404,68 @@ export default function Usuarios() {
                   <tr>
                     <td
                       colSpan={4}
-                      style={{ padding: 16, textAlign: "center" }}
+                      style={{ ...tdStyle, padding: 16 }}
                     >
                       Nenhum usuário cadastrado ainda.
                     </td>
                   </tr>
                 ) : (
-                  users.map((u) => (
-                    <tr key={u.id}>
+                  users.map((u, index) => (
+                    <tr
+                      key={u.id}
+                      style={{
+                        background:
+                          index % 2 === 0
+                            ? COLORS.tableRowEven
+                            : COLORS.tableRowOdd,
+                      }}
+                    >
                       <td
-                        style={{
-                          padding: 10,
-                          borderTop: COLORS.cardBorder,
-                        }}
+                        style={tdStyle}
                       >
                         {u.name}
                       </td>
                       <td
-                        style={{
-                          padding: 10,
-                          borderTop: COLORS.cardBorder,
-                        }}
+                        style={tdStyle}
                       >
                         {u.email}
                       </td>
                       <td
-                        style={{
-                          padding: 10,
-                          borderTop: COLORS.cardBorder,
-                        }}
+                        style={tdStyle}
                       >
-                        {ROLE_LABELS[u.role] || u.role}
+                        <span style={qtyBadgeStyle}>
+                          {ROLE_LABELS[u.role] || u.role}
+                        </span>
                       </td>
-                      <td
-                        style={{
-                          padding: 10,
-                          borderTop: COLORS.cardBorder,
-                          textAlign: "center",
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => startEdit(u)}
+                      <td style={{ ...tdStyle, padding: 8, whiteSpace: "nowrap" }}>
+                        <div
                           style={{
-                            padding: "6px 10px",
-                            marginRight: 6,
-                            background: COLORS.primary,
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: 6,
                           }}
                         >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(u.id)}
-                          style={{
-                            padding: "6px 10px",
-                            background: COLORS.danger,
-                            color: "white",
-                            border: "none",
-                            borderRadius: 6,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Remover
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(u)}
+                            style={{
+                              ...actionButtonStyle,
+                              background: COLORS.primary,
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(u.id)}
+                            style={{
+                              ...actionButtonStyle,
+                              background: COLORS.dangerLight,
+                            }}
+                          >
+                            Remover
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

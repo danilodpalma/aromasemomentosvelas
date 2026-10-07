@@ -17,6 +17,8 @@ type Venda = {
   total: number;
   desconto?: number;
   obsDesconto?: string;
+  frete?: number;
+  obsCliente?: string;
   formaPagamento: string;
   status: string;
   observacao?: string;
@@ -83,6 +85,8 @@ export default function Vendas() {
     observacao: "",
     desconto: "0.00",
     observacaoDesconto: "",
+    frete: "0.00",
+    obsCliente: "",
     itens: [
       { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
     ],
@@ -185,6 +189,8 @@ export default function Vendas() {
       observacao: "",
       desconto: "0.00",
       observacaoDesconto: "",
+      frete: "0.00",
+      obsCliente: "",
       itens: [
         { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
       ],
@@ -203,6 +209,8 @@ export default function Vendas() {
       observacao: "",
       desconto: "0.00",
       observacaoDesconto: "",
+      frete: "0.00",
+      obsCliente: "",
       itens: [
         { modeloVela: "", quantidade: "", precoUnitario: "", observacao: "" },
       ],
@@ -238,6 +246,8 @@ export default function Vendas() {
       observacao: venda.observacao ?? "",
       desconto: formatCurrencyInput(venda.desconto ?? 0, 2),
       observacaoDesconto: venda.obsDesconto ?? "",
+      frete: formatCurrencyInput(venda.frete ?? 0, 2),
+      obsCliente: venda.obsCliente ?? "",
       itens: itemRows,
     });
     showMessage("Edição de venda ativa. Faça as alterações e salve.", "info");
@@ -369,7 +379,8 @@ export default function Vendas() {
       0,
     );
     const descontoValor = Number(parseCurrencyInput(form.desconto || "0"));
-    const totalPedido = Math.max(subtotalPedido - descontoValor, 0);
+    const freteValor = Number(parseCurrencyInput(form.frete || "0"));
+    const totalPedido = Math.max(subtotalPedido - descontoValor, 0) + freteValor;
 
     const payload = {
       dataVenda: form.dataVenda,
@@ -383,6 +394,8 @@ export default function Vendas() {
       total: totalPedido,
       desconto: descontoValor,
       obsDesconto: form.observacaoDesconto,
+      frete: freteValor,
+      obsCliente: form.obsCliente,
       formaPagamento: form.formaPagamento,
       status: form.status,
       observacao: form.observacao,
@@ -428,6 +441,11 @@ export default function Vendas() {
       0,
     );
     const receita = totalVendido;
+    const vendasComFrete = vendasLista.filter((v) => Number(v.frete ?? 0) > 0);
+    const freteSummary = {
+      value: vendasComFrete.reduce((sum, v) => sum + Number(v.frete ?? 0), 0),
+      count: vendasComFrete.length,
+    };
 
     const paymentSummary = paymentMethods.map((method) => {
       const value = vendasLista
@@ -465,6 +483,7 @@ export default function Vendas() {
       receita,
       totalVelasVendidas,
       paymentSummary,
+      freteSummary,
       statusSummary,
       paymentTotals,
       statusCounts,
