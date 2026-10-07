@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (mustLogin) router.replace("/login");
   }, [mustLogin, router]);
 
-  // Ao rolar a página, o cabeçalho fica fixo e compacto (só o menu, sem o logo).
+  // Ao rolar a página, o cabeçalho fica fixo e compacto (logo menor).
   // Limites diferentes para recolher e expandir evitam que o cabeçalho
   // "pisque" quando a rolagem para perto do ponto de troca.
   const [compactHeader, setCompactHeader] = useState(false);
@@ -91,20 +91,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            gap: compactHeader ? 0 : 20,
+            gap: compactHeader ? 6 : 20,
             transition: "gap 0.25s ease",
           }}
         >
           <div
-            aria-hidden={compactHeader}
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              maxHeight: compactHeader ? 0 : 90,
-              opacity: compactHeader ? 0 : 1,
-              overflow: "hidden",
-              transition: "max-height 0.25s ease, opacity 0.2s ease",
             }}
           >
             <Link href="/">
@@ -112,11 +107,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 src="/Logo1.png"
                 alt="Aromase Momentos"
                 style={{
-                  height: 70,
+                  height: compactHeader ? 34 : 70,
                   width: "auto",
                   maxWidth: 600,
                   cursor: "pointer",
-                  transition: "transform 0.2s ease",
+                  transition: "transform 0.2s ease, height 0.25s ease",
                 }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.transform = "scale(1.05)")
