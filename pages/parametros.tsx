@@ -17,7 +17,7 @@ type Parameter = {
 };
 
 export default function Parametros() {
-  const { isAuthenticated, canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
   const [types, setTypes] = useState<Parameter[]>([]);
   const [name, setName] = useState("");
   const [category, setCategory] =
@@ -30,7 +30,7 @@ export default function Parametros() {
   useEffect(() => {
     async function loadParameters() {
       try {
-        const res = await fetch("/api/productTypes");
+        const res = await authFetch("/api/productTypes");
         const data = await res.json();
         if (!res.ok) {
           throw new Error(data?.error || "Falha ao carregar parâmetros.");
@@ -143,7 +143,8 @@ export default function Parametros() {
       setTypes((prev) => prev.filter((t) => t.id !== id));
       setMessage("Excluído.");
     } else {
-      setMessage("Erro ao excluir.");
+      const data = await res.json().catch(() => ({}));
+      setMessage(data.error || "Erro ao excluir.");
     }
   }
 
@@ -234,7 +235,7 @@ export default function Parametros() {
                   {t.name}
                 </span>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  {isAuthenticated && (
+                  {canEdit && (
                     <button
                       onClick={() => startEdit(t)}
                       style={{
@@ -305,7 +306,7 @@ export default function Parametros() {
           marginTop: 20,
         }}
       >
-        {isAuthenticated && (
+        {canEdit && (
           <div
             style={{
               background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,

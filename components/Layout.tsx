@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -18,7 +19,14 @@ const menuItems = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isLoading, logout } = useAuth();
+  const isLoginPage = router.pathname === "/login";
+  const mustLogin = !isLoading && !isAuthenticated && !isLoginPage;
+
+  // Todas as telas exigem login, exceto a própria tela de login.
+  useEffect(() => {
+    if (mustLogin) router.replace("/login");
+  }, [mustLogin, router]);
 
   function handleLogout() {
     logout();
@@ -187,7 +195,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           padding: "0 24px 40px",
         }}
       >
-        {children}
+        {isLoginPage || isAuthenticated ? children : null}
       </main>
     </div>
   );

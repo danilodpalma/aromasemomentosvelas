@@ -11,7 +11,7 @@ export default withApiErrorHandling(async function handler(
   res: NextApiResponse,
 ) {
   // Toda a rota exige login de administrador, inclusive para listar.
-  requireAdmin(req);
+  const currentUser = requireAdmin(req);
 
   if (req.method === "GET") {
     const users = await prisma.user.findMany({
@@ -92,6 +92,16 @@ export default withApiErrorHandling(async function handler(
     }
 
     const finalRole = VALID_ROLES.includes(role) ? role : "VIEWER";
+    // O sistema nunca pode ficar sem administrador.
+    if (existingUser.role === "ADMIN" && finalRole !== "ADMIN") {
+      const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (admins <= 1) {
+        return res.status(409).json({
+          error: "Este é o único administrador. Defina outro admin antes.",
+        });
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: {
@@ -118,6 +128,24 @@ export default withApiErrorHandling(async function handler(
     const id = idParam ? Number(idParam) : null;
     if (!id) {
       return res.status(400).json({ error: "Informe o id do usuário." });
+    }
+    if (id === currentUser.id) {
+      return res
+        .status(409)
+        .json({ error: "Você não pode excluir o seu próprio usuário." });
+    }
+
+    const target = await prisma.user.findUnique({ where: { id } });
+    if (!target) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+    if (target.role === "ADMIN") {
+      const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (admins <= 1) {
+        return res
+          .status(409)
+          .json({ error: "Não é possível excluir o único administrador." });
+      }
     }
 
     await prisma.user.delete({ where: { id } });

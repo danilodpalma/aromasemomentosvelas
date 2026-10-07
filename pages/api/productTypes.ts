@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth, requireCanDelete } from "../../lib/auth";
+import { requireDataAccess } from "../../lib/auth";
+import {
+  describeParameterUsage,
+  renameParameterReferences,
+} from "../../lib/references";
 
 const validCategories = [
   "productType",
@@ -26,11 +30,7 @@ export default withApiErrorHandling(async function handler(
     ? categoryParam
     : undefined;
 
-  if (req.method === "DELETE") {
-    requireCanDelete(req);
-  } else if (req.method !== "GET") {
-    requireAuth(req);
-  }
+  requireDataAccess(req);
 
   if (req.method === "GET") {
     if (categoryParam && !category) {
@@ -110,18 +110,40 @@ export default withApiErrorHandling(async function handler(
       });
     }
 
-    const updated = await prisma.productType.update({
-      where: { id },
-      data: {
-        name: finalName,
-        category: finalCategory,
-      } as any,
+    // Atualiza o parâmetro e, se o nome mudou, os registros que o usam, tudo junto.
+    const updated = await prisma.$transaction(async (tx) => {
+      if (finalCategory === existing.category) {
+        await renameParameterReferences(
+          tx,
+          existing.category,
+          existing.name,
+          finalName,
+        );
+      }
+      return tx.productType.update({
+        where: { id },
+        data: {
+          name: finalName,
+          category: finalCategory,
+        } as any,
+      });
     });
     res.status(200).json(updated);
     return;
   }
 
   if (req.method === "DELETE" && id) {
+    const existing = await prisma.productType.findUnique({ where: { id } });
+    if (!existing)
+      return res.status(404).json({ error: "Parâmetro não encontrado." });
+
+    const usage = await describeParameterUsage(existing.category, existing.name);
+    if (usage) {
+      return res.status(409).json({
+        error: `Este parâmetro é usado em ${usage} e não pode ser excluído.`,
+      });
+    }
+
     await prisma.productType.delete({ where: { id } });
     res.status(204).end();
     return;

@@ -64,7 +64,7 @@ type Parameter = {
 type MessageKind = "success" | "error" | "info";
 
 export default function Vendas() {
-  const { isAuthenticated, canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -108,10 +108,10 @@ export default function Vendas() {
       try {
         const [vendasRes, modelosRes, paymentRes, statusRes] =
           await Promise.all([
-            fetch("/api/vendas"),
-            fetch("/api/modelos"),
-            fetch("/api/productTypes?category=paymentMethod"),
-            fetch("/api/productTypes?category=saleStatus"),
+            authFetch("/api/vendas"),
+            authFetch("/api/modelos"),
+            authFetch("/api/productTypes?category=paymentMethod"),
+            authFetch("/api/productTypes?category=saleStatus"),
           ]);
         const [vendasData, modelosData, paymentData, statusData]: unknown[] =
           await Promise.all([
@@ -287,8 +287,8 @@ export default function Vendas() {
     const selectedModel = form.itens[selectedItemIndex].modeloVela;
 
     const [insumosRes, modelosRes] = await Promise.all([
-      fetch("/api/products"),
-      fetch("/api/modelos"),
+      authFetch("/api/products"),
+      authFetch("/api/modelos"),
     ]);
     const insumos = await insumosRes.json();
     const modelosData = await modelosRes.json();
@@ -435,7 +435,11 @@ export default function Vendas() {
   }
 
   function calculateResumo() {
-    const totalVendido = vendasLista.reduce((sum, v) => sum + v.total, 0);
+    // Total vendido e receita não incluem o frete (é repasse); o frete tem card próprio.
+    const totalVendido = vendasLista.reduce(
+      (sum, v) => sum + Math.max(v.total - Number(v.frete ?? 0), 0),
+      0,
+    );
     const totalVelasVendidas = vendasLista.reduce(
       (sum, v) => sum + v.quantidade,
       0,
@@ -563,7 +567,7 @@ export default function Vendas() {
           marginTop: 24,
         }}
       >
-        {isAuthenticated ? (
+        {canEdit ? (
           <VendaForm
             formMode={formMode}
             editingId={editingId}
@@ -591,27 +595,16 @@ export default function Vendas() {
               borderRadius: 10,
             }}
           >
-            <span>Entre na sua conta para lançar uma venda.</span>
-            <a
-              href="/login"
-              style={{
-                display: "inline-block",
-                padding: "10px 16px",
-                background: COLORS.primary,
-                color: "white",
-                borderRadius: 6,
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
-            >
-              Entrar
-            </a>
+            <span>
+              Seu perfil é de visualização: você pode consultar as vendas, mas
+              não lançar ou editar.
+            </span>
           </div>
         )}
 
         <VendaTable
           vendas={filteredVendas}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={canEdit}
           canDelete={canDelete}
           onEdit={editVenda}
           onDelete={deleteVenda}

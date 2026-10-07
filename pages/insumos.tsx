@@ -26,7 +26,7 @@ type Parameter = {
 };
 
 export default function Insumos() {
-  const { isAuthenticated, canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [unitOptions, setUnitOptions] = useState<Parameter[]>([]);
@@ -107,7 +107,8 @@ export default function Insumos() {
         }
         setMessage("Insumo excluído com sucesso.");
       } else {
-        setMessage("Erro ao excluir insumo.");
+        const data = await response.json().catch(() => ({}));
+        setMessage(data.error || "Erro ao excluir insumo.");
       }
     } catch {
       setMessage("Erro inesperado ao excluir insumo.");
@@ -115,7 +116,7 @@ export default function Insumos() {
   }
 
   useEffect(() => {
-    fetch("/api/products")
+    authFetch("/api/products")
       .then(async (res) => {
         const body = await res.text();
         const parsed = body ? JSON.parse(body) : null;
@@ -137,7 +138,7 @@ export default function Insumos() {
         setMessage(error.message || "Erro ao carregar insumos.");
       });
 
-    fetch("/api/productTypes?category=unit")
+    authFetch("/api/productTypes?category=unit")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -152,7 +153,7 @@ export default function Insumos() {
         setUnitOptions([]);
       });
 
-    fetch("/api/productTypes?category=productType")
+    authFetch("/api/productTypes?category=productType")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -338,7 +339,7 @@ export default function Insumos() {
           marginTop: 20,
         }}
       >
-        {isAuthenticated && (
+        {canEdit && (
           <InsumoForm
             formMode={formMode}
             editingId={editingId}
@@ -356,7 +357,7 @@ export default function Insumos() {
         <InsumoTable
           items={filteredInsumos}
           totalCount={insumos.filter((insumo) => insumo.active !== false).length}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={canEdit}
           canDelete={canDelete}
           showActiveOnly={showActiveOnly}
           onToggleActiveFilter={() => {

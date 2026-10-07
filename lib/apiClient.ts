@@ -11,5 +11,15 @@ export function authFetch(url: string, options: RequestInit = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  return fetch(url, { ...options, headers });
+  return fetch(url, { ...options, headers }).then((response) => {
+    // Sessão expirada ou inválida: limpa o login salvo e volta para a tela de login.
+    if (response.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+    return response;
+  });
 }

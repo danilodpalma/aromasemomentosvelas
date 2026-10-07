@@ -56,7 +56,7 @@ type Modelo = {
 };
 
 export default function Modelos() {
-  const { isAuthenticated, canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
   const nomeInputRef = useRef<HTMLInputElement>(null);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
@@ -154,7 +154,8 @@ export default function Modelos() {
         }
         setMessage("Modelo excluído com sucesso.");
       } else {
-        setMessage("Erro ao excluir modelo.");
+        const data = await response.json().catch(() => ({}));
+        setMessage(data.error || "Erro ao excluir modelo.");
       }
     } catch {
       setMessage("Erro inesperado ao excluir modelo.");
@@ -162,7 +163,7 @@ export default function Modelos() {
   }
 
   useEffect(() => {
-    fetch("/api/modelos")
+    authFetch("/api/modelos")
       .then((res) => res.json())
       .then((data) => setModelos(Array.isArray(data) ? data : []))
       .catch((error) => {
@@ -170,7 +171,7 @@ export default function Modelos() {
         setModelos([]);
       });
 
-    fetch("/api/products")
+    authFetch("/api/products")
       .then((res) => res.json())
       .then((data) => setInsumos(Array.isArray(data) ? data : []))
       .catch((error) => {
@@ -178,7 +179,7 @@ export default function Modelos() {
         setInsumos([]);
       });
 
-    fetch("/api/productTypes?category=productType")
+    authFetch("/api/productTypes?category=productType")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -517,7 +518,7 @@ export default function Modelos() {
           width: "100%",
         }}
       >
-        {isAuthenticated && (
+        {canEdit && (
           <ModeloForm
             formMode={formMode}
             editingId={editingId}
@@ -547,7 +548,7 @@ export default function Modelos() {
         <ModeloTable
           filteredModelos={filteredModelos}
           totalCount={modelos.filter((modelo) => modelo.ativo !== false).length}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={canEdit}
           canDelete={canDelete}
           onEdit={editModelo}
           onDelete={deleteModelo}

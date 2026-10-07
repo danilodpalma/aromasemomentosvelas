@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth, requireCanDelete } from "../../lib/auth";
+import { requireDataAccess } from "../../lib/auth";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -10,11 +10,7 @@ export default withApiErrorHandling(async function handler(
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
 
-  if (req.method === "DELETE") {
-    requireCanDelete(req);
-  } else if (req.method !== "GET") {
-    requireAuth(req);
-  }
+  requireDataAccess(req);
 
   if (req.method === "GET") {
     const vendas = await prisma.venda.findMany({
@@ -173,8 +169,7 @@ export default withApiErrorHandling(async function handler(
       observacao: existing.observacao ?? "",
     };
 
-    await prisma.vendaItem.deleteMany({ where: { vendaId: id } });
-
+    // Escrita aninhada: apagar e recriar os itens roda numa única transação.
     const updated = await prisma.venda.update({
       where: { id },
       data: {
@@ -194,6 +189,7 @@ export default withApiErrorHandling(async function handler(
         status: status ?? existing.status,
         observacao: observacao ?? firstItem.observacao ?? existing.observacao,
         itens: {
+          deleteMany: {},
           create: normalizedItems.map((item) => ({
             modeloVela: item.modeloVela,
             quantidade: item.quantidade,

@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth, requireCanDelete } from "../../lib/auth";
+import { requireDataAccess } from "../../lib/auth";
+import {
+  describeInsumoUsage,
+  renameInsumoReferences,
+} from "../../lib/references";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -10,11 +14,7 @@ export default withApiErrorHandling(async function handler(
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
 
-  if (req.method === "DELETE") {
-    requireCanDelete(req);
-  } else if (req.method !== "GET") {
-    requireAuth(req);
-  }
+  requireDataAccess(req);
 
   if (req.method === "GET") {
     const insumos = await prisma.insumo.findMany({
@@ -116,24 +116,29 @@ export default withApiErrorHandling(async function handler(
 
     const parsedStock = stock != null ? Number(stock) : existing.stock;
 
-    const updated = await prisma.insumo.update({
-      where: { id },
-      data: {
-        name: name ?? existing.name,
-        unit: unit ?? existing.unit,
-        purchaseCost: parsedPurchaseCost,
-        purchasedQuantity: parsedPurchasedQuantity,
-        unitCost: unitCost != null ? Number(unitCost) : computedUnitCost,
-        description: description ?? existing.description,
-        productTypes: Array.isArray(productTypes)
-          ? JSON.stringify(productTypes)
-          : existing.productTypes,
-        isBase: isBase != null ? Boolean(isBase) : false,
-        active: active != null ? Boolean(active) : existing.active,
-        stock: Number.isFinite(parsedStock)
-          ? Math.round(parsedStock)
-          : existing.stock,
-      } as any,
+    const novoNome = name ?? existing.name;
+    // Atualiza o insumo e, se o nome mudou, os modelos que o citam, tudo junto.
+    const updated = await prisma.$transaction(async (tx) => {
+      await renameInsumoReferences(tx, existing.name, novoNome);
+      return tx.insumo.update({
+        where: { id },
+        data: {
+          name: novoNome,
+          unit: unit ?? existing.unit,
+          purchaseCost: parsedPurchaseCost,
+          purchasedQuantity: parsedPurchasedQuantity,
+          unitCost: unitCost != null ? Number(unitCost) : computedUnitCost,
+          description: description ?? existing.description,
+          productTypes: Array.isArray(productTypes)
+            ? JSON.stringify(productTypes)
+            : existing.productTypes,
+          isBase: isBase != null ? Boolean(isBase) : false,
+          active: active != null ? Boolean(active) : existing.active,
+          stock: Number.isFinite(parsedStock)
+            ? Math.round(parsedStock)
+            : existing.stock,
+        } as any,
+      });
     });
 
     return res.status(200).json({
@@ -148,6 +153,13 @@ export default withApiErrorHandling(async function handler(
     const existing = await prisma.insumo.findUnique({ where: { id } });
     if (!existing)
       return res.status(404).json({ error: "Insumo não encontrado." });
+
+    const usage = await describeInsumoUsage(existing);
+    if (usage) {
+      return res.status(409).json({
+        error: `Este insumo é usado em ${usage}. Desative-o em vez de excluir.`,
+      });
+    }
 
     await prisma.insumo.delete({ where: { id } });
     return res.status(204).end();

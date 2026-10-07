@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth, requireCanDelete } from "../../lib/auth";
+import { requireDataAccess } from "../../lib/auth";
+import {
+  describeModeloUsage,
+  renameModeloReferences,
+} from "../../lib/references";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -10,11 +14,7 @@ export default withApiErrorHandling(async function handler(
   const idParam = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
   const id = idParam ? Number(idParam) : null;
 
-  if (req.method === "DELETE") {
-    requireCanDelete(req);
-  } else if (req.method !== "GET") {
-    requireAuth(req);
-  }
+  requireDataAccess(req);
 
   if (req.method === "GET") {
     const modelos = await prisma.modelo.findMany({
@@ -141,44 +141,49 @@ export default withApiErrorHandling(async function handler(
       return res.status(404).json({ error: "Modelo não encontrado." });
     }
 
-    const updated = await prisma.modelo.update({
-      where: { id },
-      data: {
-        nome: nome ?? existing.nome,
-        ativo: ativo !== undefined ? Boolean(ativo) : existing.ativo,
-        tipoProduto: tipoProduto ?? existing.tipoProduto,
-        baseNome: baseNome ?? existing.baseNome,
-        base2Nome: base2Nome ?? existing.base2Nome,
-        ceraGr: ceraGr != null ? Number(ceraGr) : existing.ceraGr,
-        cera2Gr: cera2Gr != null ? Number(cera2Gr) : existing.cera2Gr,
-        esenciaMl: esenciaMl != null ? Number(esenciaMl) : existing.esenciaMl,
-        essenciaNome: essenciaNome ?? existing.essenciaNome,
-        pavio: pavio ?? existing.pavio,
-        coranteNome: coranteNome ?? existing.coranteNome,
-        coranteGr: coranteGr != null ? Number(coranteGr) : existing.coranteGr,
-        recipiente: recipiente ?? existing.recipiente,
-        pedra: pedra ?? existing.pedra,
-        pedraGr: pedraGr != null ? Number(pedraGr) : existing.pedraGr,
-        extrato: extrato ?? existing.extrato,
-        extratoGr: extratoGr != null ? Number(extratoGr) : existing.extratoGr,
-        lauril: lauril ?? existing.lauril,
-        laurilGr: laurilGr != null ? Number(laurilGr) : existing.laurilGr,
-        oleo: oleo ?? existing.oleo,
-        oleoGr: oleoGr != null ? Number(oleoGr) : existing.oleoGr,
-        argila: argila ?? existing.argila,
-        argilaGr: argilaGr != null ? Number(argilaGr) : existing.argilaGr,
-        dioxido: dioxido ?? existing.dioxido,
-        dioxidoGr: dioxidoGr != null ? Number(dioxidoGr) : existing.dioxidoGr,
-        manteiga: manteiga ?? existing.manteiga,
-        manteigaGr:
-          manteigaGr != null ? Number(manteigaGr) : existing.manteigaGr,
-        embalagem: embalagem != null ? Number(embalagem) : existing.embalagem,
-        maoDeObra: maoDeObra != null ? Number(maoDeObra) : existing.maoDeObra,
-        margemLucro:
-          margemLucro != null ? Number(margemLucro) : existing.margemLucro,
-        valorVendido:
-          valorVendido != null ? Number(valorVendido) : existing.valorVendido,
-      } as any,
+    const novoNome = nome ?? existing.nome;
+    // Atualiza o modelo e, se o nome mudou, as vendas que o citam, tudo junto.
+    const updated = await prisma.$transaction(async (tx) => {
+      await renameModeloReferences(tx, existing.nome, novoNome);
+      return tx.modelo.update({
+        where: { id },
+        data: {
+          nome: novoNome,
+          ativo: ativo !== undefined ? Boolean(ativo) : existing.ativo,
+          tipoProduto: tipoProduto ?? existing.tipoProduto,
+          baseNome: baseNome ?? existing.baseNome,
+          base2Nome: base2Nome ?? existing.base2Nome,
+          ceraGr: ceraGr != null ? Number(ceraGr) : existing.ceraGr,
+          cera2Gr: cera2Gr != null ? Number(cera2Gr) : existing.cera2Gr,
+          esenciaMl: esenciaMl != null ? Number(esenciaMl) : existing.esenciaMl,
+          essenciaNome: essenciaNome ?? existing.essenciaNome,
+          pavio: pavio ?? existing.pavio,
+          coranteNome: coranteNome ?? existing.coranteNome,
+          coranteGr: coranteGr != null ? Number(coranteGr) : existing.coranteGr,
+          recipiente: recipiente ?? existing.recipiente,
+          pedra: pedra ?? existing.pedra,
+          pedraGr: pedraGr != null ? Number(pedraGr) : existing.pedraGr,
+          extrato: extrato ?? existing.extrato,
+          extratoGr: extratoGr != null ? Number(extratoGr) : existing.extratoGr,
+          lauril: lauril ?? existing.lauril,
+          laurilGr: laurilGr != null ? Number(laurilGr) : existing.laurilGr,
+          oleo: oleo ?? existing.oleo,
+          oleoGr: oleoGr != null ? Number(oleoGr) : existing.oleoGr,
+          argila: argila ?? existing.argila,
+          argilaGr: argilaGr != null ? Number(argilaGr) : existing.argilaGr,
+          dioxido: dioxido ?? existing.dioxido,
+          dioxidoGr: dioxidoGr != null ? Number(dioxidoGr) : existing.dioxidoGr,
+          manteiga: manteiga ?? existing.manteiga,
+          manteigaGr:
+            manteigaGr != null ? Number(manteigaGr) : existing.manteigaGr,
+          embalagem: embalagem != null ? Number(embalagem) : existing.embalagem,
+          maoDeObra: maoDeObra != null ? Number(maoDeObra) : existing.maoDeObra,
+          margemLucro:
+            margemLucro != null ? Number(margemLucro) : existing.margemLucro,
+          valorVendido:
+            valorVendido != null ? Number(valorVendido) : existing.valorVendido,
+        } as any,
+      });
     });
 
     return res.status(200).json(updated);
@@ -188,6 +193,13 @@ export default withApiErrorHandling(async function handler(
     const existing = await prisma.modelo.findUnique({ where: { id } });
     if (!existing)
       return res.status(404).json({ error: "Modelo não encontrado." });
+
+    const usage = await describeModeloUsage(existing.nome);
+    if (usage) {
+      return res.status(409).json({
+        error: `Este modelo é usado em ${usage}. Desative-o em vez de excluir.`,
+      });
+    }
 
     await prisma.modelo.delete({ where: { id } });
     return res.status(204).end();

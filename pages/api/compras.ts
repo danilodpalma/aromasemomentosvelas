@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
-import { requireAuth, requireCanDelete } from "../../lib/auth";
+import { requireDataAccess } from "../../lib/auth";
 
 function toNumber(value: unknown, fallback = 0) {
   const parsed = Number(value);
@@ -65,11 +65,7 @@ export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === "DELETE") {
-    requireCanDelete(req);
-  } else if (req.method !== "GET") {
-    requireAuth(req);
-  }
+  requireDataAccess(req);
 
   if (req.method === "GET") {
     const compras = await prisma.compra.findMany({

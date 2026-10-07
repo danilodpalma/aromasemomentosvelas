@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../../lib/prisma";
 import { withApiErrorHandling } from "../../../lib/api";
+import { getJwtSecret } from "../../../lib/auth";
 
-const SECRET_KEY = process.env.JWT_SECRET || "aromas-emomentos-secret-2026";
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -58,7 +58,7 @@ export default withApiErrorHandling(async function handler(
 
   const token = jwt.sign(
     { id: user.id, name: user.name, email: user.email, role: user.role },
-    SECRET_KEY,
+    getJwtSecret(),
     { expiresIn: "7d" },
   );
 

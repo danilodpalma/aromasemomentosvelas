@@ -51,22 +51,40 @@ type Modelo = {
 
 function findUnitCost(insumos: Insumo[], name?: string) {
   if (!name || name === "") return 0;
-  const normalized = name.trim().toLowerCase();
+  const item = findInsumo(insumos, name);
+  return item ? item.unitCost : 0;
+}
 
-  // Busca exata primeiro, depois parcial
-  let item = insumos.find(
+// Busca só pelo nome exato (ignorando maiúsculas/espaços nas pontas): a busca
+// parcial podia trazer o insumo errado, como "Lavanda" casando com "Lavanda Francesa".
+function findInsumo(insumos: Insumo[], name?: string | null) {
+  if (!name) return undefined;
+  const normalized = name.trim().toLowerCase();
+  return insumos.find(
     (insumo) => insumo.name.trim().toLowerCase() === normalized,
   );
+}
 
-  if (!item) {
-    // Busca parcial: o nome do insumo contém o termo ou vice-versa
-    item = insumos.find((insumo) => {
-      const insumoName = insumo.name.trim().toLowerCase();
-      return insumoName.includes(normalized) || normalized.includes(insumoName);
-    });
-  }
-
-  return item ? item.unitCost : 0;
+/** Insumos citados no modelo que não existem no cadastro (o custo deles sai zerado). */
+function findMissingInsumos(insumos: Insumo[], modelo: Modelo) {
+  const names = [
+    modelo.baseNome || "Cera de Coco",
+    modelo.base2Nome,
+    modelo.essenciaNome,
+    modelo.pavio,
+    modelo.coranteNome,
+    modelo.recipiente,
+    modelo.pedra,
+    modelo.extrato,
+    modelo.lauril,
+    modelo.oleo,
+    modelo.argila,
+    modelo.dioxido,
+    modelo.manteiga,
+  ];
+  return names.filter(
+    (name): name is string => !!name && !findInsumo(insumos, name),
+  );
 }
 
 function sortModelosByNome(modelos: Modelo[]) {
@@ -129,7 +147,7 @@ const actionButtonStyle: React.CSSProperties = {
 };
 
 export default function Calculo() {
-  const { isAuthenticated } = useAuth();
+  const { canEdit } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [calculos, setCalculos] = useState<Record<number, string>>({});
@@ -139,10 +157,13 @@ export default function Calculo() {
 
   // Salvar valor vendido
   async function saveValorVendido(modeloId: number) {
-    const typedValue = tempValues[modeloId] ?? "";
-    const currentValue = calculos[modeloId];
-    const rawValue = (typedValue || currentValue || "").trim();
-    const valorNumber = parseCurrencyInput(rawValue);
+    const typedValue = (tempValues[modeloId] ?? "").trim();
+    // O valor digitado vem no formato brasileiro ("12,50"); o valor já salvo
+    // fica em `calculos` com ponto ("12.50") e não pode passar pelo
+    // parseCurrencyInput, que removeria o ponto e multiplicaria por 100.
+    const valorNumber = typedValue
+      ? parseCurrencyInput(typedValue)
+      : Number(calculos[modeloId] || 0);
     const valorFormatted = valorNumber.toFixed(2);
 
     const response = await authFetch(`/api/modelos?id=${modeloId}`, {
@@ -222,8 +243,8 @@ export default function Calculo() {
   useEffect(() => {
     async function load() {
       const [insumosRes, modelosRes] = await Promise.all([
-        fetch("/api/products"),
-        fetch("/api/modelos"),
+        authFetch("/api/products"),
+        authFetch("/api/modelos"),
       ]);
       setInsumos(await insumosRes.json());
       const modelosData = (await modelosRes.json()) as Modelo[];
@@ -394,6 +415,7 @@ export default function Calculo() {
       finalSalePrice,
       valorVendido,
       breakdown,
+      missingInsumos: findMissingInsumos(insumos, modelo),
     };
   }
 
@@ -490,6 +512,20 @@ export default function Calculo() {
                         style={tdStyle}
                       >
                         {modelo.nome}
+                        {values.missingInsumos.length > 0 && (
+                          <div
+                            title="O custo desses insumos está sendo considerado zero."
+                            style={{
+                              marginTop: 4,
+                              color: "#b91c1c",
+                              fontSize: 11,
+                              fontWeight: 600,
+                            }}
+                          >
+                            ⚠ Insumo não encontrado:{" "}
+                            {values.missingInsumos.join(", ")}
+                          </div>
+                        )}
                       </td>
                       <td
                         style={tdStyle}
@@ -551,7 +587,7 @@ export default function Calculo() {
                             gap: 4,
                           }}
                         >
-                          {isAuthenticated ? (
+                          {canEdit ? (
                             <>
                               <span>R$</span>
                               <input
@@ -716,9 +752,7 @@ export default function Calculo() {
                                         fontSize: 12,
                                       }}
                                     >
-                                      {item.quantidade.toFixed(
-                                        item.quantidade % 1 === 0 ? 0 : 2,
-                                      )}{" "}
+                                      {item.quantidade.toFixed(3)}{" "}
                                       {item.unidade}
                                     </td>
                                     <td

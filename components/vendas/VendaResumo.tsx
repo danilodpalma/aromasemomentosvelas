@@ -42,7 +42,7 @@ export default function VendaResumo({ resumo }: Props) {
             boxShadow: COLORS.subtleShadowSmall,
           }}
         >
-          <strong>Total Vendido</strong>
+          <strong>Total Vendido (sem frete)</strong>
           <div style={{ marginTop: 8 }}>
             R$ {resumo.totalVendido.toFixed(2)}
           </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { formatDateOnly } from "../lib/date";
 import { COLORS } from "../styles/theme";
+import { authFetch } from "../lib/apiClient";
 
 type Venda = {
   id: number;
@@ -58,8 +59,15 @@ function normalizePaymentMethod(paymentMethod: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+/** Valor cobrado do cliente (produtos − desconto + frete): é o dinheiro que entra. */
 function getEffectiveSaleTotal(sale: Pick<Venda, "total" | "desconto">) {
   return Number.isFinite(sale.total) ? Number(sale.total) : 0;
+}
+
+/** Receita da venda sem o frete, que é repasse e não faturamento. */
+function getSaleRevenue(sale: Pick<Venda, "total" | "frete">) {
+  const total = Number.isFinite(sale.total) ? Number(sale.total) : 0;
+  return Math.max(total - Number(sale.frete ?? 0), 0);
 }
 
 const thStyle: React.CSSProperties = {
@@ -118,10 +126,10 @@ export default function Dashboard() {
       try {
         const [vendasRes, percentRes, paymentMethodsRes, saleStatusesRes] =
           await Promise.all([
-            fetch("/api/vendas"),
-            fetch("/api/productTypes?category=netWithdrawalPercent"),
-            fetch("/api/productTypes?category=paymentMethod"),
-            fetch("/api/productTypes?category=saleStatus"),
+            authFetch("/api/vendas"),
+            authFetch("/api/productTypes?category=netWithdrawalPercent"),
+            authFetch("/api/productTypes?category=paymentMethod"),
+            authFetch("/api/productTypes?category=saleStatus"),
           ]);
         const [vendasData, percentData, paymentMethodsData, saleStatusesData] =
           await Promise.all([
@@ -164,7 +172,7 @@ export default function Dashboard() {
   );
   const totalVendas = vendasDoMes.length;
   const receita = vendasDoMes.reduce(
-    (sum, item) => sum + getEffectiveSaleTotal(item),
+    (sum, item) => sum + getSaleRevenue(item),
     0,
   );
   const vendasRecentes = vendas.slice(0, 5);
@@ -175,7 +183,7 @@ export default function Dashboard() {
       (venda) => venda.dataVenda?.slice(0, 7) === monthKey,
     );
     const grossRevenue = sales.reduce(
-      (sum, sale) => sum + getEffectiveSaleTotal(sale),
+      (sum, sale) => sum + getSaleRevenue(sale),
       0,
     );
 
@@ -214,7 +222,7 @@ export default function Dashboard() {
     isServiceExchangePaymentMethod(sale.formaPagamento),
   );
   const totalVendido = vendas.reduce(
-    (sum, sale) => sum + getEffectiveSaleTotal(sale),
+    (sum, sale) => sum + getSaleRevenue(sale),
     0,
   );
   const totalAReceber = receivableSales.reduce(
@@ -230,11 +238,11 @@ export default function Dashboard() {
     0,
   );
   const totalPresentes = presentSales.reduce(
-    (sum, sale) => sum + getEffectiveSaleTotal(sale),
+    (sum, sale) => sum + getSaleRevenue(sale),
     0,
   );
   const totalTrocasServicos = serviceExchangeSales.reduce(
-    (sum, sale) => sum + getEffectiveSaleTotal(sale),
+    (sum, sale) => sum + getSaleRevenue(sale),
     0,
   );
   const freteSales = vendas.filter((sale) => Number(sale.frete ?? 0) > 0);
@@ -505,7 +513,7 @@ export default function Dashboard() {
                       borderTop: "1px solid #e5e7eb",
                     }}
                   >
-                    Total vendido
+                    Total vendido (sem frete)
                   </th>
                   <td
                     style={{

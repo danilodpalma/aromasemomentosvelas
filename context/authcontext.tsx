@@ -19,8 +19,21 @@ interface authcontexttype {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  canEdit: boolean;
   canDelete: boolean;
   isLoading: boolean;
+}
+
+/** true se o token JWT já passou da data de expiração (ou não pôde ser lido). */
+function isTokenExpired(token: string) {
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    return typeof payload.exp === "number" && payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
 }
 
 const AuthContext = createContext<authcontexttype | undefined>(undefined);
@@ -31,8 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+    const savedToken = localStorage.getItem("token");
+    if (savedUser && savedToken && !isTokenExpired(savedToken)) {
       setUser(JSON.parse(savedUser));
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
     setIsLoading(false);
   }, []);
@@ -57,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         isAuthenticated: !!user,
         isAdmin: user?.role === "ADMIN",
+        canEdit: !!user && user.role !== "VIEWER",
         canDelete: !!user && user.role !== "VIEWER",
         isLoading,
       }}

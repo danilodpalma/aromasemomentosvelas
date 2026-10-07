@@ -14,12 +14,16 @@ export function withApiErrorHandling(
       if (statusCode >= 500) {
         console.error("API error:", error);
       }
+      // Erros internos (500+) não expõem detalhes do banco/serviços ao cliente;
+      // o detalhe completo fica no log do servidor.
       const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === "string"
-            ? error
-            : "Unknown error";
+        statusCode >= 500
+          ? "Erro interno no servidor. Tente novamente."
+          : error instanceof Error
+            ? error.message
+            : typeof error === "string"
+              ? error
+              : "Unknown error";
       return res.status(statusCode).json({ error: message });
     }
   };

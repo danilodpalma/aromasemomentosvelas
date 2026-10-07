@@ -54,7 +54,7 @@ type Compra = {
 };
 
 export default function Compras() {
-  const { isAuthenticated, canDelete } = useAuth();
+  const { canEdit, canDelete } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [form, setForm] = useState({
     data: "",
@@ -95,10 +95,10 @@ export default function Compras() {
     async function load() {
       const [insumosRes, comprasRes, purchaseTypesRes, purchaseStatusesRes] =
         await Promise.all([
-          fetch("/api/products"),
-          fetch("/api/compras"),
-          fetch("/api/productTypes?category=purchaseType"),
-          fetch("/api/productTypes?category=purchaseStatus"),
+          authFetch("/api/products"),
+          authFetch("/api/compras"),
+          authFetch("/api/productTypes?category=purchaseType"),
+          authFetch("/api/productTypes?category=purchaseStatus"),
         ]);
 
       const insumosData = await insumosRes.json();
@@ -290,7 +290,7 @@ export default function Compras() {
         : "Compra registrada com sucesso.",
     );
     resetForm();
-    const refreshed = await fetch("/api/compras");
+    const refreshed = await authFetch("/api/compras");
     setCompras(await refreshed.json());
     requestAnimationFrame(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -339,7 +339,7 @@ export default function Compras() {
           marginTop: 20,
         }}
       >
-        {isAuthenticated && (
+        {canEdit && (
           <CompraForm
             isCreating={isCreating}
             form={form}
@@ -363,7 +363,7 @@ export default function Compras() {
 
       <CompraTable
         compras={compras}
-        isAuthenticated={isAuthenticated}
+        isAuthenticated={canEdit}
         canDelete={canDelete}
         startEdit={startEdit}
         deleteCompra={deleteCompra}

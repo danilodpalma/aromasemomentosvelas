@@ -59,7 +59,7 @@ const actionButtonStyle: React.CSSProperties = {
 };
 
 export default function Estoque() {
-  const { isAuthenticated } = useAuth();
+  const { canEdit } = useAuth();
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draftStock, setDraftStock] = useState("");
@@ -68,7 +68,7 @@ export default function Estoque() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/products");
+        const res = await authFetch("/api/products");
         const data = await res.json();
         setInsumos(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -230,7 +230,7 @@ export default function Estoque() {
                   <td
                     style={tdStyle}
                   >
-                    {isAuthenticated ? (
+                    {canEdit ? (
                       editingId === insumo.id ? (
                         <div
                           style={{
