@@ -166,8 +166,28 @@ export default function ModeloTable({
         </div>
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <input
+          type="text"
+          placeholder="Buscar modelo..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 10,
+            border: "1px solid rgb(167, 117, 75)",
+            borderRadius: 6,
+            background: COLORS.white,
+          }}
+        />
+      </div>
+
       {filteredModelos.length === 0 ? (
-        <p>Nenhum modelo cadastrado ainda.</p>
+        <p>
+          {searchTerm
+            ? "Nenhum modelo encontrado para essa busca."
+            : "Nenhum modelo cadastrado ainda."}
+        </p>
       ) : (
         <div style={{ overflowX: "auto" }}>
           <table

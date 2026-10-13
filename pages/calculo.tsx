@@ -154,6 +154,7 @@ export default function Calculo() {
   const [tempValues, setTempValues] = useState<Record<number, string>>({});
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [message, setMessage] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Salvar valor vendido
   async function saveValorVendido(modeloId: number) {
@@ -263,6 +264,10 @@ export default function Calculo() {
   const modelosOrdenados = sortModelosByNome(modelos);
   const filteredModelos = modelosOrdenados.filter(
     (modelo) => modelo.ativo !== false,
+  );
+  // A busca filtra só as linhas exibidas; o total continua sendo o de modelos ativos.
+  const visibleModelos = filteredModelos.filter((modelo) =>
+    modelo.nome.toLowerCase().includes(searchTerm.trim().toLowerCase()),
   );
 
   function calculateCosts(modelo: Modelo) {
@@ -456,6 +461,21 @@ export default function Calculo() {
             Total de modelos: {filteredModelos.length}
           </div>
         </div>
+        <div style={{ marginBottom: 16 }}>
+          <input
+            type="text"
+            placeholder="Buscar modelo..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: 10,
+              border: "1px solid rgb(167, 117, 75)",
+              borderRadius: 6,
+              background: COLORS.white,
+            }}
+          />
+        </div>
         <table
           style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}
         >
@@ -489,14 +509,16 @@ export default function Calculo() {
             </tr>
           </thead>
           <tbody>
-            {modelos.length === 0 ? (
+            {visibleModelos.length === 0 ? (
               <tr>
                 <td colSpan={11} style={{ ...tdStyle, padding: 16 }}>
-                  Nenhum modelo cadastrado ainda.
+                  {searchTerm
+                    ? "Nenhum modelo encontrado para essa busca."
+                    : "Nenhum modelo cadastrado ainda."}
                 </td>
               </tr>
             ) : (
-              filteredModelos.map((modelo, index) => {
+              visibleModelos.map((modelo, index) => {
                 const values = calculateCosts(modelo);
                 return (
                   <Fragment key={modelo.id}>
