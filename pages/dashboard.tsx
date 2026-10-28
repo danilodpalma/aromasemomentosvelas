@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { formatDateOnly } from "../lib/date";
 import { COLORS } from "../styles/theme";
 import { authFetch } from "../lib/apiClient";
-import { summarizeVendas, isCanceledStatus } from "../lib/vendas";
+import {
+  summarizeVendas,
+  summarizeByProduct,
+  isCanceledStatus,
+} from "../lib/vendas";
 
 type Venda = {
   id: number;
@@ -20,6 +24,7 @@ type Venda = {
     id: number;
     modeloVela: string;
     quantidade: number;
+    precoUnitario?: number;
     custoUnitario?: number | null;
   }>;
 };
@@ -32,6 +37,14 @@ type Parameter = {
 };
 
 type PeriodMode = "mes" | "ano" | "tudo" | "personalizado";
+type ProductSort = "margem" | "margemPercent" | "unidades" | "faturamento";
+
+/** Cor da margem %: verde a partir de 50%, amarelo de 30% a 50%, vermelho abaixo. */
+function marginColor(percent: number) {
+  if (percent >= 50) return { background: "rgba(34, 197, 94, 0.12)", color: "#166534" };
+  if (percent >= 30) return { background: "rgba(234, 179, 8, 0.15)", color: "#854d0e" };
+  return { background: "rgba(220, 38, 38, 0.12)", color: "#b91c1c" };
+}
 
 const MONTHS = [
   "Janeiro",
@@ -208,6 +221,7 @@ export default function Dashboard() {
   const [periodYear, setPeriodYear] = useState(hoje.getFullYear());
   const [periodFrom, setPeriodFrom] = useState("");
   const [periodTo, setPeriodTo] = useState("");
+  const [productSort, setProductSort] = useState<ProductSort>("margem");
 
   useEffect(() => {
     async function load() {
@@ -290,6 +304,10 @@ export default function Dashboard() {
 
   const vendasNoPeriodo = vendas.filter(isInPeriod);
   const resumo = summarizeVendas(vendasNoPeriodo, paymentMethods);
+  const margemPorProduto = summarizeByProduct(
+    vendasNoPeriodo,
+    paymentMethods,
+  ).sort((a, b) => b[productSort] - a[productSort]);
 
   const saleStatusNames = Array.from(
     new Set([
@@ -629,6 +647,118 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      {/* ---------- Margem por produto ---------- */}
+      <section style={{ marginTop: 28 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "end",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 10,
+          }}
+        >
+          <div>
+            <h3 style={{ margin: 0, color: COLORS.primaryDark }}>
+              Margem por produto · {periodLabel}
+            </h3>
+            <p style={{ margin: "4px 0 0", ...hintStyle }}>
+              Vendas recebidas e a receber. Faturamento já com o desconto da
+              venda dividido entre os itens; custo do dia de cada venda.
+            </p>
+          </div>
+          <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+            Ordenar por
+            <select
+              value={productSort}
+              onChange={(e) => setProductSort(e.target.value as ProductSort)}
+              style={inputStyle}
+            >
+              <option value="margem">Margem (R$)</option>
+              <option value="margemPercent">Margem (%)</option>
+              <option value="faturamento">Faturamento</option>
+              <option value="unidades">Unidades vendidas</option>
+            </select>
+          </label>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: 11.5,
+              background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+              borderRadius: 14,
+              overflow: "hidden",
+              boxShadow: COLORS.cardShadow,
+            }}
+          >
+            <thead style={{ background: "rgba(255,255,255,0.35)" }}>
+              <tr>
+                <th style={thStyle}>Produto</th>
+                <th style={thStyle}>Unidades</th>
+                <th style={thStyle}>Faturamento</th>
+                <th style={thStyle}>Custo</th>
+                <th style={thStyle}>Margem</th>
+                <th style={thStyle}>Margem %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {margemPorProduto.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ ...tdStyle, padding: 16 }}>
+                    Nenhuma venda no período.
+                  </td>
+                </tr>
+              ) : (
+                margemPorProduto.map((produto, index) => (
+                  <tr
+                    key={produto.produto}
+                    style={{
+                      background:
+                        index % 2 === 0
+                          ? COLORS.tableRowEven
+                          : COLORS.tableRowOdd,
+                    }}
+                  >
+                    <td style={{ ...tdStyle, fontWeight: 700 }}>
+                      {produto.produto}
+                      {produto.unidadesSemCusto > 0 && (
+                        <div style={{ ...hintStyle, color: "#92400e" }}>
+                          {produto.unidadesSemCusto} un. sem custo registrado
+                          (fora da margem)
+                        </div>
+                      )}
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={qtyBadgeStyle}>{produto.unidades}</span>
+                    </td>
+                    <td style={tdStyle}>{formatCurrency(produto.faturamento)}</td>
+                    <td style={tdStyle}>{formatCurrency(produto.custo)}</td>
+                    <td style={tdStyle}>
+                      <span style={totalBadgeStyle}>
+                        {formatCurrency(produto.margem)}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span
+                        style={{
+                          ...badgeStyle,
+                          ...marginColor(produto.margemPercent),
+                        }}
+                      >
+                        {formatPercent(produto.margemPercent)}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
 
