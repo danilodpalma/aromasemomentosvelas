@@ -32,7 +32,11 @@ type VendaResumoInput = {
   quantidade: number;
   formaPagamento: string;
   status: string;
-  itens?: Array<{ quantidade: number; precoUnitario?: number }>;
+  itens?: Array<{
+    quantidade: number;
+    precoUnitario?: number;
+    custoUnitario?: number | null;
+  }>;
 };
 
 /** Minúsculas e sem acentos, para comparar nomes digitados de formas diferentes. */
@@ -84,6 +88,20 @@ export function getSaleRevenue(venda: Pick<VendaResumoInput, "total" | "frete">)
   return Math.max(total - Number(venda.frete ?? 0), 0);
 }
 
+/**
+ * Custo de fabricação da venda (soma de custo congelado × quantidade dos itens).
+ * Null quando algum item não tem custo registrado.
+ */
+function getSaleCost(venda: VendaResumoInput): number | null {
+  if (!venda.itens?.length) return null;
+  let custo = 0;
+  for (const item of venda.itens) {
+    if (item.custoUnitario == null) return null;
+    custo += item.custoUnitario * item.quantidade;
+  }
+  return custo;
+}
+
 function getSaleUnits(venda: VendaResumoInput) {
   return venda.itens?.length
     ? venda.itens.reduce((sum, item) => sum + item.quantidade, 0)
@@ -114,6 +132,7 @@ export function summarizeVendas(
     bruto: 0,
     descontos: 0,
     faturamento: 0,
+    custoProdutos: 0,
     recebido: 0,
     aReceber: 0,
     frete: 0,
@@ -122,8 +141,10 @@ export function summarizeVendas(
     recebidoPorForma: [] as MethodTotal[],
     aReceberPorForma: [] as MethodTotal[],
     // Saídas sem receita (valor de venda dos produtos doados)
-    doacoes: { pedidos: 0, unidades: 0, valor: 0 },
-    doacoesPorForma: [] as (MethodTotal & { unidades: number })[],
+    doacoes: { pedidos: 0, unidades: 0, valor: 0, custo: 0 },
+    doacoesPorForma: [] as (MethodTotal & { unidades: number; custo: number })[],
+    // Vendas/doações cujo custo não está registrado (ficam fora do custo e da margem)
+    semCusto: { pedidos: 0 },
     // Fora dos totais
     canceladas: { pedidos: 0, valor: 0 },
     semTipo: { pedidos: 0, valor: 0, formas: [] as string[] },
@@ -133,6 +154,7 @@ export function summarizeVendas(
     const faturamento = getSaleRevenue(venda);
     const desconto = Number(venda.desconto ?? 0);
     const unidades = getSaleUnits(venda);
+    const custo = getSaleCost(venda);
 
     if (isCanceledStatus(venda.status)) {
       resumo.canceladas.pedidos += 1;
@@ -146,6 +168,8 @@ export function summarizeVendas(
       resumo.doacoes.pedidos += 1;
       resumo.doacoes.unidades += unidades;
       resumo.doacoes.valor += faturamento;
+      resumo.doacoes.custo += custo ?? 0;
+      if (custo === null) resumo.semCusto.pedidos += 1;
       const entry = resumo.doacoesPorForma.find(
         (item) => item.name === venda.formaPagamento,
       );
@@ -153,12 +177,14 @@ export function summarizeVendas(
         entry.pedidos += 1;
         entry.unidades += unidades;
         entry.valor += faturamento;
+        entry.custo += custo ?? 0;
       } else {
         resumo.doacoesPorForma.push({
           name: venda.formaPagamento,
           pedidos: 1,
           unidades,
           valor: faturamento,
+          custo: custo ?? 0,
         });
       }
       continue;
@@ -178,6 +204,8 @@ export function summarizeVendas(
     resumo.bruto += faturamento + desconto;
     resumo.descontos += desconto;
     resumo.faturamento += faturamento;
+    resumo.custoProdutos += custo ?? 0;
+    if (custo === null) resumo.semCusto.pedidos += 1;
     resumo.frete += Number(venda.frete ?? 0);
 
     if (group === "recebido") {
@@ -189,8 +217,13 @@ export function summarizeVendas(
     }
   }
 
+  const margem = resumo.faturamento - resumo.custoProdutos;
   return {
     ...resumo,
     ticketMedio: resumo.pedidos > 0 ? resumo.faturamento / resumo.pedidos : 0,
+    // Margem bruta: faturamento líquido − custo de fabricação (insumos +
+    // embalagem + mão de obra) dos produtos vendidos.
+    margem,
+    margemPercent: resumo.faturamento > 0 ? (margem / resumo.faturamento) * 100 : 0,
   };
 }

@@ -16,7 +16,12 @@ type Venda = {
   quantidade: number;
   formaPagamento: string;
   status: string;
-  itens?: Array<{ id: number; modeloVela: string; quantidade: number }>;
+  itens?: Array<{
+    id: number;
+    modeloVela: string;
+    quantidade: number;
+    custoUnitario?: number | null;
+  }>;
 };
 
 type Parameter = {
@@ -57,6 +62,9 @@ function formatOrderStatusLabel(status: string) {
 
 const formatCurrency = (amount: number) =>
   amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const formatPercent = (value: number) =>
+  `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 
 const thStyle: React.CSSProperties = {
   padding: "10px 8px",
@@ -307,6 +315,7 @@ export default function Dashboard() {
     return {
       month,
       faturamento: resumoMes.faturamento,
+      margem: resumoMes.margem,
       recebido: resumoMes.recebido,
       aReceber: resumoMes.aReceber,
       netRevenue: resumoMes.faturamento * (netWithdrawalPercent / 100),
@@ -422,10 +431,16 @@ export default function Dashboard() {
           color={COLORS.primaryDark}
         />
         <KpiCard
+          title="Margem bruta"
+          hint={`${formatPercent(resumo.margemPercent)} · faturamento − custo de fabricação`}
+          value={formatCurrency(resumo.margem)}
+          color="#166534"
+        />
+        <KpiCard
           title="Recebido"
           hint="Já pago (tipo Recebido)"
           value={formatCurrency(resumo.recebido)}
-          color="#166534"
+          color="#1d4ed8"
         />
         <KpiCard
           title="A receber"
@@ -435,8 +450,8 @@ export default function Dashboard() {
         />
         <KpiCard
           title="Doações / cortesias"
-          hint={`${resumo.doacoes.pedidos} pedidos · valor de venda`}
-          value={formatCurrency(resumo.doacoes.valor)}
+          hint={`${resumo.doacoes.pedidos} pedidos · custo de fabricação`}
+          value={formatCurrency(resumo.doacoes.custo)}
           color="#7c3aed"
         />
       </section>
@@ -456,6 +471,23 @@ export default function Dashboard() {
           estão fora do resumo porque a forma de pagamento não tem tipo:{" "}
           <strong>{resumo.semTipo.formas.join(", ")}</strong>. Defina o tipo em
           Parâmetros → Formas de pagamento.
+        </div>
+      )}
+
+      {resumo.semCusto.pedidos > 0 && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: 14,
+            background: "#fffbeb",
+            border: "1px solid #fde68a",
+            color: "#92400e",
+            borderRadius: 8,
+          }}
+        >
+          {resumo.semCusto.pedidos} pedido(s) do período têm produto sem custo
+          registrado (modelo não encontrado). Eles ficam fora do custo e da
+          margem.
         </div>
       )}
 
@@ -488,6 +520,17 @@ export default function Dashboard() {
                 <SummaryRow
                   label="(=) Faturamento líquido"
                   value={formatCurrency(resumo.faturamento)}
+                  strong
+                />
+                <SummaryRow
+                  label="(−) Custo dos produtos"
+                  hint="Insumos + embalagem + mão de obra, do dia da venda"
+                  value={formatCurrency(resumo.custoProdutos)}
+                />
+                <SummaryRow
+                  label="(=) Margem bruta"
+                  hint={formatPercent(resumo.margemPercent)}
+                  value={formatCurrency(resumo.margem)}
                   strong
                 />
                 <SummaryRow
@@ -538,8 +581,8 @@ export default function Dashboard() {
               Saídas sem receita
             </h4>
             <p style={{ margin: "0 0 10px", ...hintStyle }}>
-              Produtos entregues sem pagamento (tipo Doação / cortesia), pelo
-              valor de venda.
+              Produtos entregues sem pagamento (tipo Doação / cortesia). O valor
+              é o custo de fabricação; o valor de venda aparece abaixo de cada linha.
             </p>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <tbody>
@@ -550,15 +593,15 @@ export default function Dashboard() {
                     <SummaryRow
                       key={method.name}
                       label={method.name}
-                      hint={`${method.pedidos} ${method.pedidos === 1 ? "pedido" : "pedidos"} · ${method.unidades} un.`}
-                      value={formatCurrency(method.valor)}
+                      hint={`${method.pedidos} ${method.pedidos === 1 ? "pedido" : "pedidos"} · ${method.unidades} un. · valor de venda ${formatCurrency(method.valor)}`}
+                      value={formatCurrency(method.custo)}
                     />
                   ))
                 )}
                 <SummaryRow
-                  label="Total doado"
-                  hint={`${resumo.doacoes.pedidos} pedidos · ${resumo.doacoes.unidades} un.`}
-                  value={formatCurrency(resumo.doacoes.valor)}
+                  label="Custo total doado"
+                  hint={`${resumo.doacoes.pedidos} pedidos · ${resumo.doacoes.unidades} un. · valor de venda ${formatCurrency(resumo.doacoes.valor)}`}
+                  value={formatCurrency(resumo.doacoes.custo)}
                   strong
                 />
               </tbody>
@@ -610,6 +653,7 @@ export default function Dashboard() {
               <tr>
                 <th style={thStyle}>Mês</th>
                 <th style={thStyle}>Faturamento líquido</th>
+                <th style={thStyle}>Margem bruta</th>
                 <th style={thStyle}>Recebido</th>
                 <th style={thStyle}>A receber</th>
                 <th style={thStyle}>Líquido ({netWithdrawalPercent}%)</th>
@@ -633,6 +677,7 @@ export default function Dashboard() {
                       {formatCurrency(month.faturamento)}
                     </span>
                   </td>
+                  <td style={tdStyle}>{formatCurrency(month.margem)}</td>
                   <td style={tdStyle}>{formatCurrency(month.recebido)}</td>
                   <td style={tdStyle}>{formatCurrency(month.aReceber)}</td>
                   <td style={tdStyle}>
