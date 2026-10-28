@@ -114,6 +114,9 @@ model VendaItem {
   quantidade     Int
   precoUnitario  Float
   total          Float
+  // Custo total de fabricação (insumos + embalagem + mão de obra) de 1 unidade,
+  // congelado no dia da venda. Null = custo desconhecido.
+  custoUnitario  Float?
   observacao     String?
   createdAt      DateTime @default(now())
   venda          Venda    @relation(fields: [vendaId], references: [id])

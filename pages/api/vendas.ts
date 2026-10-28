@@ -2,6 +2,28 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
 import { requireDataAccess } from "../../lib/auth";
+import { calcularCustoModelo } from "../../lib/custos";
+
+/**
+ * Custo total de fabricação de 1 unidade de cada modelo, com os preços de
+ * insumo de hoje. Modelos não encontrados ficam fora do mapa (custo desconhecido).
+ */
+async function custosAtuaisPorModelo(nomes: string[]) {
+  const unicos = Array.from(new Set(nomes));
+  const custos = new Map<string, number>();
+  if (unicos.length === 0) return custos;
+
+  const [modelos, insumos] = await Promise.all([
+    prisma.modelo.findMany({ where: { nome: { in: unicos } } }),
+    prisma.insumo.findMany({ select: { name: true, unitCost: true } }),
+  ]);
+  for (const modelo of modelos) {
+    if (!custos.has(modelo.nome)) {
+      custos.set(modelo.nome, calcularCustoModelo(modelo, insumos).totalCost);
+    }
+  }
+  return custos;
+}
 
 export default withApiErrorHandling(async function handler(
   req: NextApiRequest,
@@ -75,6 +97,9 @@ export default withApiErrorHandling(async function handler(
     const freteValor = Number(frete || 0);
     const total = Math.max(subtotal - descontoValor, 0) + freteValor;
     const firstItem = normalizedItems[0];
+    const custos = await custosAtuaisPorModelo(
+      normalizedItems.map((item) => item.modeloVela),
+    );
 
     const venda = await prisma.venda.create({
       data: {
@@ -100,6 +125,7 @@ export default withApiErrorHandling(async function handler(
             quantidade: item.quantidade,
             precoUnitario: item.precoUnitario,
             total: item.quantidade * item.precoUnitario,
+            custoUnitario: custos.get(item.modeloVela) ?? null,
             observacao: item.observacao ?? "",
           })),
         },
@@ -169,6 +195,20 @@ export default withApiErrorHandling(async function handler(
       observacao: existing.observacao ?? "",
     };
 
+    // Itens que já existiam mantêm o custo congelado na venda original; só
+    // produtos novos/trocados recebem o custo de hoje.
+    const custoAnterior = new Map<string, number>();
+    for (const item of existing.itens) {
+      if (item.custoUnitario != null && !custoAnterior.has(item.modeloVela)) {
+        custoAnterior.set(item.modeloVela, item.custoUnitario);
+      }
+    }
+    const custosHoje = await custosAtuaisPorModelo(
+      normalizedItems
+        .map((item) => item.modeloVela)
+        .filter((nome) => !custoAnterior.has(nome)),
+    );
+
     // Escrita aninhada: apagar e recriar os itens roda numa única transação.
     const updated = await prisma.venda.update({
       where: { id },
@@ -195,6 +235,10 @@ export default withApiErrorHandling(async function handler(
             quantidade: item.quantidade,
             precoUnitario: item.precoUnitario,
             total: item.quantidade * item.precoUnitario,
+            custoUnitario:
+              custoAnterior.get(item.modeloVela) ??
+              custosHoje.get(item.modeloVela) ??
+              null,
             observacao: item.observacao ?? "",
           })),
         },

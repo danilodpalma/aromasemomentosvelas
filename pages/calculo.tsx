@@ -7,6 +7,7 @@ import {
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
 import { COLORS } from "../styles/theme";
+import { calcularCustoModelo } from "../lib/custos";
 
 type Insumo = {
   id: number;
@@ -48,44 +49,6 @@ type Modelo = {
   maoDeObra: number;
   margemLucro: number;
 };
-
-function findUnitCost(insumos: Insumo[], name?: string) {
-  if (!name || name === "") return 0;
-  const item = findInsumo(insumos, name);
-  return item ? item.unitCost : 0;
-}
-
-// Busca só pelo nome exato (ignorando maiúsculas/espaços nas pontas): a busca
-// parcial podia trazer o insumo errado, como "Lavanda" casando com "Lavanda Francesa".
-function findInsumo(insumos: Insumo[], name?: string | null) {
-  if (!name) return undefined;
-  const normalized = name.trim().toLowerCase();
-  return insumos.find(
-    (insumo) => insumo.name.trim().toLowerCase() === normalized,
-  );
-}
-
-/** Insumos citados no modelo que não existem no cadastro (o custo deles sai zerado). */
-function findMissingInsumos(insumos: Insumo[], modelo: Modelo) {
-  const names = [
-    modelo.baseNome || "Cera de Coco",
-    modelo.base2Nome,
-    modelo.essenciaNome,
-    modelo.pavio,
-    modelo.coranteNome,
-    modelo.recipiente,
-    modelo.pedra,
-    modelo.extrato,
-    modelo.lauril,
-    modelo.oleo,
-    modelo.argila,
-    modelo.dioxido,
-    modelo.manteiga,
-  ];
-  return names.filter(
-    (name): name is string => !!name && !findInsumo(insumos, name),
-  );
-}
 
 function sortModelosByNome(modelos: Modelo[]) {
   return [...modelos].sort((a, b) =>
@@ -271,156 +234,18 @@ export default function Calculo() {
   );
 
   function calculateCosts(modelo: Modelo) {
-    const baseName = modelo.baseNome || "Cera de Coco";
-    const base2Name = modelo.base2Nome || "";
-    const ceraCost = modelo.ceraGr * findUnitCost(insumos, baseName);
-    const cera2Cost = (modelo.cera2Gr || 0) * findUnitCost(insumos, base2Name);
-    const esenciaCost =
-      modelo.esenciaMl * findUnitCost(insumos, modelo.essenciaNome);
-    const pavioCost = 1 * findUnitCost(insumos, modelo.pavio);
-    const coranteCost =
-      modelo.coranteGr * findUnitCost(insumos, modelo.coranteNome);
-    const recipienteCost = 1 * findUnitCost(insumos, modelo.recipiente);
-    const pedraCost =
-      (modelo.pedraGr || 0) * findUnitCost(insumos, modelo.pedra);
-    const extratoCost =
-      modelo.extratoGr * findUnitCost(insumos, modelo.extrato);
-    const laurilCost = modelo.laurilGr * findUnitCost(insumos, modelo.lauril);
-    const oleoCost = modelo.oleoGr * findUnitCost(insumos, modelo.oleo);
-    const argilaCost = modelo.argilaGr * findUnitCost(insumos, modelo.argila);
-    const dioxidoCost =
-      modelo.dioxidoGr * findUnitCost(insumos, modelo.dioxido);
-    const manteigaCost =
-      modelo.manteigaGr * findUnitCost(insumos, modelo.manteiga);
-
-    const insumoCost =
-      ceraCost +
-      cera2Cost +
-      esenciaCost +
-      pavioCost +
-      coranteCost +
-      recipienteCost +
-      pedraCost +
-      extratoCost +
-      laurilCost +
-      oleoCost +
-      argilaCost +
-      dioxidoCost +
-      manteigaCost;
-    const fixedCost = modelo.embalagem + modelo.maoDeObra;
-    const totalCost = insumoCost + fixedCost;
-    const priceSuggested = totalCost * (1 + modelo.margemLucro / 100);
-    const finalSalePrice =
-      Math.ceil(totalCost * (1 + modelo.margemLucro / 100) * 100) / 100;
-    const profit = priceSuggested - totalCost;
+    const custo = calcularCustoModelo(modelo, insumos);
+    const finalSalePrice = Math.ceil(custo.priceSuggested * 100) / 100;
+    const profit = custo.priceSuggested - custo.totalCost;
     const valorVendido = Number(calculos[modelo.id] || 0);
-    const actualProfit = valorVendido - totalCost;
-
-    const breakdown = [
-      {
-        label: baseName,
-        quantidade: modelo.ceraGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, baseName),
-        value: ceraCost,
-      },
-      {
-        label: base2Name || "Base secundária",
-        quantidade: modelo.cera2Gr || 0,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, base2Name),
-        value: cera2Cost,
-      },
-      {
-        label: modelo.essenciaNome ? modelo.essenciaNome : "Essência",
-        quantidade: modelo.esenciaMl,
-        unidade: "ml",
-        unitCost: findUnitCost(insumos, modelo.essenciaNome),
-        value: esenciaCost,
-      },
-      {
-        label: modelo.pavio ? modelo.pavio : "Pavio",
-        quantidade: 1,
-        unidade: "und",
-        unitCost: findUnitCost(insumos, modelo.pavio),
-        value: pavioCost,
-      },
-      {
-        label: modelo.coranteNome ? modelo.coranteNome : "Corante",
-        quantidade: modelo.coranteGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.coranteNome),
-        value: coranteCost,
-      },
-      {
-        label: modelo.recipiente ? modelo.recipiente : "Recipiente",
-        quantidade: 1,
-        unidade: "und",
-        unitCost: findUnitCost(insumos, modelo.recipiente),
-        value: recipienteCost,
-      },
-      {
-        label: modelo.pedra ? modelo.pedra : "Pedra",
-        quantidade: modelo.pedraGr || 0,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.pedra),
-        value: pedraCost,
-      },
-      {
-        label: modelo.extrato ? modelo.extrato : "Extrato",
-        quantidade: modelo.extratoGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.extrato),
-        value: extratoCost,
-      },
-      {
-        label: modelo.lauril ? modelo.lauril : "Lauril",
-        quantidade: modelo.laurilGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.lauril),
-        value: laurilCost,
-      },
-      {
-        label: modelo.oleo ? modelo.oleo : "Óleo",
-        quantidade: modelo.oleoGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.oleo),
-        value: oleoCost,
-      },
-      {
-        label: modelo.argila ? modelo.argila : "Argila",
-        quantidade: modelo.argilaGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.argila),
-        value: argilaCost,
-      },
-      {
-        label: modelo.dioxido ? modelo.dioxido : "Dióxido",
-        quantidade: modelo.dioxidoGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.dioxido),
-        value: dioxidoCost,
-      },
-      {
-        label: modelo.manteiga ? modelo.manteiga : "Manteiga",
-        quantidade: modelo.manteigaGr,
-        unidade: "g",
-        unitCost: findUnitCost(insumos, modelo.manteiga),
-        value: manteigaCost,
-      },
-    ].filter((item) => item.value > 0);
+    const actualProfit = valorVendido - custo.totalCost;
 
     return {
-      insumoCost,
-      fixedCost,
-      totalCost,
-      priceSuggested,
+      ...custo,
       profit,
       actualProfit,
       finalSalePrice,
       valorVendido,
-      breakdown,
-      missingInsumos: findMissingInsumos(insumos, modelo),
     };
   }
 
