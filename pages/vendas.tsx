@@ -5,7 +5,6 @@ import { authFetch } from "../lib/apiClient";
 import { COLORS } from "../styles/theme";
 import VendaForm, { VendaFormState } from "../components/vendas/VendaForm";
 import VendaTable, { VendaFilters } from "../components/vendas/VendaTable";
-import VendaResumo from "../components/vendas/VendaResumo";
 
 type Venda = {
   id: number;
@@ -434,67 +433,6 @@ export default function Vendas() {
     }
   }
 
-  function calculateResumo() {
-    // Total vendido e receita não incluem o frete (é repasse); o frete tem card próprio.
-    const totalVendido = vendasLista.reduce(
-      (sum, v) => sum + Math.max(v.total - Number(v.frete ?? 0), 0),
-      0,
-    );
-    const totalVelasVendidas = vendasLista.reduce(
-      (sum, v) => sum + v.quantidade,
-      0,
-    );
-    const receita = totalVendido;
-    const vendasComFrete = vendasLista.filter((v) => Number(v.frete ?? 0) > 0);
-    const freteSummary = {
-      value: vendasComFrete.reduce((sum, v) => sum + Number(v.frete ?? 0), 0),
-      count: vendasComFrete.length,
-    };
-
-    const paymentSummary = paymentMethods.map((method) => {
-      const value = vendasLista
-        .filter((v) => v.formaPagamento === method.name)
-        .reduce((sum, v) => sum + v.total, 0);
-      const count = vendasLista.filter(
-        (v) => v.formaPagamento === method.name,
-      ).length;
-      return { name: method.name, value, count };
-    });
-
-    const statusSummary = saleStatuses.map((status) => {
-      const count = vendasLista.filter((v) => v.status === status.name).length;
-      return { name: status.name, count };
-    });
-
-    const paymentTotals = paymentSummary.reduce(
-      (acc, item) => {
-        acc[item.name] = item.value;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    const statusCounts = statusSummary.reduce(
-      (acc, item) => {
-        acc[item.name] = item.count;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-    return {
-      totalVendido,
-      receita,
-      totalVelasVendidas,
-      paymentSummary,
-      freteSummary,
-      statusSummary,
-      paymentTotals,
-      statusCounts,
-    };
-  }
-
-  const resumo = calculateResumo();
   const filteredVendas = getFilteredVendas();
 
   function getFilteredVendas() {
@@ -539,7 +477,7 @@ export default function Vendas() {
       >
         <div>
           <h2>Vendas</h2>
-          <p>Registre vendas de velas e acompanhe o resumo das vendas.</p>
+          <p>Registre vendas de velas. O resumo financeiro fica no Dashboard.</p>
         </div>
       </div>
       {message && (
@@ -625,7 +563,6 @@ export default function Vendas() {
           }
         />
       </div>
-      <VendaResumo resumo={resumo} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../lib/prisma";
 import { withApiErrorHandling } from "../../lib/api";
 import { requireDataAccess } from "../../lib/auth";
+import { isPaymentGroup } from "../../lib/vendas";
 import {
   describeParameterUsage,
   renameParameterReferences,
@@ -47,7 +48,7 @@ export default withApiErrorHandling(async function handler(
   }
 
   if (req.method === "POST") {
-    const { name, category: bodyCategory } = req.body;
+    const { name, category: bodyCategory, paymentGroup } = req.body;
     if (!name) return res.status(400).json({ error: "Nome é obrigatório." });
 
     const finalCategory = validCategories.includes(bodyCategory)
@@ -75,6 +76,10 @@ export default withApiErrorHandling(async function handler(
       data: {
         name: finalName,
         category: finalCategory,
+        paymentGroup:
+          finalCategory === "paymentMethod" && isPaymentGroup(paymentGroup)
+            ? paymentGroup
+            : null,
       } as any,
     });
     res.status(201).json(created);
@@ -82,7 +87,7 @@ export default withApiErrorHandling(async function handler(
   }
 
   if ((req.method === "PUT" || req.method === "PATCH") && id) {
-    const { name, category: bodyCategory } = req.body;
+    const { name, category: bodyCategory, paymentGroup } = req.body;
     const existing = (await prisma.productType.findUnique({
       where: { id },
     })) as any;
@@ -125,6 +130,14 @@ export default withApiErrorHandling(async function handler(
         data: {
           name: finalName,
           category: finalCategory,
+          paymentGroup:
+            finalCategory !== "paymentMethod"
+              ? null
+              : paymentGroup === undefined
+                ? existing.paymentGroup
+                : isPaymentGroup(paymentGroup)
+                  ? paymentGroup
+                  : null,
         } as any,
       });
     });

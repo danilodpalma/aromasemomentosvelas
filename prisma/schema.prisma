@@ -148,6 +148,8 @@ model ProductType {
   id        Int      @id @default(autoincrement())
   name      String
   category  String   @default("productType")
+  // Só para formas de pagamento: "recebido", "a_receber" ou "doacao".
+  paymentGroup String?
   createdAt DateTime @default(now())
 
   @@unique([name, category])

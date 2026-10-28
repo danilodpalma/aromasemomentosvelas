@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { formatDateOnly } from "../lib/date";
 import { COLORS } from "../styles/theme";
 import { authFetch } from "../lib/apiClient";
+import { summarizeVendas, isCanceledStatus } from "../lib/vendas";
 
 type Venda = {
   id: number;
@@ -22,7 +23,10 @@ type Parameter = {
   id: number;
   name: string;
   category: string;
+  paymentGroup?: string | null;
 };
+
+type PeriodMode = "mes" | "ano" | "tudo" | "personalizado";
 
 const MONTHS = [
   "Janeiro",
@@ -51,24 +55,8 @@ function formatOrderStatusLabel(status: string) {
   return `Pedidos ${status}`;
 }
 
-function normalizePaymentMethod(paymentMethod: string) {
-  return paymentMethod
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-/** Valor cobrado do cliente (produtos − desconto + frete): é o dinheiro que entra. */
-function getEffectiveSaleTotal(sale: Pick<Venda, "total" | "desconto">) {
-  return Number.isFinite(sale.total) ? Number(sale.total) : 0;
-}
-
-/** Receita da venda sem o frete, que é repasse e não faturamento. */
-function getSaleRevenue(sale: Pick<Venda, "total" | "frete">) {
-  const total = Number.isFinite(sale.total) ? Number(sale.total) : 0;
-  return Math.max(total - Number(sale.frete ?? 0), 0);
-}
+const formatCurrency = (amount: number) =>
+  amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const thStyle: React.CSSProperties = {
   padding: "10px 8px",
@@ -115,11 +103,103 @@ const totalBadgeStyle: React.CSSProperties = {
   fontWeight: 800,
 };
 
+const cardStyle: React.CSSProperties = {
+  background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+  padding: 18,
+  borderRadius: 14,
+  border: COLORS.cardBorder,
+  boxShadow: COLORS.cardShadow,
+};
+
+const inputStyle: React.CSSProperties = {
+  padding: "8px 10px",
+  border: "1px solid rgb(167, 117, 75)",
+  borderRadius: 6,
+  background: COLORS.white,
+};
+
+const hintStyle: React.CSSProperties = {
+  color: COLORS.grayText,
+  fontSize: 12,
+  fontWeight: 400,
+};
+
+/** Linha "rótulo → valor" das tabelas de resumo. */
+function SummaryRow({
+  label,
+  hint,
+  value,
+  strong,
+  indent,
+}: {
+  label: React.ReactNode;
+  hint?: React.ReactNode;
+  value: React.ReactNode;
+  strong?: boolean;
+  indent?: boolean;
+}) {
+  return (
+    <tr>
+      <th
+        style={{
+          padding: 8,
+          paddingLeft: indent ? 24 : 8,
+          textAlign: "left",
+          borderTop: "1px solid #e5e7eb",
+          fontWeight: strong ? 800 : indent ? 500 : 600,
+        }}
+      >
+        {label}
+        {hint && <div style={hintStyle}>{hint}</div>}
+      </th>
+      <td
+        style={{
+          padding: 8,
+          textAlign: "right",
+          borderTop: "1px solid #e5e7eb",
+          fontWeight: strong ? 800 : 500,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </td>
+    </tr>
+  );
+}
+
+function KpiCard({
+  title,
+  hint,
+  value,
+  color,
+}: {
+  title: string;
+  hint: string;
+  value: string;
+  color: string;
+}) {
+  return (
+    <div style={{ ...cardStyle, padding: 20 }}>
+      <p style={{ margin: 0, color: "#6b7280" }}>{title}</p>
+      <p style={{ margin: "2px 0 0", ...hintStyle }}>{hint}</p>
+      <p style={{ marginTop: 8, marginBottom: 0, fontSize: 26, fontWeight: 700, color }}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
+  const hoje = new Date();
   const [vendas, setVendas] = useState<Venda[]>([]);
   const [netWithdrawalPercent, setNetWithdrawalPercent] = useState(35);
   const [paymentMethods, setPaymentMethods] = useState<Parameter[]>([]);
   const [saleStatuses, setSaleStatuses] = useState<Parameter[]>([]);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("mes");
+  const [periodMonth, setPeriodMonth] = useState(hoje.getMonth() + 1);
+  const [periodYear, setPeriodYear] = useState(hoje.getFullYear());
+  const [periodFrom, setPeriodFrom] = useState("");
+  const [periodTo, setPeriodTo] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -165,129 +245,76 @@ export default function Dashboard() {
     load();
   }, []);
 
-  const hoje = new Date();
-  const mesAtivo = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-  const vendasDoMes = vendas.filter(
-    (venda) => venda.dataVenda?.slice(0, 7) === mesAtivo,
-  );
-  const totalVendas = vendasDoMes.length;
-  const receita = vendasDoMes.reduce(
-    (sum, item) => sum + getSaleRevenue(item),
-    0,
-  );
-  const vendasRecentes = vendas.slice(0, 5);
-  const anoAtual = hoje.getFullYear();
-  const monthlySales = MONTHS.map((month, index) => {
-    const monthKey = `${anoAtual}-${String(index + 1).padStart(2, "0")}`;
-    const sales = vendas.filter(
-      (venda) => venda.dataVenda?.slice(0, 7) === monthKey,
-    );
-    const grossRevenue = sales.reduce(
-      (sum, sale) => sum + getSaleRevenue(sale),
-      0,
-    );
-
-    return {
-      month,
-      grossRevenue,
-      netRevenue: grossRevenue * (netWithdrawalPercent / 100),
-      orderCount: sales.length,
-    };
-  });
-  const isReceivablePaymentMethod = (paymentMethod: string) => {
-    const normalized = normalizePaymentMethod(paymentMethod);
-    return normalized === "a receber" || normalized === "consignacao";
-  };
-  const isPresentPaymentMethod = (paymentMethod: string) =>
-    normalizePaymentMethod(paymentMethod) === "presente";
-  const isServiceExchangePaymentMethod = (paymentMethod: string) => {
-    const normalized = normalizePaymentMethod(paymentMethod);
-    return (
-      normalized === "troca de servicos" || normalized === "troca por servicos"
-    );
-  };
-  const receivableSales = vendas.filter((sale) =>
-    isReceivablePaymentMethod(sale.formaPagamento),
-  );
-  const receivedSales = vendas.filter(
-    (sale) =>
-      !isReceivablePaymentMethod(sale.formaPagamento) &&
-      !isPresentPaymentMethod(sale.formaPagamento) &&
-      !isServiceExchangePaymentMethod(sale.formaPagamento),
-  );
-  const presentSales = vendas.filter((sale) =>
-    isPresentPaymentMethod(sale.formaPagamento),
-  );
-  const serviceExchangeSales = vendas.filter((sale) =>
-    isServiceExchangePaymentMethod(sale.formaPagamento),
-  );
-  const totalVendido = vendas.reduce(
-    (sum, sale) => sum + getSaleRevenue(sale),
-    0,
-  );
-  const totalAReceber = receivableSales.reduce(
-    (sum, sale) => sum + getEffectiveSaleTotal(sale),
-    0,
-  );
-  const totalUnidadesVendidas = vendas.reduce(
-    (sum, sale) =>
-      sum +
-      (sale.itens?.length
-        ? sale.itens.reduce((itemSum, item) => itemSum + item.quantidade, 0)
-        : sale.quantidade),
-    0,
-  );
-  const totalPresentes = presentSales.reduce(
-    (sum, sale) => sum + getSaleRevenue(sale),
-    0,
-  );
-  const totalTrocasServicos = serviceExchangeSales.reduce(
-    (sum, sale) => sum + getSaleRevenue(sale),
-    0,
-  );
-  const freteSales = vendas.filter((sale) => Number(sale.frete ?? 0) > 0);
-  const totalFrete = freteSales.reduce(
-    (sum, sale) => sum + Number(sale.frete ?? 0),
-    0,
-  );
-  const paymentMethodNames = Array.from(
+  // ---------- Período ----------
+  // As datas são comparadas como texto "AAAA-MM-DD" para não sofrer com fuso horário.
+  const monthKey = `${periodYear}-${String(periodMonth).padStart(2, "0")}`;
+  function isInPeriod(venda: Venda) {
+    const day = venda.dataVenda?.slice(0, 10) ?? "";
+    switch (periodMode) {
+      case "mes":
+        return day.slice(0, 7) === monthKey;
+      case "ano":
+        return day.slice(0, 4) === String(periodYear);
+      case "personalizado":
+        return (!periodFrom || day >= periodFrom) && (!periodTo || day <= periodTo);
+      default:
+        return true;
+    }
+  }
+  const periodLabel =
+    periodMode === "mes"
+      ? `${MONTHS[periodMonth - 1]}/${periodYear}`
+      : periodMode === "ano"
+        ? String(periodYear)
+        : periodMode === "personalizado"
+          ? `${periodFrom ? formatDateOnly(periodFrom) : "início"} a ${
+              periodTo ? formatDateOnly(periodTo) : "hoje"
+            }`
+          : "Todo o período";
+  const availableYears = Array.from(
     new Set([
-      ...paymentMethods.map((method) => method.name),
-      ...vendas.map((sale) => sale.formaPagamento).filter(Boolean),
+      hoje.getFullYear(),
+      ...vendas
+        .map((venda) => Number(venda.dataVenda?.slice(0, 4)))
+        .filter((year) => Number.isFinite(year) && year > 2000),
     ]),
-  );
-  const receivedByMethod = paymentMethodNames
-    .filter(
-      (name) =>
-        !isReceivablePaymentMethod(name) &&
-        !isPresentPaymentMethod(name) &&
-        !isServiceExchangePaymentMethod(name),
-    )
-    .map((name) => {
-      const methodSales = receivedSales.filter(
-        (sale) => sale.formaPagamento === name,
-      );
-      return {
-        name,
-        total: methodSales.reduce(
-          (sum, sale) => sum + getEffectiveSaleTotal(sale),
-          0,
-        ),
-        orderCount: methodSales.length,
-      };
-    });
+  ).sort((a, b) => b - a);
+
+  const vendasNoPeriodo = vendas.filter(isInPeriod);
+  const resumo = summarizeVendas(vendasNoPeriodo, paymentMethods);
+
   const saleStatusNames = Array.from(
     new Set([
       ...saleStatuses.map((status) => status.name),
-      ...vendas.map((sale) => sale.status).filter(Boolean),
+      ...vendasNoPeriodo.map((sale) => sale.status).filter(Boolean),
     ]),
-  );
+  ).filter((name) => !isCanceledStatus(name));
   const ordersByStatus = saleStatusNames.map((name) => ({
     name,
-    count: vendas.filter((sale) => sale.status === name).length,
+    count: vendasNoPeriodo.filter((sale) => sale.status === name).length,
   }));
-  const formatCurrency = (amount: number) =>
-    amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  // ---------- Mês a mês ----------
+  // Usa o ano do filtro (ou o ano atual, quando o filtro não é por mês/ano).
+  const tableYear =
+    periodMode === "mes" || periodMode === "ano" ? periodYear : hoje.getFullYear();
+  const monthlySales = MONTHS.map((month, index) => {
+    const key = `${tableYear}-${String(index + 1).padStart(2, "0")}`;
+    const resumoMes = summarizeVendas(
+      vendas.filter((venda) => venda.dataVenda?.slice(0, 7) === key),
+      paymentMethods,
+    );
+    return {
+      month,
+      faturamento: resumoMes.faturamento,
+      recebido: resumoMes.recebido,
+      aReceber: resumoMes.aReceber,
+      netRevenue: resumoMes.faturamento * (netWithdrawalPercent / 100),
+      orderCount: resumoMes.pedidos,
+    };
+  });
+
+  const vendasRecentes = vendas.slice(0, 5);
 
   return (
     <div>
@@ -296,123 +323,276 @@ export default function Dashboard() {
         Use este painel como ponto de partida para acompanhar seu negócio.
       </p>
 
+      {/* ---------- Filtro de período ---------- */}
+      <section
+        style={{
+          ...cardStyle,
+          display: "flex",
+          alignItems: "end",
+          gap: 12,
+          flexWrap: "wrap",
+          marginTop: 16,
+        }}
+      >
+        <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+          Período
+          <select
+            value={periodMode}
+            onChange={(e) => setPeriodMode(e.target.value as PeriodMode)}
+            style={inputStyle}
+          >
+            <option value="mes">Mês</option>
+            <option value="ano">Ano</option>
+            <option value="tudo">Todo o período</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </label>
+        {periodMode === "mes" && (
+          <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+            Mês
+            <select
+              value={periodMonth}
+              onChange={(e) => setPeriodMonth(Number(e.target.value))}
+              style={inputStyle}
+            >
+              {MONTHS.map((month, index) => (
+                <option key={month} value={index + 1}>
+                  {month}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {(periodMode === "mes" || periodMode === "ano") && (
+          <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+            Ano
+            <select
+              value={periodYear}
+              onChange={(e) => setPeriodYear(Number(e.target.value))}
+              style={inputStyle}
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {periodMode === "personalizado" && (
+          <>
+            <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+              De
+              <input
+                type="date"
+                value={periodFrom}
+                onChange={(e) => setPeriodFrom(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
+              Até
+              <input
+                type="date"
+                value={periodTo}
+                onChange={(e) => setPeriodTo(e.target.value)}
+                style={inputStyle}
+              />
+            </label>
+          </>
+        )}
+        <span style={{ marginLeft: "auto", color: COLORS.primaryDark, fontWeight: 700 }}>
+          {periodLabel}
+        </span>
+      </section>
+
+      {/* ---------- Indicadores ---------- */}
       <section
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           gap: 16,
-          marginTop: 24,
+          marginTop: 16,
         }}
       >
-        <div
-          style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
-            padding: 20,
-            borderRadius: 14,
-            boxShadow: COLORS.cardShadow,
-            border: COLORS.cardBorder,
-          }}
-        >
-          <p style={{ margin: 0, color: "#6b7280" }}>Vendas no mês</p>
-          <p style={{ marginTop: 8, fontSize: 28, fontWeight: 700 }}>
-            {totalVendas}
-          </p>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
-            padding: 20,
-            borderRadius: 14,
-            boxShadow: COLORS.cardShadow,
-            border: COLORS.cardBorder,
-          }}
-        >
-          <p style={{ margin: 0, color: "#6b7280" }}>Receita no mês</p>
-          <p style={{ marginTop: 8, fontSize: 28, fontWeight: 700 }}>
-            R$ {receita.toFixed(2)}
-          </p>
-        </div>
+        <KpiCard
+          title="Faturamento líquido"
+          hint={`${resumo.pedidos} pedidos · produtos − descontos, sem frete`}
+          value={formatCurrency(resumo.faturamento)}
+          color={COLORS.primaryDark}
+        />
+        <KpiCard
+          title="Recebido"
+          hint="Já pago (tipo Recebido)"
+          value={formatCurrency(resumo.recebido)}
+          color="#166534"
+        />
+        <KpiCard
+          title="A receber"
+          hint="Vendido, pagamento pendente"
+          value={formatCurrency(resumo.aReceber)}
+          color="#b45309"
+        />
+        <KpiCard
+          title="Doações / cortesias"
+          hint={`${resumo.doacoes.pedidos} pedidos · valor de venda`}
+          value={formatCurrency(resumo.doacoes.valor)}
+          color="#7c3aed"
+        />
       </section>
 
+      {resumo.semTipo.pedidos > 0 && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: 14,
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#b91c1c",
+            borderRadius: 8,
+          }}
+        >
+          {resumo.semTipo.pedidos} venda(s) ({formatCurrency(resumo.semTipo.valor)})
+          estão fora do resumo porque a forma de pagamento não tem tipo:{" "}
+          <strong>{resumo.semTipo.formas.join(", ")}</strong>. Defina o tipo em
+          Parâmetros → Formas de pagamento.
+        </div>
+      )}
+
+      {/* ---------- Resumo financeiro ---------- */}
       <section style={{ marginTop: 28 }}>
         <h3 style={{ marginBottom: 10, color: COLORS.primaryDark }}>
-          Vendas recentes
+          Resumo financeiro · {periodLabel}
         </h3>
-        <table
+        <div
           style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: 11.5,
-            background: "linear-gradient(135deg, #f7e8d7 0%, #efd9c2 100%)",
-            borderRadius: 14,
-            overflow: "hidden",
-            boxShadow: "0 10px 24px rgba(92, 54, 24, 0.08)",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: 16,
           }}
         >
-          <thead style={{ background: "rgba(255,255,255,0.35)" }}>
-            <tr>
-              <th style={thStyle}>Cliente</th>
-              <th style={thStyle}>Produto</th>
-              <th style={thStyle}>Total</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vendasRecentes.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ ...tdStyle, padding: 16 }}>
-                  Nenhuma venda registrada ainda.
-                </td>
-              </tr>
-            ) : (
-              vendasRecentes.map((venda, index) => (
-                <tr
-                  key={venda.id}
-                  style={{
-                    background:
-                      index % 2 === 0
-                        ? COLORS.tableRowEven
-                        : COLORS.tableRowOdd,
-                  }}
-                >
-                  <td style={tdStyle}>
-                    {venda.cliente}
-                  </td>
-                  <td style={tdStyle}>
-                    {venda.itens?.length ? (
-                      venda.itens.map((item) => (
-                        <div key={item.id}>
-                          {item.quantidade}x {item.modeloVela}
-                        </div>
-                      ))
-                    ) : (
-                      <div>
-                        {venda.quantidade}x {venda.modeloVela}
-                      </div>
-                    )}
-                  </td>
-                  <td
-                    style={tdStyle}
-                  >
-                    <span style={totalBadgeStyle}><span>R$</span><span>{venda.total.toFixed(2)}</span></span>
-                  </td>
-                  <td style={tdStyle}>
-                    {venda.status}
-                  </td>
-                  <td style={tdStyle}>
-                    {formatDateOnly(venda.dataVenda)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+          <div style={cardStyle}>
+            <h4 style={{ margin: "0 0 10px", color: COLORS.primaryDark }}>
+              Vendas
+            </h4>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <tbody>
+                <SummaryRow
+                  label="Produtos vendidos (bruto)"
+                  value={formatCurrency(resumo.bruto)}
+                />
+                <SummaryRow
+                  label="(−) Descontos"
+                  value={formatCurrency(resumo.descontos)}
+                />
+                <SummaryRow
+                  label="(=) Faturamento líquido"
+                  value={formatCurrency(resumo.faturamento)}
+                  strong
+                />
+                <SummaryRow
+                  label="Recebido"
+                  value={formatCurrency(resumo.recebido)}
+                />
+                {resumo.recebidoPorForma.map((method) => (
+                  <SummaryRow
+                    key={method.name}
+                    indent
+                    label={method.name}
+                    hint={`${method.pedidos} ${method.pedidos === 1 ? "pedido" : "pedidos"}`}
+                    value={formatCurrency(method.valor)}
+                  />
+                ))}
+                <SummaryRow
+                  label="A receber"
+                  value={formatCurrency(resumo.aReceber)}
+                />
+                {resumo.aReceberPorForma.map((method) => (
+                  <SummaryRow
+                    key={method.name}
+                    indent
+                    label={method.name}
+                    hint={`${method.pedidos} ${method.pedidos === 1 ? "pedido" : "pedidos"}`}
+                    value={formatCurrency(method.valor)}
+                  />
+                ))}
+                <SummaryRow
+                  label="Frete cobrado"
+                  hint="Repasse, fora do faturamento"
+                  value={formatCurrency(resumo.frete)}
+                />
+                <SummaryRow
+                  label="Pedidos · unidades"
+                  value={`${resumo.pedidos} · ${resumo.unidades}`}
+                />
+                <SummaryRow
+                  label="Ticket médio"
+                  value={formatCurrency(resumo.ticketMedio)}
+                />
+              </tbody>
+            </table>
+          </div>
+
+          <div style={cardStyle}>
+            <h4 style={{ margin: "0 0 4px", color: COLORS.primaryDark }}>
+              Saídas sem receita
+            </h4>
+            <p style={{ margin: "0 0 10px", ...hintStyle }}>
+              Produtos entregues sem pagamento (tipo Doação / cortesia), pelo
+              valor de venda.
+            </p>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <tbody>
+                {resumo.doacoesPorForma.length === 0 ? (
+                  <SummaryRow label="Nenhuma no período" value="—" />
+                ) : (
+                  resumo.doacoesPorForma.map((method) => (
+                    <SummaryRow
+                      key={method.name}
+                      label={method.name}
+                      hint={`${method.pedidos} ${method.pedidos === 1 ? "pedido" : "pedidos"} · ${method.unidades} un.`}
+                      value={formatCurrency(method.valor)}
+                    />
+                  ))
+                )}
+                <SummaryRow
+                  label="Total doado"
+                  hint={`${resumo.doacoes.pedidos} pedidos · ${resumo.doacoes.unidades} un.`}
+                  value={formatCurrency(resumo.doacoes.valor)}
+                  strong
+                />
+              </tbody>
+            </table>
+          </div>
+
+          <div style={cardStyle}>
+            <h4 style={{ margin: "0 0 10px", color: COLORS.primaryDark }}>
+              Pedidos
+            </h4>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <tbody>
+                {ordersByStatus.map((status) => (
+                  <SummaryRow
+                    key={status.name}
+                    label={formatOrderStatusLabel(status.name)}
+                    value={status.count}
+                  />
+                ))}
+                <SummaryRow
+                  label="Cancelados"
+                  hint="Fora de todos os totais"
+                  value={`${resumo.canceladas.pedidos} · ${formatCurrency(resumo.canceladas.valor)}`}
+                />
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
+      {/* ---------- Mês a mês ---------- */}
       <section style={{ marginTop: 28 }}>
         <h3 style={{ marginBottom: 10, color: COLORS.primaryDark }}>
-          Resumo geral de vendas · {anoAtual}
+          Faturamento mês a mês · {tableYear}
         </h3>
         <div style={{ overflowX: "auto" }}>
           <table
@@ -429,15 +609,11 @@ export default function Dashboard() {
             <thead style={{ background: "rgba(255,255,255,0.35)" }}>
               <tr>
                 <th style={thStyle}>Mês</th>
-                <th style={thStyle}>
-                  Faturamento bruto
-                </th>
-                <th style={thStyle}>
-                  Líquido ({netWithdrawalPercent}%)
-                </th>
-                <th style={thStyle}>
-                  Quantidade de pedidos
-                </th>
+                <th style={thStyle}>Faturamento líquido</th>
+                <th style={thStyle}>Recebido</th>
+                <th style={thStyle}>A receber</th>
+                <th style={thStyle}>Líquido ({netWithdrawalPercent}%)</th>
+                <th style={thStyle}>Pedidos</th>
               </tr>
             </thead>
             <tbody>
@@ -451,26 +627,20 @@ export default function Dashboard() {
                         : COLORS.tableRowOdd,
                   }}
                 >
+                  <td style={tdStyle}>{month.month}</td>
                   <td style={tdStyle}>
-                    {month.month}
-                  </td>
-                  <td
-                    style={tdStyle}
-                  >
                     <span style={totalBadgeStyle}>
-                      {formatCurrency(month.grossRevenue)}
+                      {formatCurrency(month.faturamento)}
                     </span>
                   </td>
-                  <td
-                    style={tdStyle}
-                  >
+                  <td style={tdStyle}>{formatCurrency(month.recebido)}</td>
+                  <td style={tdStyle}>{formatCurrency(month.aReceber)}</td>
+                  <td style={tdStyle}>
                     <span style={priceBadgeStyle}>
                       {formatCurrency(month.netRevenue)}
                     </span>
                   </td>
-                  <td
-                    style={tdStyle}
-                  >
+                  <td style={tdStyle}>
                     <span style={qtyBadgeStyle}>{month.orderCount}</span>
                   </td>
                 </tr>
@@ -480,295 +650,77 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* ---------- Vendas recentes ---------- */}
       <section style={{ marginTop: 28 }}>
         <h3 style={{ marginBottom: 10, color: COLORS.primaryDark }}>
-          Resumo geral · Todos os meses
+          Vendas recentes
         </h3>
-        <div
+        <table
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 16,
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: 11.5,
+            background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
+            borderRadius: 14,
+            overflow: "hidden",
+            boxShadow: COLORS.cardShadow,
           }}
         >
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-              padding: 18,
-              borderRadius: 14,
-              border: COLORS.cardBorder,
-              boxShadow: COLORS.cardShadow,
-            }}
-          >
-            <h4 style={{ margin: "0 0 10px", color: COLORS.primaryDark }}>
-              Financeiro
-            </h4>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <tbody>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total vendido (sem frete)
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {formatCurrency(totalVendido)}
-                  </td>
-                </tr>
-                {receivedByMethod.map((method) => (
-                  <tr key={method.name}>
-                    <th
-                      style={{
-                        padding: 8,
-                        textAlign: "left",
-                        borderTop: "1px solid #e5e7eb",
-                        fontWeight: 500,
-                      }}
-                    >
-                      Total recebido {method.name}
-                      <div style={{ color: COLORS.grayText, fontSize: 12 }}>
-                        {method.orderCount}{" "}
-                        {method.orderCount === 1 ? "pedido" : "pedidos"}
+          <thead style={{ background: "rgba(255,255,255,0.35)" }}>
+            <tr>
+              <th style={thStyle}>Cliente</th>
+              <th style={thStyle}>Produto</th>
+              <th style={thStyle}>Total</th>
+              <th style={thStyle}>Pagamento</th>
+              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vendasRecentes.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ ...tdStyle, padding: 16 }}>
+                  Nenhuma venda registrada ainda.
+                </td>
+              </tr>
+            ) : (
+              vendasRecentes.map((venda, index) => (
+                <tr
+                  key={venda.id}
+                  style={{
+                    background:
+                      index % 2 === 0
+                        ? COLORS.tableRowEven
+                        : COLORS.tableRowOdd,
+                  }}
+                >
+                  <td style={tdStyle}>{venda.cliente}</td>
+                  <td style={tdStyle}>
+                    {venda.itens?.length ? (
+                      venda.itens.map((item) => (
+                        <div key={item.id}>
+                          {item.quantidade}x {item.modeloVela}
+                        </div>
+                      ))
+                    ) : (
+                      <div>
+                        {venda.quantidade}x {venda.modeloVela}
                       </div>
-                    </th>
-                    <td
-                      style={{
-                        padding: 8,
-                        textAlign: "right",
-                        borderTop: "1px solid #e5e7eb",
-                      }}
-                    >
-                      {formatCurrency(method.total)}
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total a receber (A Receber e Consignação)
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {formatCurrency(totalAReceber)}
+                    )}
                   </td>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total de presentes
-                    <div style={{ color: COLORS.grayText, fontSize: 12 }}>
-                      {presentSales.length}{" "}
-                      {presentSales.length === 1 ? "pedido" : "pedidos"}
-                    </div>
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {formatCurrency(totalPresentes)}
+                  <td style={tdStyle}>
+                    <span style={totalBadgeStyle}>
+                      {formatCurrency(venda.total)}
+                    </span>
                   </td>
+                  <td style={tdStyle}>{venda.formaPagamento}</td>
+                  <td style={tdStyle}>{venda.status}</td>
+                  <td style={tdStyle}>{formatDateOnly(venda.dataVenda)}</td>
                 </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Trocas por serviços
-                    <div style={{ color: COLORS.grayText, fontSize: 12 }}>
-                      {serviceExchangeSales.length}{" "}
-                      {serviceExchangeSales.length === 1 ? "pedido" : "pedidos"}
-                    </div>
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {formatCurrency(totalTrocasServicos)}
-                  </td>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total de frete
-                    <div style={{ color: COLORS.grayText, fontSize: 12 }}>
-                      {freteSales.length}{" "}
-                      {freteSales.length === 1 ? "pedido" : "pedidos"}
-                    </div>
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {formatCurrency(totalFrete)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${COLORS.cardGradientFrom} 0%, ${COLORS.cardGradientTo} 100%)`,
-              padding: 18,
-              borderRadius: 14,
-              border: COLORS.cardBorder,
-              boxShadow: COLORS.cardShadow,
-            }}
-          >
-            <h4 style={{ margin: "0 0 10px", color: COLORS.primaryDark }}>
-              Pedidos e unidades
-            </h4>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <tbody>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total de pedidos
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {vendas.length}
-                  </td>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Total de unidades vendidas
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {totalUnidadesVendidas}
-                  </td>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Presentes
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {presentSales.length}
-                  </td>
-                </tr>
-                <tr>
-                  <th
-                    style={{
-                      padding: 8,
-                      textAlign: "left",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    Trocas por serviços
-                  </th>
-                  <td
-                    style={{
-                      padding: 8,
-                      textAlign: "right",
-                      borderTop: "1px solid #e5e7eb",
-                    }}
-                  >
-                    {serviceExchangeSales.length}
-                  </td>
-                </tr>
-                {ordersByStatus.map((status) => (
-                  <tr key={status.name}>
-                    <th
-                      style={{
-                        padding: 8,
-                        textAlign: "left",
-                        borderTop: "1px solid #e5e7eb",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {formatOrderStatusLabel(status.name)}
-                    </th>
-                    <td
-                      style={{
-                        padding: 8,
-                        textAlign: "right",
-                        borderTop: "1px solid #e5e7eb",
-                      }}
-                    >
-                      {status.count}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </section>
     </div>
   );

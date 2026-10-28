@@ -2,6 +2,12 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../context";
 import { authFetch } from "../lib/apiClient";
 import { COLORS } from "../styles/theme";
+import {
+  PAYMENT_GROUPS,
+  inferPaymentGroup,
+  paymentGroupLabel,
+  type PaymentGroup,
+} from "../lib/vendas";
 
 type Parameter = {
   id: number;
@@ -14,6 +20,7 @@ type Parameter = {
     | "purchaseStatus"
     | "purchaseType"
     | "netWithdrawalPercent";
+  paymentGroup?: PaymentGroup | null;
 };
 
 export default function Parametros() {
@@ -22,6 +29,7 @@ export default function Parametros() {
   const [name, setName] = useState("");
   const [category, setCategory] =
     useState<Parameter["category"]>("productType");
+  const [paymentGroup, setPaymentGroup] = useState<PaymentGroup | "">("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
@@ -45,9 +53,21 @@ export default function Parametros() {
           { category: "purchaseStatus" as const, name: "Recebido" },
           { category: "purchaseType" as const, name: "Despesa" },
           { category: "purchaseType" as const, name: "Compra de Insumo" },
-          { category: "paymentMethod" as const, name: "A Receber" },
-          { category: "paymentMethod" as const, name: "Consignação" },
-          { category: "paymentMethod" as const, name: "Troca de Serviços" },
+          {
+            category: "paymentMethod" as const,
+            name: "A Receber",
+            paymentGroup: "a_receber",
+          },
+          {
+            category: "paymentMethod" as const,
+            name: "Consignação",
+            paymentGroup: "a_receber",
+          },
+          {
+            category: "paymentMethod" as const,
+            name: "Troca de Serviços",
+            paymentGroup: "doacao",
+          },
           { category: "netWithdrawalPercent" as const, name: "35" },
         ];
 
@@ -72,6 +92,8 @@ export default function Parametros() {
                 body: JSON.stringify({
                   name: entry.name,
                   category: entry.category,
+                  paymentGroup:
+                    "paymentGroup" in entry ? entry.paymentGroup : undefined,
                 }),
               }).then(async (response) => {
                 if (!response.ok) return null;
@@ -101,6 +123,9 @@ export default function Parametros() {
     e.preventDefault();
     if (!isFormActive) return;
     if (!name.trim()) return setMessage("Nome obrigatório.");
+    if (category === "paymentMethod" && !paymentGroup) {
+      return setMessage("Escolha o tipo da forma de pagamento.");
+    }
 
     const url = editingId
       ? `/api/productTypes?id=${editingId}`
@@ -110,7 +135,11 @@ export default function Parametros() {
     const res = await authFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), category }),
+      body: JSON.stringify({
+        name: name.trim(),
+        category,
+        paymentGroup: category === "paymentMethod" ? paymentGroup : null,
+      }),
     });
 
     if (res.ok) {
@@ -122,6 +151,7 @@ export default function Parametros() {
       );
       setName("");
       setCategory("productType");
+      setPaymentGroup("");
       setEditingId(null);
       setIsCreating(false);
       setMessage("Salvo com sucesso.");
@@ -153,6 +183,8 @@ export default function Parametros() {
     setEditingId(t.id);
     setName(t.name);
     setCategory(t.category);
+    // Sem tipo salvo ainda: já sugere o tipo deduzido pelo nome.
+    setPaymentGroup(t.paymentGroup ?? inferPaymentGroup(t.name) ?? "");
     setMessage("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -161,6 +193,7 @@ export default function Parametros() {
     setEditingId(null);
     setName("");
     setCategory("productType");
+    setPaymentGroup("");
     setIsCreating(true);
     setMessage("");
   }
@@ -169,6 +202,7 @@ export default function Parametros() {
     setEditingId(null);
     setName("");
     setCategory("productType");
+    setPaymentGroup("");
     setIsCreating(false);
   }
 
@@ -233,6 +267,27 @@ export default function Parametros() {
               >
                 <span style={{ fontWeight: 600, color: COLORS.primaryDark }}>
                   {t.name}
+                  {t.category === "paymentMethod" && (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 2,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: t.paymentGroup ? COLORS.grayText : "#b91c1c",
+                      }}
+                    >
+                      {t.paymentGroup
+                        ? `Tipo: ${paymentGroupLabel(t.paymentGroup)}`
+                        : `Sem tipo definido${
+                            inferPaymentGroup(t.name)
+                              ? ` · usando "${paymentGroupLabel(
+                                  inferPaymentGroup(t.name),
+                                )}" pelo nome`
+                              : ""
+                          }`}
+                    </span>
+                  )}
                 </span>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {canEdit && (
@@ -417,6 +472,40 @@ export default function Parametros() {
                     }}
                   />
                 </label>
+                {category === "paymentMethod" && (
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: 600,
+                      color: COLORS.primaryDark,
+                    }}
+                  >
+                    Tipo (para o resumo financeiro)
+                    <select
+                      disabled={!isFormActive}
+                      value={paymentGroup}
+                      onChange={(e) =>
+                        setPaymentGroup(e.target.value as PaymentGroup | "")
+                      }
+                      style={{
+                        width: "100%",
+                        marginTop: 6,
+                        padding: "8px 10px",
+                        border: "1px solid rgb(166, 116, 71)",
+                        borderRadius: 8,
+                        background: isFormActive ? "#fff" : COLORS.grayLight,
+                        fontSize: 13,
+                      }}
+                    >
+                      <option value="">Escolha</option>
+                      {PAYMENT_GROUPS.map((group) => (
+                        <option key={group.value} value={group.value}>
+                          {group.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
               <div
                 style={{
