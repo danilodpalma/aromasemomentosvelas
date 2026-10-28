@@ -33,6 +33,7 @@ type VendaResumoInput = {
   formaPagamento: string;
   status: string;
   itens?: Array<{
+    modeloVela?: string;
     quantidade: number;
     precoUnitario?: number;
     custoUnitario?: number | null;
@@ -226,4 +227,80 @@ export function summarizeVendas(
     margem,
     margemPercent: resumo.faturamento > 0 ? (margem / resumo.faturamento) * 100 : 0,
   };
+}
+
+export type MargemProduto = {
+  produto: string;
+  unidades: number;
+  faturamento: number;
+  custo: number;
+  margem: number;
+  margemPercent: number;
+  /** Unidades sem custo registrado (ficam fora do custo e da margem). */
+  unidadesSemCusto: number;
+};
+
+/**
+ * Margem por produto das vendas efetivas (Recebido + A receber, sem canceladas).
+ * O desconto da venda é dividido entre os itens na proporção do subtotal de
+ * cada um, para a soma por produto bater com o faturamento líquido.
+ */
+export function summarizeByProduct(
+  vendas: VendaResumoInput[],
+  paymentMethods: PaymentMethodParam[] = [],
+): MargemProduto[] {
+  const porProduto = new Map<string, MargemProduto>();
+
+  for (const venda of vendas) {
+    if (isCanceledStatus(venda.status)) continue;
+    const group = getPaymentGroup(venda.formaPagamento, paymentMethods);
+    if (group !== "recebido" && group !== "a_receber") continue;
+
+    const itens = venda.itens ?? [];
+    const subtotalVenda = itens.reduce(
+      (sum, item) => sum + item.quantidade * Number(item.precoUnitario ?? 0),
+      0,
+    );
+    const desconto = Number(venda.desconto ?? 0);
+
+    for (const item of itens) {
+      const produto = item.modeloVela || "Sem nome";
+      const subtotal = item.quantidade * Number(item.precoUnitario ?? 0);
+      const descontoRateado =
+        subtotalVenda > 0 ? desconto * (subtotal / subtotalVenda) : 0;
+      const entry =
+        porProduto.get(produto) ??
+        ({
+          produto,
+          unidades: 0,
+          faturamento: 0,
+          custo: 0,
+          margem: 0,
+          margemPercent: 0,
+          unidadesSemCusto: 0,
+        } as MargemProduto);
+
+      entry.unidades += item.quantidade;
+      if (item.custoUnitario == null) {
+        // Sem custo: não entra no faturamento usado na margem, para não inflá-la.
+        entry.unidadesSemCusto += item.quantidade;
+      } else {
+        entry.faturamento += subtotal - descontoRateado;
+        entry.custo += item.custoUnitario * item.quantidade;
+      }
+      porProduto.set(produto, entry);
+    }
+  }
+
+  return [...porProduto.values()]
+    .map((entry) => {
+      const margem = entry.faturamento - entry.custo;
+      return {
+        ...entry,
+        margem,
+        margemPercent:
+          entry.faturamento > 0 ? (margem / entry.faturamento) * 100 : 0,
+      };
+    })
+    .sort((a, b) => b.margem - a.margem);
 }
