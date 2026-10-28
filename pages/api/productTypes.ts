@@ -16,6 +16,15 @@ const validCategories = [
   "purchaseStatus",
   "purchaseType",
   "netWithdrawalPercent",
+  "marginGreenPercent",
+  "marginYellowPercent",
+];
+
+/** Categorias cujo "nome" é um percentual de 0 a 100. */
+const percentCategories = [
+  "netWithdrawalPercent",
+  "marginGreenPercent",
+  "marginYellowPercent",
 ];
 
 export default withApiErrorHandling(async function handler(
@@ -55,7 +64,7 @@ export default withApiErrorHandling(async function handler(
       ? bodyCategory
       : "productType";
     const finalName = String(name).trim();
-    if (finalCategory === "netWithdrawalPercent") {
+    if (percentCategories.includes(finalCategory)) {
       const percentage = Number(finalName);
       if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
         return res
@@ -98,7 +107,7 @@ export default withApiErrorHandling(async function handler(
       ? bodyCategory
       : existing.category;
     const finalName = String(name ?? existing.name).trim();
-    if (finalCategory === "netWithdrawalPercent") {
+    if (percentCategories.includes(finalCategory)) {
       const percentage = Number(finalName);
       if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
         return res
