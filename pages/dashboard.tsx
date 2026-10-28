@@ -39,11 +39,23 @@ type Parameter = {
 type PeriodMode = "mes" | "ano" | "tudo" | "personalizado";
 type ProductSort = "margem" | "margemPercent" | "unidades" | "faturamento";
 
-/** Cor da margem %: verde a partir de 50%, amarelo de 30% a 50%, vermelho abaixo. */
-function marginColor(percent: number) {
-  if (percent >= 50) return { background: "rgba(34, 197, 94, 0.12)", color: "#166534" };
-  if (percent >= 30) return { background: "rgba(234, 179, 8, 0.15)", color: "#854d0e" };
+type MarginBands = { green: number; yellow: number };
+
+/** Faixas padrão da margem %, usadas quando não há parâmetro cadastrado. */
+const DEFAULT_MARGIN_BANDS: MarginBands = { green: 50, yellow: 30 };
+
+/** Cor da margem %: verde a partir da faixa verde, amarelo a partir da amarela, vermelho abaixo. */
+function marginColor(percent: number, bands: MarginBands) {
+  if (percent >= bands.green) return { background: "rgba(34, 197, 94, 0.12)", color: "#166534" };
+  if (percent >= bands.yellow) return { background: "rgba(234, 179, 8, 0.15)", color: "#854d0e" };
   return { background: "rgba(220, 38, 38, 0.12)", color: "#b91c1c" };
+}
+
+/** Lê um parâmetro percentual (0 a 100); devolve null se ausente ou inválido. */
+function readPercent(data: unknown) {
+  if (!Array.isArray(data)) return null;
+  const value = Number((data[0] as Parameter | undefined)?.name);
+  return Number.isFinite(value) && value >= 0 && value <= 100 ? value : null;
 }
 
 const MONTHS = [
@@ -222,24 +234,53 @@ export default function Dashboard() {
   const [periodFrom, setPeriodFrom] = useState("");
   const [periodTo, setPeriodTo] = useState("");
   const [productSort, setProductSort] = useState<ProductSort>("margem");
+  const [marginBands, setMarginBands] =
+    useState<MarginBands>(DEFAULT_MARGIN_BANDS);
 
   useEffect(() => {
     async function load() {
       try {
-        const [vendasRes, percentRes, paymentMethodsRes, saleStatusesRes] =
-          await Promise.all([
-            authFetch("/api/vendas"),
-            authFetch("/api/productTypes?category=netWithdrawalPercent"),
-            authFetch("/api/productTypes?category=paymentMethod"),
-            authFetch("/api/productTypes?category=saleStatus"),
-          ]);
-        const [vendasData, percentData, paymentMethodsData, saleStatusesData] =
-          await Promise.all([
-            vendasRes.json(),
-            percentRes.json(),
-            paymentMethodsRes.json(),
-            saleStatusesRes.json(),
-          ]);
+        const [
+          vendasRes,
+          percentRes,
+          paymentMethodsRes,
+          saleStatusesRes,
+          greenRes,
+          yellowRes,
+        ] = await Promise.all([
+          authFetch("/api/vendas"),
+          authFetch("/api/productTypes?category=netWithdrawalPercent"),
+          authFetch("/api/productTypes?category=paymentMethod"),
+          authFetch("/api/productTypes?category=saleStatus"),
+          authFetch("/api/productTypes?category=marginGreenPercent"),
+          authFetch("/api/productTypes?category=marginYellowPercent"),
+        ]);
+        const [
+          vendasData,
+          percentData,
+          paymentMethodsData,
+          saleStatusesData,
+          greenData,
+          yellowData,
+        ] = await Promise.all([
+          vendasRes.json(),
+          percentRes.json(),
+          paymentMethodsRes.json(),
+          saleStatusesRes.json(),
+          greenRes.json(),
+          yellowRes.json(),
+        ]);
+        const green =
+          (greenRes.ok ? readPercent(greenData) : null) ??
+          DEFAULT_MARGIN_BANDS.green;
+        const yellow =
+          (yellowRes.ok ? readPercent(yellowData) : null) ??
+          DEFAULT_MARGIN_BANDS.yellow;
+        // Se as faixas vierem invertidas, a maior vira o verde.
+        setMarginBands({
+          green: Math.max(green, yellow),
+          yellow: Math.min(green, yellow),
+        });
         setVendas(vendasRes.ok && Array.isArray(vendasData) ? vendasData : []);
         if (percentRes.ok && Array.isArray(percentData)) {
           const percent = Number(
@@ -670,6 +711,11 @@ export default function Dashboard() {
               Vendas recebidas e a receber. Faturamento já com o desconto da
               venda dividido entre os itens; custo do dia de cada venda.
             </p>
+            <p style={{ margin: "4px 0 0", ...hintStyle }}>
+              🟢 a partir de {marginBands.green}% · 🟡 de {marginBands.yellow}%
+              a {marginBands.green}% · 🔴 abaixo de {marginBands.yellow}% (faixas
+              em Parâmetros)
+            </p>
           </div>
           <label style={{ display: "grid", gap: 6, fontWeight: 600 }}>
             Ordenar por
@@ -748,7 +794,7 @@ export default function Dashboard() {
                       <span
                         style={{
                           ...badgeStyle,
-                          ...marginColor(produto.margemPercent),
+                          ...marginColor(produto.margemPercent, marginBands),
                         }}
                       >
                         {formatPercent(produto.margemPercent)}

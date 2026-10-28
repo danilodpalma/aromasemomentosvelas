@@ -19,9 +19,26 @@ type Parameter = {
     | "saleStatus"
     | "purchaseStatus"
     | "purchaseType"
-    | "netWithdrawalPercent";
+    | "netWithdrawalPercent"
+    | "marginGreenPercent"
+    | "marginYellowPercent";
   paymentGroup?: PaymentGroup | null;
 };
+
+/** Botões de ação no mesmo padrão da tabela de Vendas (Editar / Excluir). */
+const actionButtonStyle: React.CSSProperties = {
+  padding: "5px 8px",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+
+const SINGLE_VALUE_CATEGORIES: Parameter["category"][] = [
+  "netWithdrawalPercent",
+  "marginGreenPercent",
+  "marginYellowPercent",
+];
 
 export default function Parametros() {
   const { canEdit, canDelete } = useAuth();
@@ -34,6 +51,11 @@ export default function Parametros() {
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
   const isFormActive = isCreating || editingId !== null;
+  // Valores em edição no quadro de faixas (null = mostrando os salvos).
+  const [marginDraft, setMarginDraft] = useState<{
+    green: string;
+    yellow: string;
+  } | null>(null);
 
   useEffect(() => {
     async function loadParameters() {
@@ -69,16 +91,22 @@ export default function Parametros() {
             paymentGroup: "doacao",
           },
           { category: "netWithdrawalPercent" as const, name: "35" },
+          { category: "marginGreenPercent" as const, name: "50" },
+          { category: "marginYellowPercent" as const, name: "30" },
         ];
 
-        const missingDefaults = defaults.filter(
-          (entry) =>
-            !data.some(
-              (item: Parameter) =>
-                item.category === entry.category &&
-                item.name.trim().toLowerCase() ===
-                  entry.name.trim().toLowerCase(),
-            ),
+        // Categorias de valor único (percentuais): o padrão só é criado se a
+        // categoria estiver vazia. Comparar pelo valor recriava o padrão depois
+        // de uma edição (ex.: 50 → 60 fazia surgir outro "50").
+        const missingDefaults = defaults.filter((entry) =>
+          SINGLE_VALUE_CATEGORIES.includes(entry.category)
+            ? !data.some((item: Parameter) => item.category === entry.category)
+            : !data.some(
+                (item: Parameter) =>
+                  item.category === entry.category &&
+                  item.name.trim().toLowerCase() ===
+                    entry.name.trim().toLowerCase(),
+              ),
         );
 
         let merged = data as Parameter[];
@@ -220,6 +248,151 @@ export default function Parametros() {
   const netWithdrawalPercent = safeTypes.filter(
     (t) => t.category === "netWithdrawalPercent",
   );
+  const marginGreenPercent = safeTypes.filter(
+    (t) => t.category === "marginGreenPercent",
+  );
+  const marginYellowPercent = safeTypes.filter(
+    (t) => t.category === "marginYellowPercent",
+  );
+
+  const greenParam = marginGreenPercent[0];
+  const yellowParam = marginYellowPercent[0];
+  const greenValue = marginDraft?.green ?? greenParam?.name ?? "50";
+  const yellowValue = marginDraft?.yellow ?? yellowParam?.name ?? "30";
+
+  async function saveMarginBands() {
+    const green = Number(greenValue.replace(",", "."));
+    const yellow = Number(yellowValue.replace(",", "."));
+    if (![green, yellow].every((v) => Number.isFinite(v) && v >= 0 && v <= 100)) {
+      return setMessage("As faixas devem ser percentuais entre 0 e 100.");
+    }
+    if (yellow >= green) {
+      return setMessage("O verde precisa ser maior que o amarelo.");
+    }
+
+    const entries = [
+      { category: "marginGreenPercent" as const, param: greenParam, value: green },
+      { category: "marginYellowPercent" as const, param: yellowParam, value: yellow },
+    ];
+    const saved: Parameter[] = [];
+    for (const entry of entries) {
+      const res = await authFetch(
+        entry.param
+          ? `/api/productTypes?id=${entry.param.id}`
+          : "/api/productTypes",
+        {
+          method: entry.param ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: String(entry.value),
+            category: entry.category,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return setMessage(err?.error || "Erro ao salvar as faixas.");
+      }
+      saved.push(await res.json());
+    }
+
+    setTypes((prev) => [
+      ...prev.filter((t) => !saved.some((item) => item.id === t.id)),
+      ...saved,
+    ]);
+    setMarginDraft(null);
+    setMessage("Faixas da margem salvas.");
+  }
+
+  function renderMarginBands() {
+    const rows = [
+      { key: "green" as const, label: "🟢 Verde a partir de", value: greenValue },
+      { key: "yellow" as const, label: "🟡 Amarelo a partir de", value: yellowValue },
+    ];
+    return (
+      <div
+        style={{
+          background: "rgba(255,255,255,0.7)",
+          border: "1px solid rgba(166, 116, 71, 0.16)",
+          borderRadius: 12,
+          padding: 14,
+          boxShadow: "0 4px 12px rgba(92, 54, 24, 0.06)",
+        }}
+      >
+        <h3
+          style={{
+            margin: "0 0 4px",
+            color: COLORS.primaryDark,
+            fontSize: 15,
+          }}
+        >
+          Faixas da margem % (Dashboard)
+        </h3>
+        <p style={{ margin: "0 0 10px", color: COLORS.grayText, fontSize: 12 }}>
+          Cores da Margem por produto. Abaixo do amarelo fica 🔴 vermelho.
+        </p>
+        <div style={{ display: "grid", gap: 8 }}>
+          {rows.map((row) => (
+            <div
+              key={row.key}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: "rgba(247, 232, 215, 0.75)",
+                border: "1px solid rgba(166, 116, 71, 0.18)",
+              }}
+            >
+              <span style={{ fontWeight: 600, color: COLORS.primaryDark }}>
+                {row.label}
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  disabled={!canEdit}
+                  value={row.value}
+                  onChange={(e) =>
+                    setMarginDraft((prev) => ({
+                      green: prev?.green ?? greenValue,
+                      yellow: prev?.yellow ?? yellowValue,
+                      [row.key]: e.target.value,
+                    }))
+                  }
+                  style={{
+                    width: 70,
+                    padding: "6px 8px",
+                    border: "1px solid rgb(166, 116, 71)",
+                    borderRadius: 8,
+                    textAlign: "right",
+                    background: canEdit ? "#fff" : COLORS.grayLight,
+                  }}
+                />
+                <strong>%</strong>
+              </span>
+            </div>
+          ))}
+        </div>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={saveMarginBands}
+            style={{
+              ...actionButtonStyle,
+              marginTop: 10,
+              background: COLORS.primary,
+            }}
+          >
+            Salvar faixas
+          </button>
+        )}
+      </div>
+    );
+  }
 
   function renderParameterGroup(
     title: string,
@@ -289,19 +462,14 @@ export default function Parametros() {
                     </span>
                   )}
                 </span>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   {canEdit && (
                     <button
+                      type="button"
                       onClick={() => startEdit(t)}
                       style={{
-                        padding: "7px 10px",
-                        borderRadius: 999,
-                        border: "1px solid rgba(166, 116, 71, 0.3)",
-                        background: "#fff",
-                        color: COLORS.primaryDark,
-                        cursor: "pointer",
-                        fontSize: 12,
-                        fontWeight: 600,
+                        ...actionButtonStyle,
+                        background: COLORS.primary,
                       }}
                     >
                       Editar
@@ -309,16 +477,11 @@ export default function Parametros() {
                   )}
                   {canDelete && (
                     <button
+                      type="button"
                       onClick={() => handleDelete(t.id)}
                       style={{
-                        padding: "7px 10px",
-                        borderRadius: 999,
-                        border: "none",
-                        background: "#b45309",
-                        color: "white",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        fontWeight: 600,
+                        ...actionButtonStyle,
+                        background: COLORS.dangerLight,
                       }}
                     >
                       Excluir
@@ -393,13 +556,13 @@ export default function Parametros() {
                   type="button"
                   onClick={startNew}
                   style={{
-                    padding: "8px 14px",
+                    padding: "8px 16px",
                     background: COLORS.newButtonGradient,
                     color: "white",
                     border: "none",
-                    borderRadius: 6,
-                    fontWeight: 600,
+                    borderRadius: 999,
                     cursor: "pointer",
+                    fontWeight: 600,
                   }}
                 >
                   + Novo
@@ -447,6 +610,7 @@ export default function Parametros() {
                     <option value="netWithdrawalPercent">
                       Percentual líquido a retirar (%)
                     </option>
+
                   </select>
                 </label>
                 <label
@@ -520,14 +684,11 @@ export default function Parametros() {
                   disabled={!isFormActive}
                   style={{
                     padding: "10px 16px",
-                    background:
-                      "linear-gradient(135deg, #a76f4b 0%, #8c5331 100%)",
+                    background: isFormActive ? COLORS.primary : "#a78b58",
                     color: "white",
                     border: "none",
-                    borderRadius: 999,
-                    fontWeight: 600,
+                    borderRadius: 6,
                     cursor: isFormActive ? "pointer" : "not-allowed",
-                    opacity: isFormActive ? 1 : 0.6,
                   }}
                 >
                   {editingId ? "Atualizar" : "Criar"}
@@ -606,6 +767,7 @@ export default function Parametros() {
               "35% (padrão)",
               netWithdrawalPercent,
             )}
+            {renderMarginBands()}
           </div>
         </div>
       </div>
